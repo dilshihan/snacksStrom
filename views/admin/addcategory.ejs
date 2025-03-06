@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SNACK STORM</title>
+    <link rel="stylesheet" href="/style/addcategory.css">
+    <link rel="shortcut icon" href="/images/favicon.png" type="">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.2/dist/sweetalert2.min.css">
+</head>
+
+<body>
+    <main class="ml-64 p-8">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="text-3xl font-bold text-gray-900">Add Category</h1>
+            <p class="text-gray-500">Create a new product category</p>
+        </div>
+
+        <!-- Add Category Form -->
+        <div class="form-container">
+            <form id="addCategoryForm" action="/admin/addcategory" method="POST">
+                <div class="form-group">
+                    <label for="categoryName">Category Name</label>
+                    <i class="fas fa-tag"></i>
+                    <input type="text" id="categoryName" name="name" required placeholder="Enter category name">
+                </div>
+                <div class="form-group">
+                    <label for="categoryDescription">Description</label>
+                    <i class="fas fa-align-left"></i>
+                    <textarea id="categoryDescription" name="description" rows="4" required
+                        placeholder="Enter category description"></textarea>
+                </div>
+                <button type="submit" class="submit-btn">Add Category</button>
+            </form>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.2/dist/sweetalert2.min.js"></script>
+
+    <script>
+        document.getElementById("addCategoryForm").addEventListener("submit", async (event) => {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const categoryData = Object.fromEntries(formData.entries());
+
+            try {
+                const response = await fetch("/admin/addcategory", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(categoryData)
+                });
+
+
+                const result = await response.json();
+
+                if (result.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Category added successfully!',
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+
+                    setTimeout(() => {
+                        window.location.href = "/admin/category";
+                    }, 1500);
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: result.message
+                    });
+                }
+            } catch (error) {
+                console.error("Error adding category:", error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Something went wrong!',
+                    text: 'Please try again later.'
+                });
+            }
+        });
+
+    </script>
+</body>
+
+</html>

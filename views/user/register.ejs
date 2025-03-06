@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.8/dist/sweetalert2.min.css"
+      rel="stylesheet"
+    />
+    <link rel="shortcut icon" href="/images/favicon.png" type="" />
+    <link rel="stylesheet" href="/style/userregister.css" />
+    <title>SNACK STORM</title>
+  </head>
+  <body>
+    <div class="login-page">
+      <div class="form">
+        <!-- Register Form -->
+        <form
+          method="post"
+          action="/user/register"
+          class="register-form acrylic"
+        >
+          <span>Sign Up</span>
+          <input name="email" class="email" type="text" placeholder="Email" />
+          <input
+            name="password"
+            class="password"
+            type="password"
+            placeholder="Password"
+          />
+          <input
+            class="conformPassword"
+            type="password"
+            placeholder="Confirm Password"
+          />
+          <button id="SignUp">sign up</button>
+          <div class="google">
+            <a class="google-btn" onclick="handleGoogleSignIn()">
+              <img
+                src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg"
+                alt="Google logo"
+              />
+              <span class="google-sign">Continue with Google</span>
+            </a>
+          </div>
+
+          <p class="message"><a href="#">I have an Account</a></p>
+        </form>
+
+        <!-- Login Form -->
+        <form method="post" action="/user/login" class="login-form acrylic">
+          <input
+            type="text"
+            id="message"
+            value="<%= message %>"
+            name="message"
+            hidden
+          />
+          <span>Login to your account</span>
+          <input
+            name="email"
+            class="logemail"
+            type="text"
+            placeholder="Email"
+          />
+          <input
+            name="password"
+            class="logpassword"
+            type="password"
+            placeholder="Password"
+          />
+          <button id="SignIn">Log in</button>
+
+          <div class="google">
+            <a class="google-btn" onclick="handleGoogleSignIn()">
+              <img
+                src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg"
+                alt="Google logo"
+              />
+              <span class="google-sign">Continue with Google</span>
+            </a>
+          </div>
+          <p class="message"><a href="#">Create Account</a></p>
+        </form>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.8/dist/sweetalert2.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        document
+          .querySelector(".register-form")
+          .addEventListener("submit", formvalidate1);
+        document
+          .querySelector(".login-form")
+          .addEventListener("submit", formvalidate2);
+      });
+
+      function formvalidate1(e) {
+        e.preventDefault();
+        var email = document.querySelector(".email").value;
+        var password = document.querySelector(".password").value;
+        var conformPassword = document.querySelector(".conformPassword").value;
+
+        if (email == "" || password == "" || conformPassword == "") {
+          swal.fire("All fields are required");
+          return false;
+        } else if (password != conformPassword) {
+          swal.fire("Passwords do not match");
+          return false;
+        }
+        e.target.submit();
+        return true;
+      }
+
+      function formvalidate2(e) {
+        e.preventDefault();
+        var email = document.querySelector(".logemail").value;
+        var password = document.querySelector(".logpassword").value;
+
+        if (email == "" || password == "") {
+          swal.fire("All fields are required");
+          return false;
+        }
+        e.target.submit();
+        return true;
+      }
+
+      $(".message a").click(function () {
+        $("form").animate({ height: "toggle", opacity: "toggle" }, "slow");
+      });
+
+      const message = document.getElementById("message").value;
+      if (message) {
+        swal.fire(message);
+      }
+
+      // Google Sign In Configuration
+      function handleGoogleSignIn() {
+        const width = 500;
+        const height = 600;
+        const left = window.screen.width / 2 - width / 2;
+        const top = window.screen.height / 2 - height / 2;
+
+        const popup = window.open(
+          `https://accounts.google.com/o/oauth2/v2/auth?` +
+            `client_id=441541077548-vlflkfl4t4vkh6354l5rl1cg0r769u8b.apps.googleusercontent.com` +
+            `&redirect_uri=${encodeURIComponent(
+              window.location.origin + "/user/auth/google/callback"
+            )}` +
+            `&response_type=token` +
+            `&scope=email%20profile` +
+            `&prompt=select_account`,
+          "GoogleLogin",
+          `width=${width},height=${height},left=${left},top=${top}`
+        );
+
+        // Handle the OAuth response
+        window.addEventListener("message", async function (event) {
+          if (event.origin !== window.location.origin) return;
+
+          if (event.data.type === "google-auth") {
+            try {
+              console.log("Received user data:", event.data.userData); // Debug log
+              const result = await fetch("/user/auth/google/callback", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  userData: event.data.userData, // Wrap userData in an object
+                }),
+              });
+
+              const data = await result.json();
+              if (data.success) {
+                window.location.href = "/user/home";
+              } else {
+                Swal.fire({
+                  icon: "error",
+                  title: "Authentication Failed",
+                  text: data.message || "Failed to authenticate with Google",
+                });
+              }
+            } catch (error) {
+              console.error("Authentication error:", error);
+              Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: "Failed to authenticate with Google",
+              });
+            }
+          }
+        });
+      }
+    </script>
+    <script>
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.has("blocked")) {
+        Swal.fire({
+          icon: "error",
+          title: "Access Denied",
+          text: "User email blocked, please try another email",
+          confirmButtonColor: "#d33",
+        });
+      }
+    </script>
+  </body>
+</html>

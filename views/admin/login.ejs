@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SNACK STORM - Admin Portal</title>
+    <link rel="shortcut icon" href="/images/favicon.png" type="">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/style/adminlogin.css">
+</head>
+
+<body>
+    <div class="page-container">
+        <div class="login-container">
+            <div class="login-card">
+                <div class="logo-section">
+                    <h1 class="logo-title">SNACK STORM</h1>
+                    <span class="admin-badge">Admin Portal</span>
+
+                    <p>
+                        <%= message %>
+                    </p>
+
+                </div>
+
+                <form action="/admin/login" method="post">
+                    <div class="input-group">
+                        <label for="email-field" class="input-label">Email Address</label>
+                        <input name="email" id="email-field" type="email" class="input-field"
+                            placeholder="Enter your admin email" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="password-field" class="input-label">Password</label>
+                        <input name="password" id="password-field" type="password" class="input-field"
+                            placeholder="Enter your password" required>
+                    </div>
+
+                    <p id="errp" class="error-text"></p>
+
+                    <button type="submit" id="bb" class="submit-btn">
+                        Sign in to Admin Panel
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function forgot() {
+            const email = document.getElementById('email-field').value;
+            if (email === '') {
+                document.getElementById('errp').innerHTML = 'Please enter your admin email to reset password';
+                document.getElementById('errp').style.animation = 'none';
+                setTimeout(() => {
+                    document.getElementById('errp').style.animation = 'shake 0.5s ease-out';
+                }, 10);
+            } else {
+                window.location.href = '/admin/forgot/' + email;
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,257 @@
+/* Basic Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Body Styles */
+body {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f0f2f5;
+    font-family: 'Segoe UI', Roboto, -apple-system, BlinkMacSystemFont, sans-serif;
+    overflow: hidden;
+}
+
+/* Container Styles */
+.page-container {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    background: linear-gradient(-45deg, #0e2a47, #1e4976, #2c5282, #2b6cb0);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
+}
+
+.login-container {
+    width: 100%;
+    max-width: 420px;
+    margin: auto;
+    padding: 2.5rem;
+    perspective: 1000px;
+}
+
+/* Card Styles */
+.login-card {
+    background: white;
+    padding: 2.5rem;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    animation: cardFloat 6s ease-in-out infinite, fadeIn 1s ease-out;
+    transform-style: preserve-3d;
+}
+
+/* Logo Section */
+.logo-section {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.logo-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #0e2a47;
+    margin-bottom: 0.5rem;
+    animation: titlePop 0.5s ease-out 0.5s both;
+}
+
+.admin-badge {
+    display: inline-block;
+    padding: 0.25rem 1rem;
+    background: #0e2a47;
+    color: white;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-top: 0.5rem;
+    animation: slideIn 0.5s ease-out 0.8s both;
+}
+
+/* Form Elements */
+.input-group {
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: fadeInUp 0.5s ease-out forwards;
+}
+
+.input-group:nth-child(1) {
+    animation-delay: 1s;
+}
+
+.input-group:nth-child(2) {
+    animation-delay: 1.2s;
+}
+
+.input-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #4a5568;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.input-field {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    color: #2d3748;
+    transition: all 0.3s ease;
+    background-color: #f8fafc;
+}
+
+.input-field:focus {
+    outline: none;
+    border-color: #0e2a47;
+    box-shadow: 0 0 0 3px rgba(14, 42, 71, 0.1);
+    background-color: white;
+    transform: translateY(-2px);
+}
+
+.input-field::placeholder {
+    color: #a0aec0;
+}
+
+/* Button Styles */
+.submit-btn {
+    width: 100%;
+    padding: 0.875rem;
+    background: #0e2a47;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 1rem;
+    opacity: 0;
+    animation: fadeInUp 0.5s ease-out 1.4s forwards;
+    position: relative;
+    overflow: hidden;
+}
+
+.submit-btn:hover {
+    background: #1e4976;
+    transform: translateY(-2px);
+}
+
+.submit-btn:active {
+    transform: translateY(0);
+}
+
+.submit-btn::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 150%;
+    height: 150%;
+    background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 60%);
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+    transition: transform 0.5s ease-out, opacity 0.3s ease-out;
+}
+
+.submit-btn:hover::after {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+}
+
+/* Error Text */
+.error-text {
+    color: #e53e3e;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    text-align: center;
+    animation: shake 0.5s ease-out;
+}
+
+/* Forgot Password Link */
+.forgot-link {
+    display: block;
+    text-align: center;
+    margin-top: 1.5rem;
+    color: #0e2a47;
+    font-size: 0.875rem;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    opacity: 0;
+    animation: fadeInUp 0.5s ease-out 1.6s forwards;
+}
+
+.forgot-link:hover {
+    color: #1e4976;
+    text-decoration: underline;
+    transform: translateX(5px);
+}
+
+/* Animations */
+@keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+@keyframes cardFloat {
+    0%, 100% { transform: translateY(0) rotateX(0) rotateY(0); }
+    25% { transform: translateY(-10px) rotateX(2deg) rotateY(-2deg); }
+    75% { transform: translateY(10px) rotateX(-2deg) rotateY(2deg); }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes titlePop {
+    0% {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    90% {
+        transform: scale(1.1);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-5px); }
+    40%, 80% { transform: translateX(5px); }
+}

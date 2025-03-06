@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <!-- Basic -->
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <!-- Mobile Metas -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <!-- Site Metas -->
+    <meta name="keywords" content="" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <link rel="shortcut icon" href="/images/favicon.png" type="" />
+    <title>SNACK STORM - Checkout</title>
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.css" />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/jquery-nice-select/1.1.0/css/nice-select.min.css"
+      integrity="sha512-CruCP+TD3yXzlvvijET8wV5WxxEh5H8P4cmz0RFbKK6FlZ2sYl3AEsKlLPHbniXKSrDdFewhbmBK5skbdsASbQ=="
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" type="text/css" href="/css/style.css" />
+    <link rel="stylesheet" type="text/css" href="/css/responsive.css" />
+    <link href="/css/font-awesome.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/style/checkout.css" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  </head>
+  <body class="sub_page">
+    <header class="header_section">
+      <div class="container">
+        <nav class="navbar navbar-expand-lg custom_nav-container">
+          <a class="navbar-brand" href="/user/home">
+            <span> SNACK STORM </span>
+          </a>
+
+          <button
+            class="navbar-toggler"
+            type="button"
+            data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+          >
+            <span class=""> </span>
+          </button>
+
+          <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mx-auto">
+              <li class="nav-item">
+                <a class="nav-link" href="/user/home">Home </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/user/menu">Menu </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/user/about">About</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/user/contactus">Contact Us</a>
+              </li>
+            </ul>
+            <div class="user_option">
+              <a class="cart_link" href="/user/cart">
+                <svg
+                  version="1.1"
+                  id="Capa_1"
+                  xmlns="http://www.w3.org/2000/svg"
+                  xmlns:xlink="http://www.w3.org/1999/xlink"
+                  x="0px"
+                  y="0px"
+                  viewBox="0 0 456.029 456.029"
+                  style="enable-background: new 0 0 456.029 456.029"
+                  xml:space="preserve"
+                >
+                  <g>
+                    <g>
+                      <path
+                        d="M345.6,338.862c-29.184,0-53.248,23.552-53.248,53.248c0,29.184,23.552,53.248,53.248,53.248
+                     c29.184,0,53.248-23.552,53.248-53.248C398.336,362.926,374.784,338.862,345.6,338.862z"
+                      />
+                    </g>
+                  </g>
+                  <g>
+                    <g>
+                      <path
+                        d="M439.296,84.91c-1.024,0-2.56-0.512-4.096-0.512H112.64l-5.12-34.304C104.448,27.566,84.992,10.67,61.952,10.67H20.48
+                     C9.216,10.67,0,19.886,0,31.15c0,11.264,9.216,20.48,20.48,20.48h41.472c2.56,0,4.608,2.048,5.12,4.608l31.744,216.064
+                     c4.096,27.136,27.648,47.616,55.296,47.616h212.992c26.624,0,49.664-18.944,55.296-45.056l33.28-166.4
+                     C457.728,97.71,450.56,86.958,439.296,84.91z"
+                      />
+                    </g>
+                  </g>
+                  <g>
+                    <g>
+                      <path
+                        d="M215.04,389.55c-1.024-28.16-24.576-50.688-52.736-50.688c-29.696,1.536-52.224,26.112-51.2,55.296
+                     c1.024,28.16,24.064,50.688,52.224,50.688h1.024C193.536,443.31,216.576,418.734,215.04,389.55z"
+                      />
+                    </g>
+                  </g>
+                  <g></g>
+                  <g></g>
+                  <g></g>
+                  <g></g>
+                  <g></g>
+                  <g></g>
+                  <g></g>
+                  <g></g>
+                  <g></g>
+                  <g></g>
+                  <g></g>
+                  <g></g>
+                  <g></g>
+                  <g></g>
+                  <g></g>
+                </svg>
+              </a>
+              <form class="form-inline">
+                <button class="btn my-2 my-sm-0 nav_search-btn" type="submit">
+                  <i class="fa fa-search" aria-hidden="true"></i>
+                </button>
+              </form>
+              <a href="/user/userprofile" class="user_link">
+                <% if (user && user.image) { %>
+                <img
+                  src="<%= user.image %>"
+                  style="
+                    width: 30px;
+                    height: 30px;
+                    object-fit: cover;
+                    border-radius: 50%;
+                  "
+                  alt="Profile"
+                />
+                <% } else { %>
+                <i class="fa fa-user" aria-hidden="true"></i>
+                <% } %>
+              </a>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </header>
+    <div class="hero_area"></div>
+
+    <!-- checkout section -->
+    <section class="checkout_section layout_padding">
+      <div class="container">
+        <div class="heading_container">
+          <h2>Checkout</h2>
+        </div>
+
+        <ul class="breadcrumb">
+          <li><a href="/user/cart">Cart</a></li>
+          <li class="active">Checkout</li>
+        </ul>
+
+        <div class="row">
+          <div class="col-lg-8">
+            <div class="checkout_container">
+              <h3 class="checkout_heading">
+                Shipping Information
+                <button class="change_address_btn" onclick="openAddressModal()">
+                  <i class="fa fa-map-marker" aria-hidden="true"></i>
+                  Change Address
+                </button>
+              </h3>
+              <!-- Current Address Display - Initially Visible -->
+              <div id="current-address-display" class="current_address_display">
+                <h4>Delivery Address</h4>
+                <% if (defaultAddress) { %>
+                <div class="address_info">
+                  <p><strong><%= defaultAddress.fullname %></strong></p>
+                  <p>
+                    <%= defaultAddress.streetAddress %>, <%= defaultAddress.city
+                    %>
+                  </p>
+                  <p>
+                    <%= defaultAddress.state %>, <%= defaultAddress.zipCode %>
+                  </p>
+                  <p>Phone: <%= defaultAddress.phoneNumber %></p>
+                </div>
+                <% } else { %>
+                <p>No address found. Please add an address.</p>
+                <% } %>
+              </div>
+
+              <!-- Add New Address Button -->
+              <button id="add-address-btn" class="add_new_address_btn">
+                Add New Address
+              </button>
+
+              <!-- Address Form - Initially Hidden -->
+              <form id="checkout-form">
+                <div class="form_group">
+                  <label class="form_label">FullName*</label>
+                  <input
+                    type="text"
+                    name="fullname"
+                    class="form_input"
+                    id="fullname"
+                    required
+                  />
+                </div>
+
+                <div class="form_group">
+                  <label class="form_label">Phone Number*</label>
+                  <input
+                    type="tel"
+                    name="phoneNumber"
+                    class="form_input"
+                    id="phone"
+                    required
+                  />
+                </div>
+
+                <div class="form_group">
+                  <label class="form_label">Street Address*</label>
+                  <input
+                    type="text"
+                    name="streetAddress"
+                    class="form_input"
+                    id="addressLine1"
+                    required
+                  />
+                </div>
+                <div class="row">
+                  <div class="col-md-4">
+                    <div class="form_group">
+                      <label class="form_label">City*</label>
+                      <input
+                        type="text"
+                        name="city"
+                        class="form_input"
+                        id="city"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="form_group">
+                      <label class="form_label">State/Province*</label>
+                      <input
+                        type="text"
+                        name="state"
+                        class="form_input"
+                        id="state"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="form_group">
+                      <label class="form_label">Zip/Postal Code*</label>
+                      <input
+                        type="text"
+                        name="zipCode"
+                        class="form_input"
+                        id="zipCode"
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-12">
+                  <div class="form_group checkbox_group">
+                    <input
+                      type="checkbox"
+                      name="isDefault"
+                      id="address_isDefault"
+                      class="form_checkbox"
+                    />
+                    <label for="address_isDefault" class="checkbox_label"
+                      >Set as default address</label
+                    >
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  id="use-address-btn"
+                  class="use_current_address_btn"
+                >
+                  Save Address
+                </button>
+                <button type="button" id="cancel-btn" class="cancel-btn">
+                  Cancel
+                </button>
+              </form>
+            </div>
+
+            <div class="checkout_container">
+              <h3 class="checkout_heading">Payment Method</h3>
+              <div class="payment_options">
+                <div
+                  class="payment_option active"
+                  onclick="selectPayment('credit')"
+                >
+                  <input
+                    type="radio"
+                    name="payment-method"
+                    id="credit"
+                    class="payment_radio"
+                    checked
+                  />
+                  <label for="credit">Credit / Debit Card</label>
+                </div>
+
+                <div class="payment_option" onclick="selectPayment('paypal')">
+                  <input
+                    type="radio"
+                    name="payment-method"
+                    id="paypal"
+                    class="payment_radio"
+                  />
+                  <label for="paypal">PayPal</label>
+                </div>
+
+                <div class="payment_option" onclick="selectPayment('cod')">
+                  <input
+                    type="radio"
+                    name="payment-method"
+                    id="cod"
+                    class="payment_radio"
+                  />
+                  <label for="cod">Cash on Delivery</label>
+                </div>
+              </div>
+
+              <div id="credit-details" class="payment_details active">
+                <div class="form_group">
+                  <label class="form_label">Card Number*</label>
+                  <input
+                    type="text"
+                    class="form_input"
+                    placeholder="1234 5678 9012 3456"
+                    required
+                  />
+                </div>
+
+                <div class="form_group">
+                  <label class="form_label">Cardholder Name*</label>
+                  <input type="text" class="form_input" required />
+                </div>
+
+                <div class="card_row">
+                  <div class="form_group w-50">
+                    <label class="form_label">Expiration Date*</label>
+                    <input
+                      type="text"
+                      class="form_input"
+                      placeholder="MM/YY"
+                      required
+                    />
+                  </div>
+
+                  <div class="form_group w-50">
+                    <label class="form_label">CVV*</label>
+                    <input
+                      type="text"
+                      class="form_input"
+                      placeholder="123"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div id="paypal-details" class="payment_details">
+                <p>
+                  You will be redirected to PayPal to complete your payment.
+                </p>
+              </div>
+
+              <div id="cod-details" class="payment_details">
+                <p>You will pay for your order at the time of delivery.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-4">
+            <div class="order_summary">
+              <h3 class="summary_heading">Order Summary</h3>
+              <div class="summary_items">
+                <% let subtotal = 0; %> <% cart.forEach(item => { %> <% let
+                itemTotal = item.price * item.quantity; %> <% subtotal +=
+                itemTotal; %>
+                <div class="summary_item">
+                  <div class="item_name">
+                    <span class="item_quantity"><%= item.quantity %></span>
+                    <span><%= item.name %></span>
+                  </div>
+                  <div class="item_price">₹<%= itemTotal.toFixed(2) %></div>
+                </div>
+                <% }); %>
+              </div>
+
+              <% let shipping = subtotal > 0 ? 5.99 : 0; %> <% let tax =
+              subtotal * 0.08; %> <% let discount = 0; %> <% let total =
+              subtotal + shipping + tax - discount; %>
+
+              <div class="price_details">
+                <div class="price_row">
+                  <span>Subtotal</span>
+                  <span>₹<%= subtotal.toFixed(2) %></span>
+                </div>
+
+                <div class="price_row">
+                  <span>Shipping</span>
+                  <span>₹<%= shipping.toFixed(2) %></span>
+                </div>
+
+                <div class="price_row">
+                  <span>Tax</span>
+                  <span>₹<%= tax.toFixed(2) %></span>
+                </div>
+
+                <div class="price_row">
+                  <span>Discount</span>
+                  <span>-₹<%= discount.toFixed(2) %></span>
+                </div>
+
+                <div class="price_total">
+                  <span>Total</span>
+                  <span>₹<%= total.toFixed(2) %></span>
+                </div>
+              </div>
+
+              <button id="place-order-btn" class="place_order_btn">
+                Place Order
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Address Modal -->
+    <div id="addressModal" class="address_modal">
+      <div class="address_modal_content">
+        <div class="address_modal_header">
+          <h4 class="address_modal_title">Select a Delivery Address</h4>
+          <button class="address_modal_close" onclick="closeAddressModal()">
+            &times;
+          </button>
+        </div>
+
+        <div id="savedAddresses">
+          <% addresses.forEach((address, index) => { %>
+          <div
+            class="saved_address <%= index === 0 ? 'selected' : '' %>"
+            onclick="selectAddress(this, <%= index %>)"
+          >
+            <div class="saved_address_title"><%= address.title %></div>
+            <div class="saved_address_details">
+              <p><strong><%= address.fullname %></strong></p>
+              <input
+                type="hidden"
+                class="addressId"
+                value="<%= address._id %>"
+              />
+              <p><%= address.streetAddress %>, <%= address.city %></p>
+              <p><%= address.state %>, <%= address.zipCode %></p>
+              <p>Phone: <%= address.phoneNumber %></p>
+            </div>
+          </div>
+          <% }); %>
+        </div>
+
+        <div class="address_actions">
+          <button
+            class="use_selected_address_btn"
+            onclick="useSelectedAddress()"
+          >
+            Use This Address
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- footer section -->
+    <footer class="footer_section">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-4 footer-col">
+            <div class="footer_contact">
+              <h4>Contact Us</h4>
+              <div class="contact_link_box">
+                <a href="">
+                  <i class="fa fa-map-marker" aria-hidden="true"></i>
+                  <span> Location </span>
+                </a>
+                <a href="">
+                  <i class="fa fa-phone" aria-hidden="true"></i>
+                  <span> Call +91 8089113204 </span>
+                </a>
+                <a href="">
+                  <i class="fa fa-envelope" aria-hidden="true"></i>
+                  <span> mohddilshan1234321@gmail.com </span>
+                </a>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4 footer-col">
+            <div class="footer_detail">
+              <a href="" class="footer-logo"> SNACK STORM </a>
+              <p>
+                Necessary, making this the first true generator on the Internet.
+                It uses a dictionary of over 200 Latin words, combined with
+              </p>
+              <div class="footer_social">
+                <a href="">
+                  <i class="fa fa-facebook" aria-hidden="true"></i>
+                </a>
+                <a href="">
+                  <i class="fa fa-twitter" aria-hidden="true"></i>
+                </a>
+                <a href="">
+                  <i class="fa fa-linkedin" aria-hidden="true"></i>
+                </a>
+                <a href="">
+                  <i class="fa fa-instagram" aria-hidden="true"></i>
+                </a>
+                <a href="">
+                  <i class="fa fa-pinterest" aria-hidden="true"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4 footer-col">
+            <h4>Opening Hours</h4>
+            <p>Everyday</p>
+            <p>10.00 Am -10.00 Pm</p>
+          </div>
+        </div>
+        <div class="footer-info">
+          <p>
+            &copy; <span id="displayYear"></span> All Rights Reserved By
+            <a href="">muhammed dilshihan</a><br /><br />
+            &copy; <span id="displayYear"></span> Distributed By
+            <a href="" target="_blank">dilshihan</a>
+          </p>
+        </div>
+      </div>
+    </footer>
+
+    <!-- jQery -->
+    <script src="/js/jquery-3.4.1.min.js"></script>
+    <!-- popper js -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+      integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+      crossorigin="anonymous"
+    ></script>
+    <!-- bootstrap js -->
+    <script src="/js/bootstrap.js"></script>
+    <!-- owl slider -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
+    <!-- custom js -->
+    <script src="/js/custom.js"></script>
+
+    <script>
+      // Header scroll effect
+      let lastScrollTop = 0;
+      const header = document.querySelector(".header_section");
+      let headerHeight = header.offsetHeight;
+
+      window.addEventListener(
+        "scroll",
+        function () {
+          let currentScroll =
+            window.pageYOffset || document.documentElement.scrollTop;
+
+          if (currentScroll > lastScrollTop && currentScroll > headerHeight) {
+            // Scrolling down
+            header.style.transform = "translateY(-100%)";
+          } else {
+            // Scrolling up
+            header.style.transform = "translateY(0)";
+          }
+          lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
+        },
+        false
+      );
+
+      // Payment method selection
+      function selectPayment(method) {
+        // Update active payment option
+        document.querySelectorAll(".payment_option").forEach((option) => {
+          option.classList.remove("active");
+        });
+        document
+          .querySelector(`[onclick="selectPayment('${method}')"]`)
+          .classList.add("active");
+
+        // Update radio button
+        document.getElementById(method).checked = true;
+
+        // Show correct payment details
+        document.querySelectorAll(".payment_details").forEach((details) => {
+          details.classList.remove("active");
+        });
+        document.getElementById(`${method}-details`).classList.add("active");
+      }
+
+      // Place order button event
+      document
+        .getElementById("place-order-btn")
+        .addEventListener("click", function () {
+          // Validate form
+          const form = document.getElementById("checkout-form");
+          if (form.checkValidity()) {
+            Swal.fire({
+              icon: "success",
+              title: "Order Placed Successfully!",
+              text: "Thank you for your order. Your delicious food is on its way!",
+              confirmButtonColor: "#ffbe33",
+            }).then(() => {
+              // Redirect to order confirmation page
+              // window.location.href = '/order-confirmation';
+            });
+          } else {
+            Swal.fire({
+              icon: "error",
+              title: "Oops...",
+              text: "Please fill in all required fields",
+              confirmButtonColor: "#ffbe33",
+            });
+            form.reportValidity();
+          }
+        });
+
+      // Update year in footer
+      document.getElementById("displayYear").textContent =
+        new Date().getFullYear();
+    </script>
+    <script>
+      // Add this JavaScript to handle the button click
+      document.addEventListener("DOMContentLoaded", function () {
+        const addButton = document.getElementById("add-address-btn");
+        const checkoutForm = document.getElementById("checkout-form");
+
+        addButton.addEventListener("click", function () {
+          // Toggle form visibility
+          checkoutForm.style.display =
+            checkoutForm.style.display === "none" ? "block" : "block";
+        });
+      });
+
+      document.addEventListener("DOMContentLoaded", function () {
+        const addButton = document.getElementById("add-address-btn");
+        const checkoutForm = document.getElementById("checkout-form");
+        const cancelButton = document.getElementById("cancel-btn");
+
+        // Show form when Add New Address is clicked
+        addButton.addEventListener("click", function () {
+          checkoutForm.style.display = "block";
+        });
+
+        // Hide form when Cancel is clicked
+        cancelButton.addEventListener("click", function () {
+          checkoutForm.style.display = "none";
+        });
+      });
+      document
+        .getElementById("use-address-btn")
+        .addEventListener("click", async function (e) {
+          e.preventDefault();
+
+          const fullname = document.getElementById("fullname").value.trim();
+          const phoneNumber = document.getElementById("phone").value.trim();
+          const streetAddress = document
+            .getElementById("addressLine1")
+            .value.trim();
+          const city = document.getElementById("city").value.trim();
+          const state = document.getElementById("state").value.trim();
+          const zipCode = document.getElementById("zipCode").value.trim();
+          const isDefault = document.getElementById("address_isDefault").checked
+            ? "on"
+            : "off";
+
+          const phoneRegex = /^[6-9]\d{9}$/;
+          const repeatedDigitsRegex = /^(\d)\1{9}$/;
+          const zipRegex = /^[1-9][0-9]{5}$/;
+          const textOnlyRegex = /^[A-Za-z\s]+$/;
+
+          if (
+            !fullname ||
+            !phoneNumber ||
+            !streetAddress ||
+            !city ||
+            !state ||
+            !zipCode
+          ) {
+            Swal.fire({
+              icon: "warning",
+              title: "Missing Fields",
+              text: "Please fill in all required fields.",
+            });
+            return;
+          }
+
+          if (!textOnlyRegex.test(fullname)) {
+            Swal.fire({
+              icon: "error",
+              title: "Invalid Name",
+              text: "Full name should contain only letters and spaces.",
+            });
+            return;
+          }
+
+          if (!textOnlyRegex.test(city)) {
+            Swal.fire({
+              icon: "error",
+              title: "Invalid City",
+              text: "City name should contain only letters and spaces.",
+            });
+            return;
+          }
+
+          if (!textOnlyRegex.test(state)) {
+            Swal.fire({
+              icon: "error",
+              title: "Invalid State",
+              text: "State name should contain only letters and spaces.",
+            });
+            return;
+          }
+
+          if (
+            !phoneRegex.test(phoneNumber) ||
+            repeatedDigitsRegex.test(phoneNumber)
+          ) {
+            Swal.fire({
+              icon: "error",
+              title: "Invalid Phone Number",
+              text: "Enter a valid 10-digit phone number starting with 6-9. Avoid repeated digits like 1111111111.",
+            });
+            return;
+          }
+
+          if (!zipRegex.test(zipCode)) {
+            Swal.fire({
+              icon: "error",
+              title: "Invalid Zip Code",
+              text: "Please enter a valid 6-digit zip code.",
+            });
+            return;
+          }
+
+          try {
+            const response = await fetch("/user/add-checkoutaddress", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                fullname,
+                phoneNumber,
+                streetAddress,
+                city,
+                state,
+                zipCode,
+                isDefault,
+              }),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+              Swal.fire({
+                icon: "success",
+                title: "Success!",
+                text: "Address saved successfully!",
+                confirmButtonText: "OK",
+              }).then(() => {
+                window.location.reload();
+              });
+            } else {
+              Swal.fire({
+                icon: "error",
+                title: "Error",
+                text:
+                  data.message || "Failed to save address. Please try again.",
+              });
+            }
+          } catch (error) {
+            console.error("Error:", error);
+            Swal.fire({
+              icon: "error",
+              title: "Request Failed",
+              text: "Failed to save address. Please check your internet connection and try again.",
+            });
+          }
+        });
+    </script>
+    <script>
+      // Selected address index tracker
+      let selectedAddressId = null; 
+    
+      function selectAddress(element, index) {
+        const addresses = document.querySelectorAll(".saved_address");
+        addresses.forEach((addr) => addr.classList.remove("selected"));
+    
+        // Add selection to clicked address
+        element.classList.add("selected");
+    
+        // Retrieve and store the selected address ID
+        selectedAddressId = element.querySelector(".addressId").value;
+      }
+    
+      function useSelectedAddress() {
+        const selectedAddress = document.querySelector(".saved_address.selected");
+        if (!selectedAddress) {
+          Swal.fire({
+            icon: "warning",
+            title: "No address selected!",
+            text: "Please select an address before proceeding.",
+          });
+          return;
+        }
+    
+        console.log("Selected Address ID:", selectedAddressId);
+    
+        const addressDetails = selectedAddress.querySelector(
+          ".saved_address_details"
+        ).innerHTML;
+    
+        const addressDisplay = document.querySelector(".selected-address-display");
+        if (addressDisplay) {
+          addressDisplay.innerHTML = addressDetails.replace(/<br>/g, ", ");
+        }
+    
+        fetch("/user/set-default-address", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ selectedAddressId }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              Swal.fire({
+                icon: "success",
+                title: "Success!",
+                text: "Default address updated successfully!",
+                confirmButtonText: "OK",
+              }).then(() => {
+                location.reload();
+              });
+            } else {
+              Swal.fire({
+                icon: "error",
+                title: "Error!",
+                text: "Error updating default address: " + data.message,
+              });
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            Swal.fire({
+              icon: "error",
+              title: "Oops...",
+              text: "Something went wrong while updating the address!",
+            });
+          });
+      }
+    
+      // Modal control functions
+      function openAddressModal() {
+        document.getElementById("addressModal").style.display = "block";
+      }
+    
+      function closeAddressModal() {
+        document.getElementById("addressModal").style.display = "none";
+      }
+    
+      // Close modal when clicking outside
+      window.onclick = function (event) {
+        const modal = document.getElementById("addressModal");
+        if (event.target === modal) {
+          closeAddressModal();
+        }
+      };
+    
+      // Close modal with ESC key
+      document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+          closeAddressModal();
+        }
+      });
+    </script>
+  </body>
+</html>
