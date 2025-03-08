@@ -5,8 +5,8 @@ const orderSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     },
-    customerName: {
-        type: String,
+    customerId: {
+        type: mongoose.Schema.Types.ObjectId,
         required: true
     },
     products: [
@@ -19,7 +19,7 @@ const orderSchema = new mongoose.Schema({
             productName: String, 
             quantity: {
                 type: Number,
-                required: true
+                required: true  
             },
             price: {
                 type: Number,
@@ -33,13 +33,18 @@ const orderSchema = new mongoose.Schema({
     },
     paymentMethod: {
         type: String,
-        enum: ['Cash on Delivery', 'Credit Card', 'UPI', 'Net Banking'],
+        enum: ['cod', 'credit', 'UPI', 'Net Banking'],
         required: true
     },
     status: {
         type: String,
         enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'],
         default: 'Pending'
+    },
+    shippingAddress: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Address',
+        required: true
     }
 });
 

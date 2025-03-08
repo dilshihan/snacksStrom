@@ -362,42 +362,49 @@
 
 
                         <!-- Orders Tab -->
-                        <div id="orders" class="tab_content">
-                            <div class="order_card">
-                                <div class="order_details">
-                                    <div>
-                                        <h5>Order #SNK1001</h5>
-                                        <p>Placed on Feb 20, 2025</p>
-                                    </div>
-                                    <div>
-                                        <span class="order_status status_delivered">Delivered</span>
-                                    </div>
-                                </div>
-                                <p><strong>Items:</strong> Double Cheeseburger, Fries, Soda</p>
-                                <p><strong>Total:</strong> $24.99</p>
-                                <div class="order_actions">
-                                    <button><i class="fa fa-eye"></i> View Details</button>
-                                    <button><i class="fa fa-redo"></i> Reorder</button>
-                                </div>
-                            </div>
-                            <div class="order_card">
-                                <div class="order_details">
-                                    <div>
-                                        <h5>Order #SNK1002</h5>
-                                        <p>Placed on Feb 25, 2025</p>
-                                    </div>
-                                    <div>
-                                        <span class="order_status status_processing">Processing</span>
-                                    </div>
-                                </div>
-                                <p><strong>Items:</strong> Veggie Burger, Onion Rings, Milkshake</p>
-                                <p><strong>Total:</strong> $22.50</p>
-                                <div class="order_actions">
-                                    <button><i class="fa fa-eye"></i> View Details</button>
-                                    <button><i class="fa fa-ban"></i> Cancel Order</button>
-                                </div>
-                            </div>
+                        <div id="orders" class="tab_content"> 
+                            <% if (orders.length > 0) { %>
+                                <% orders.forEach(order => { %>
+                                    <% order.products.forEach(product => { %>
+                                        <div class="order_card">
+                                            <div class="order_details">
+                                                <div>
+                                                    <h5><%= product.productName %></h5> 
+                                                    <p>Placed on <%= order.orderDate.toDateString() %></p>
+                                                </div>
+                                                <div>
+                                                    <span class="order_status 
+                                                        <%= order.status === 'Delivered' ? 'status_delivered' : 
+                                                            order.status === 'Processing' ? 'status_processing' : 
+                                                            'status_pending' %>">
+                                                        <%= order.status %>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <p><strong>Price:</strong> $<%= product.price.toFixed(2) %></p>
+                                            <p><strong>Quantity:</strong> <%= product.quantity %></p>
+                                            <p><strong>Total:</strong> $<%= (product.price * product.quantity).toFixed(2) %></p>
+                                            <div class="order_actions">
+                                                <button class="view_details_btn" data-order-id="<%= order._id %>" data-product-id="<%= product._id %>">
+                                                    <i class="fa fa-eye"></i> View Details
+                                                </button>
+                                                                                             
+                                                <% if (order.status !== "canceled") { %>
+                                                    <button class="cancel_order_btn" data-order-id="<%= order._id %>">
+                                                        <i class="fa fa-ban"></i> Cancel Order
+                                                    </button>
+                                                <% } %>
+                                                
+                                            </div>
+                                        </div>
+                                    <% }); %>
+                                <% }); %>
+                            <% } else { %>
+                                <p>No orders found.</p>
+                            <% } %>
                         </div>
+                        
+                        
 
 
 
@@ -975,6 +982,57 @@
             });
         });
 
+
+
+    </script>
+    <script>
+   document.querySelectorAll('.view_details_btn').forEach(button => {
+    button.addEventListener('click', function () {
+        const orderId = this.getAttribute('data-order-id');
+        const productId = this.getAttribute('data-product-id');
+        if (orderId && productId) {
+            window.location.href = `/user/orderdetails?orderId=${orderId}&productId=${productId}`;
+        } else {
+            alert("Order ID or Product ID is missing!");
+        }
+    });
+});
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".cancel_order_btn").forEach(button => {
+        button.addEventListener("click", function () {
+            const orderId = this.getAttribute("data-order-id");
+
+            Swal.fire({
+                title: "Are you sure?",
+                text: "Do you really want to cancel this order?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Yes, cancel it",
+                cancelButtonText: "No, keep it",
+                dangerMode: true
+            }).then((result) => {
+                if (!result.isConfirmed) return; 
+
+                fetch(`cancel-order/${orderId}`, {
+                    method: "DELETE",
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire("Canceled!", "Order has been canceled successfully.", "success")
+                        .then(() => location.reload());
+                    } else {
+                        Swal.fire("Failed!", "Could not cancel the order.", "error");
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    Swal.fire("Error!", "Something went wrong. Please try again.", "error");
+                });
+            });
+        });
+    });
+});
 
 
     </script>

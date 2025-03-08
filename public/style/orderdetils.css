@@ -1,0 +1,327 @@
+/* Order Details Specific Styles */
+.order_container {
+    max-width: 800px;
+    margin: 0 auto;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+  }
+
+  .order_summary {
+    padding: 15px;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .order_status {
+    font-weight: bold;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    display: inline-block;
+  }
+
+  .status_delivered { background-color: #d4edda; color: #155724; }
+  .status_processing { background-color: #fff3cd; color: #856404; }
+  .status_pending { background-color: #d1ecf1; color: #0c5460; }
+
+  .product_details {
+    display: flex;
+    padding: 15px;
+    margin: 15px 0;
+    background: #f9f9f9;
+    border-radius: 5px;
+  }
+
+  .product_image img {
+    width: 100px;
+    height: 100px;
+    border-radius: 5px;
+    object-fit: cover;
+  }
+
+  .product_info {
+    margin-left: 20px;
+    flex-grow: 1;
+  }
+
+  .details_section {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-top: 20px;
+  }
+
+  .details_block {
+    flex: 1;
+    min-width: 250px;
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: 5px;
+  }
+
+  .btn_back {
+    display: inline-block;
+    text-align: center;
+    padding: 8px 30px;
+    background: #ffbe33;
+    color: white;
+    text-decoration: none;
+    border-radius: 45px;
+    margin-top: 20px;
+    font-weight: 600;
+    transition: all 0.3s;
+  }
+
+  .btn_back:hover {
+    background: #e69c00;
+    color: white;
+  }
+  
+  .layout_padding {
+    padding: 75px 0;
+  }
+  
+  .heading_container {
+    margin-bottom: 30px;
+  }
+  
+  .heading_container h2 {
+    font-weight: bold;
+    color: #222222;
+    text-align: center;
+    position: relative;
+    margin-bottom: 15px;
+  }
+  
+  .heading_container h2::before {
+    content: "";
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background-color: #ffbe33;
+    top: 50%;
+    left: -30px;
+    transform: translateY(-50%);
+  }
+   /* Tracking Modal Styles */
+   .tracking-modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+  }
+  
+  .tracking-modal-content {
+    background-color: #fff;
+    margin: 10% auto;
+    padding: 30px;
+    border-radius: 10px;
+    width: 80%;
+    max-width: 600px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  }
+  
+  .tracking-close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  
+  .tracking-close:hover,
+  .tracking-close:focus {
+    color: #000;
+    text-decoration: none;
+  }
+  
+  .track-btn {
+    background-color: #ffbe33;
+    color: #ffffff;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 30px;
+    cursor: pointer;
+    margin-right: 10px;
+    font-weight: 500;
+    transition: all 0.3s;
+  }
+  
+  .track-btn:hover {
+    background-color: #e69c00;
+  }
+  
+  .tracking-steps {
+    margin-top: 20px;
+  }
+  
+  .step {
+    display: flex;
+    position: relative;
+    margin-bottom: 10px;
+  }
+  
+  .step-number {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-right: 15px;
+    z-index: 1;
+  }
+  
+  .step.active .step-number {
+    background-color: #ffbe33;
+    color: white;
+  }
+  
+  .step-content {
+    padding-bottom: 20px;
+  }
+  
+  .step-date {
+    color: #888;
+    font-size: 14px;
+    margin-top: 5px;
+  }
+  
+  .step-line {
+    position: absolute;
+    left: 15px;
+    top: 30px;
+    bottom: 0;
+    width: 2px;
+    background-color: #ddd;
+  }
+  
+  .step.active .step-line {
+    background-color: #ffbe33;
+  }
+  
+  .step:last-child .step-line {
+    display: none;
+  }
+  .track-btn {
+    background-color: #ffbe33;
+    color: #ffffff;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 30px;
+    cursor: pointer;
+    margin-left: 15px;
+    font-weight: 500;
+    transition: all 0.3s;
+  }
+  
+  .track-btn:hover {
+    background-color: #e69c00;
+  }
+  
+  /* Tracking Modal Styles */
+  .tracking-modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+  }
+  
+  .tracking-modal-content {
+    background-color: #fff;
+    margin: 10% auto;
+    padding: 30px;
+    border-radius: 10px;
+    width: 80%;
+    max-width: 600px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  }
+  
+  .tracking-close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  
+  .tracking-close:hover,
+  .tracking-close:focus {
+    color: #000;
+    text-decoration: none;
+  }
+  
+  /* Tracking Steps */
+  .tracking-steps {
+    margin-top: 30px;
+  }
+  
+  .step {
+    display: flex;
+    position: relative;
+    margin-bottom: 15px;
+  }
+  
+  .step-number {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-right: 15px;
+    z-index: 1;
+  }
+  
+  .step.active .step-number {
+    background-color: #ffbe33;
+    color: white;
+  }
+  
+  .step-content {
+    padding-bottom: 20px;
+  }
+  
+  .step-content h4 {
+    margin-top: 0;
+    margin-bottom: 5px;
+  }
+  
+  .step-date {
+    color: #888;
+    font-size: 14px;
+    margin-top: 5px;
+  }
+  
+  .step-line {
+    position: absolute;
+    left: 15px;
+    top: 30px;
+    bottom: 0;
+    width: 2px;
+    background-color: #ddd;
+  }
+  
+  .step.active .step-line {
+    background-color: #ffbe33;
+  }
+  
+  .step:last-child .step-line {
+    display: none;
+  }

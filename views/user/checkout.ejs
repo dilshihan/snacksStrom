@@ -396,10 +396,16 @@
                 itemTotal; %>
                 <div class="summary_item">
                   <div class="item_name">
-                    <span class="item_quantity"><%= item.quantity %></span>
-                    <span><%= item.name %></span>
+                    <span  class="item_quantity"><%= item.quantity %></span>
+                    <input type="hidden" id="quantity"  value="<%= item.quantity %>" > 
+                    <span ><%= item.name %></span>
+                    <input type="hidden" value="<%= item.name %>" id="productName">
+                    <input type="hidden"  id="productId" value="<%=item.id %>">
+                    <input type="hidden"  id="userId" value="<%=user._id%>">
+         
                   </div>
                   <div class="item_price">₹<%= itemTotal.toFixed(2) %></div>
+                  <input type="hidden"  id="productPrice" value="<%= itemTotal.toFixed(2) %>" >
                 </div>
                 <% }); %>
               </div>
@@ -432,6 +438,7 @@
                 <div class="price_total">
                   <span>Total</span>
                   <span>₹<%= total.toFixed(2) %></span>
+                  <input type="hidden" id="TotalAmount" value="<%= total.toFixed(2) %>">
                 </div>
               </div>
 
@@ -466,6 +473,7 @@
               <input
                 type="hidden"
                 class="addressId"
+                id="addressId"
                 value="<%= address._id %>"
               />
               <p><%= address.streetAddress %>, <%= address.city %></p>
@@ -592,56 +600,117 @@
         false
       );
 
-      // Payment method selection
-      function selectPayment(method) {
-        // Update active payment option
-        document.querySelectorAll(".payment_option").forEach((option) => {
-          option.classList.remove("active");
+     // Payment method selection
+     document.addEventListener("DOMContentLoaded", function () {
+    // Select Payment Method
+    function selectPayment(method) {
+        // Remove active class from all options
+        document.querySelectorAll(".payment_option").forEach(option => {
+            option.classList.remove("active");
         });
-        document
-          .querySelector(`[onclick="selectPayment('${method}')"]`)
-          .classList.add("active");
 
-        // Update radio button
+        // Add active class to selected payment option
+        document.querySelector(`[onclick="selectPayment('${method}')"]`).classList.add("active");
+
+        // Update radio button selection
         document.getElementById(method).checked = true;
 
-        // Show correct payment details
-        document.querySelectorAll(".payment_details").forEach((details) => {
-          details.classList.remove("active");
+        // Hide all payment details
+        document.querySelectorAll(".payment_details").forEach(details => {
+            details.classList.remove("active");
         });
+
+        // Show selected payment details
         document.getElementById(`${method}-details`).classList.add("active");
-      }
+    }
 
-      // Place order button event
-      document
-        .getElementById("place-order-btn")
-        .addEventListener("click", function () {
-          // Validate form
-          const form = document.getElementById("checkout-form");
-          if (form.checkValidity()) {
+    // Attach event listener globally
+    window.selectPayment = selectPayment; // Expose function globally for onclick
+
+    // Place Order Button Click Event
+    document.getElementById("place-order-btn").addEventListener("click", function () {
+        console.log("Place Order Button Clicked!");
+
+        // Get selected payment method
+        const selectedPaymentMethod = document.querySelector('input[name="payment-method"]:checked');
+        if (!selectedPaymentMethod) {
             Swal.fire({
-              icon: "success",
-              title: "Order Placed Successfully!",
-              text: "Thank you for your order. Your delicious food is on its way!",
-              confirmButtonColor: "#ffbe33",
-            }).then(() => {
-              // Redirect to order confirmation page
-              // window.location.href = '/order-confirmation';
+                icon: "error",
+                title: "Please select a payment method!",
+                confirmButtonColor: "#ffbe33",
             });
-          } else {
-            Swal.fire({
-              icon: "error",
-              title: "Oops...",
-              text: "Please fill in all required fields",
-              confirmButtonColor: "#ffbe33",
-            });
-            form.reportValidity();
-          }
+            return;
+        } 
+        const products = [];
+
+document.querySelectorAll(".summary_item").forEach(item => {
+    const productId = item.querySelector("#productId").value;
+    const productName = item.querySelector("#productName").value;
+    const productQuantity = item.querySelector("#quantity").value;
+    const productPrice = item.querySelector("#productPrice").value;
+   
+
+    products.push({
+        productId,
+        productName,
+        quantity: productQuantity,
+        price: productPrice
+    });
+});
+
+const totalAmount = document.getElementById("TotalAmount").value;
+const userId = document.getElementById("userId").value
+const paymentMethod = selectedPaymentMethod.id;
+const addressId = document.getElementById("addressId")?.value; 
+// Collect order details
+const orderData = {
+    customerId: userId,  // Replace with actual user data
+    products,  // Now this includes all products
+    totalAmount, // Replace with calculated total
+    paymentMethod,
+    addressId
+};
+
+console.log(orderData);
+
+
+        // Send data to backend
+        fetch("/user/order-details", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(orderData)
+        })
+        .then(response => response.json())
+        .then(data => {
+          console.log(data);
+          
+            if (data.success) {
+                Swal.fire({
+                    icon: "success",
+                    title: "Order Placed Successfully!",
+                    text: "Thank you for your order!",
+                    confirmButtonColor: "#ffbe33",
+                }).then(() => {
+                    window.location.href = "/user/Ordersuccess";
+                });
+            } else {
+                Swal.fire({
+                    icon: "error",
+                    title: "Order Failed!",
+                    text: "Please try again.",
+                    confirmButtonColor: "#ffbe33",
+                });
+            }
+        })
+        .catch(error => {
+            console.error("Order Error:", error);
         });
+    });
+});
 
-      // Update year in footer
-      document.getElementById("displayYear").textContent =
-        new Date().getFullYear();
+
     </script>
     <script>
       // Add this JavaScript to handle the button click

@@ -6,7 +6,9 @@ const nodemailer = require('nodemailer')
 const Category = require('../model/categorymodel')
 const cartmodel = require('../model/cartmodel')
 const addressmodel = require('../model/addressmodel')
+const Order = require("../model/ordermodel")
 const { use } = require('passport')
+const mongoose = require('mongoose');
 
 
 
@@ -344,6 +346,8 @@ const loadcheckout = async (req,res)=>{
             price: item.productId.price,
             quantity: item.quantity,
         }));
+
+        
         const totalPrice = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
 
         res.render('user/checkout',{user,defaultAddress,addresses, cart: cartItems, totalPrice})
@@ -422,6 +426,45 @@ const checkoutchangeaddress =  async (req, res) => {
     }
 }
 
+const loadordersuccess = async(req,res)=>{
+    try{
+        res.render('user/Ordersuccess')
+    }catch(error){
+        console.log(error)
+    }
+}
+
+const addorderdetails = async(req,res)=>{
+    try {
+        const { customerId, products, totalAmount, paymentMethod,addressId } = req.body;
+        
+
+        if (!customerId || !products || !totalAmount || !paymentMethod) {
+            return res.status(400).json({ success: false, message: "All fields are required!" });
+        }
+        const address = await addressmodel.findById(addressId);
+        if (!address) {
+            return res.status(400).json({ message: "Invalid address ID" });
+        }
+
+        const newOrder = new Order({
+            customerId,
+            products,
+            totalAmount,
+            paymentMethod,
+            shippingAddress: addressId 
+        });
+
+        await newOrder.save();
+        res.json({ success: true, order: newOrder }); 
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: "Internal Server Error" }); 
+    }
+ 
+}
+
 const loaduserprofile = async(req,res)=>{
     try{
         const userid = req.session.user 
@@ -429,15 +472,18 @@ const loaduserprofile = async(req,res)=>{
         if (!user) {
             return res.status(404).render('error', { message: 'User not found' });
         }
-        
-        const addresses = await addressmodel.find({ userId: user._id })        
+      
+        const addresses = await addressmodel.find({ userId: user._id })
+        const orders = await Order.find({ customerId: new mongoose.Types.ObjectId(user._id) }).sort({ createdAt: -1 }).exec();
+
         if(!addresses) {
             addresses = [];
         }
         
         res.render('user/userprofile',{
             user: user,
-            addresses: addresses
+            addresses: addresses,
+            orders:orders
         });
 
     }catch(error){
@@ -571,6 +617,57 @@ const deleteaddress = async (req,res)=>{
     }
 }
 
+const loadorderdetils = async(req,res)=>{
+    try{
+
+        const   userid = req.session.user
+        const user = await userschema.findById(userid) 
+        const orderId = req.query.orderId
+        const productId = req.query.productId;
+
+        if (!orderId || !productId) {
+            return res.status(400).send("Order ID and Product ID are required");
+        }
+        const order = await Order.findById(orderId).populate('products.productId').populate('shippingAddress'); 
+       
+        if (!order) {
+            return res.status(404).send("Order not found");
+        }
+   
+        const productDetails = order.products.find(item => item._id.toString() === productId);
+
+        
+        
+        if (!productDetails) {
+            return res.status(404).send("Product not found in this order");
+        }
+        res.render('user/orderdetails',{order,user,productDetails})
+    }catch(error){
+        console.log(error)
+        res.status(500).send("Internal Server Error");
+    }
+}
+
+const cancelorder =async(req,res)=>{
+    const orderId = req.params.id  
+    try{
+        const updatedOrder = await Order.findByIdAndUpdate(
+            orderId,
+            { status: "canceled" }, 
+            { new: true } 
+        );
+        
+        if (!updatedOrder) {
+            return res.status(404).json({ success: false, message: "Order not found" });
+        }
+
+        res.json({ success: true, message: "Order canceled successfully" });
+    }catch (error) {
+        console.error( error);
+        res.status(500).json({ success: false, message: "Error canceling order" });
+    }
+}
+
 const handleGoogleLogin = async (req, res) => {
     try {
         const { token, userData } = req.body;
@@ -662,7 +759,8 @@ module.exports={registerUser,loadregister,loginUser,
                loadmenu,loadabout,loadcontactus,
                Productdetails,loadcart,addtocart,
                removefromcart,loadcheckout,checkoutaddaddress,
-               checkoutchangeaddress,
+               checkoutchangeaddress,loadordersuccess,addorderdetails,
                loaduserprofile,updateprofile,updateprofileimage,
                addaddress,editaddress,deleteaddress,
+               loadorderdetils,cancelorder,
                handleGoogleLogin,handleGoogleCallback}
