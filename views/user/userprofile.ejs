@@ -374,11 +374,12 @@
                                                 </div>
                                                 <div>
                                                     <span class="order_status 
-                                                        <%= order.status === 'Delivered' ? 'status_delivered' : 
-                                                            order.status === 'Processing' ? 'status_processing' : 
-                                                            'status_pending' %>">
-                                                        <%= order.status %>
-                                                    </span>
+                                                    <%= product.status === 'Delivered' ? 'status_delivered' : 
+                                                        product.status === 'Processing' ? 'status_processing' : 
+                                                        product.status === 'Cancelled' ? 'status_cancelled' :
+                                                        'status_pending' %>">
+                                                    <%= product.status %>
+                                                </span>
                                                 </div>
                                             </div>
                                             <p><strong>Price:</strong> $<%= product.price.toFixed(2) %></p>
@@ -389,8 +390,9 @@
                                                     <i class="fa fa-eye"></i> View Details
                                                 </button>
                                                                                              
-                                                <% if (order.status !== "canceled") { %>
-                                                    <button class="cancel_order_btn" data-order-id="<%= order._id %>">
+                                                <% if (product.status !== "Cancelled"&&product.status !== "Delivered") { %>
+                                                    <button class="cancel_order_btn"data-order-id="<%= order._id %>" 
+                                                        data-product-id="<%= product._id %>">
                                                         <i class="fa fa-ban"></i> Cancel Order
                                                     </button>
                                                 <% } %>
@@ -402,7 +404,7 @@
                             <% } else { %>
                                 <p>No orders found.</p>
                             <% } %>
-                        </div>
+                        </div>  
                         
                         
 
@@ -1001,28 +1003,29 @@ document.addEventListener("DOMContentLoaded", function () {
     document.querySelectorAll(".cancel_order_btn").forEach(button => {
         button.addEventListener("click", function () {
             const orderId = this.getAttribute("data-order-id");
+            const productId = this.getAttribute("data-product-id");
 
             Swal.fire({
                 title: "Are you sure?",
-                text: "Do you really want to cancel this order?",
+                text: "Do you really want to cancel this product from your order?",
                 icon: "warning",
                 showCancelButton: true,
                 confirmButtonText: "Yes, cancel it",
                 cancelButtonText: "No, keep it",
                 dangerMode: true
             }).then((result) => {
-                if (!result.isConfirmed) return; 
+                if (!result.isConfirmed) return;
 
-                fetch(`cancel-order/${orderId}`, {
+                fetch(`cancel-order/${orderId}/${productId}`, {
                     method: "DELETE",
                 })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        Swal.fire("Canceled!", "Order has been canceled successfully.", "success")
+                        Swal.fire("Canceled!", "Product has been canceled successfully.", "success")
                         .then(() => location.reload());
                     } else {
-                        Swal.fire("Failed!", "Could not cancel the order.", "error");
+                        Swal.fire("Failed!", data.message || "Could not cancel the product.", "error");
                     }
                 })
                 .catch(error => {

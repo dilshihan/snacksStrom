@@ -4,6 +4,7 @@ const usermodel = require('../model/usermodel')
 const ProductModel = require('../model/prodectmodel')
 const  Categorymodel = require('../model/categorymodel')
 const ordermodel = require('../model/ordermodel')
+const Order = require("../model/ordermodel")
 const fs = require('fs');
 const path = require('path');
 
@@ -370,7 +371,7 @@ const loadorders = async (req, res) => {
         let skip = (page - 1) * limit; 
 
         const totalOrders = await ordermodel.countDocuments();
-        const orders = await ordermodel.find().skip(skip).limit(limit);
+        const orders = await ordermodel.find().sort({orderDate: -1}).skip(skip).limit(limit);
 
         res.render('admin/order', {
             orders, 
@@ -382,6 +383,66 @@ const loadorders = async (req, res) => {
         console.log(error);
     }
 };
+
+const updateorderstatus = async(req,res)=>{
+    try {
+        const { orderId } = req.params;
+        const { status } = req.body;
+        
+        const validStatuses = ["Pending", "Processing", "Shipped", "Delivered", "Cancelled"];
+        if (!validStatuses.includes(status)) {
+            return res.status(400).json({ success: false, message: "Invalid status" });
+        }
+
+        const order = await Order.findById(orderId);
+        if (!order) {
+            return res.status(404).json({ success: false, message: "Order not found" });
+        }
+       
+        if (order.status === "Cancelled") {
+            return res.status(403).json({ success: false, message: "Cannot change status of a cancelled order" });
+        }
+
+        order.status = status;
+        await order.save();
+
+        res.json({ success: true, message: "Order status updated successfully", order });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+}
+
+const loadviewoderdeatils = async(req,res)=>{
+    try{
+        const orderId = req.query.id;
+        const order = await Order.findById(orderId)
+        .populate("customerId", "name email phoneNumber")
+            .populate("products.productId") 
+            .populate("shippingAddress");  
+
+        if (!order) {
+            return res.status(404).send("Order not found");
+        }
+        let subtotal = order.products.reduce((acc, item) => {
+            return acc + (item.price * item.quantity);
+        }, 0);
+        let shippingCharge = 5.99;
+        let tax = 10.40;
+        let totalAmount = subtotal + shippingCharge + tax;
+
+        res.render('admin/vieworderdetils',{order,
+            subtotal: subtotal.toFixed(2), 
+            shippingCharge: shippingCharge.toFixed(2),
+            tax: tax.toFixed(2),
+            totalAmount: totalAmount.toFixed(2),
+        })
+        
+    }catch(error){
+        console.log(error)
+        res.status(500).send("Server error");
+    }
+}
 
 const logout=async(req,res)=>{
     try {
@@ -401,4 +462,5 @@ loaduser,banUser,loadProducts,loadaddproduct,
 addProduct,loadcategory,loadaddcategory,
 addcategory,loadUpdateCategory,updateCategory,
 Categorylisting,Productlisting,loadupdateProduct,
-updateProduct,loadorders,logout}
+updateProduct,loadorders,updateorderstatus,
+loadviewoderdeatils,logout}

@@ -1,0 +1,356 @@
+:root {
+    --primary-color: #2196F3;
+    --secondary-color: #e3f2fd;
+    --accent-color: #1565c0;
+    --text-color: #333;
+    --light-gray: #f5f5f5;
+    --border-color: #ddd;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #f9f9f9;
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 0 20px;
+    margin-left: 450px;
+}
+
+.order-card {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.3s ease;
+}
+
+.order-card:hover {
+    transform: translateY(-5px);
+}
+
+.order-header {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 20px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.order-id {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.order-status {
+    background-color: white;
+    color: var(--primary-color);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-weight: bold;
+}
+
+.order-body {
+    padding: 30px;
+}
+
+.order-section {
+    margin-bottom: 30px;
+}
+
+.section-title {
+    font-size: 1.25rem;
+    color: var(--primary-color);
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--secondary-color);
+}
+
+.customer-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.info-group {
+    margin-bottom: 15px;
+}
+
+.info-label {
+    font-weight: 600;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.info-value {
+    font-size: 1.1rem;
+}
+
+.delivery-info {
+    background-color: var(--light-gray);
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+}
+
+.order-items {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.order-items th {
+    text-align: left;
+    padding: 12px 15px;
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+}
+
+.order-items td {
+    padding: 12px 15px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.item-image {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+.price {
+    font-weight: bold;
+}
+
+.subtotal {
+    text-align: right;
+}
+
+.order-summary {
+    margin-top: 20px;
+    background-color: var(--light-gray);
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.total-row {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--primary-color);
+    border-top: 2px solid var(--border-color);
+    padding-top: 10px;
+    margin-top: 10px;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+}
+
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: var(--accent-color);
+}
+
+.btn-outline {
+    background-color: transparent;
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
+}
+
+.btn-outline:hover {
+    background-color: var(--secondary-color);
+}
+
+.timeline {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 30px 0;
+    position: relative;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    top: 25px;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background-color: var(--border-color);
+    z-index: 1;
+}
+
+.timeline-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 2;
+}
+
+.step-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: white;
+    border: 4px solid var(--border-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.active .step-icon {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+
+.completed .step-icon {
+    background-color: #4CAF50;
+    border-color: #4CAF50;
+    color: white;
+}
+
+.step-text {
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .customer-info {
+        grid-template-columns: 1fr;
+    }
+    
+    .timeline {
+        flex-direction: column;
+        align-items: flex-start;
+        margin-left: 20px;
+    }
+    
+    .timeline::before {
+        top: 0;
+        bottom: 0;
+        left: 25px;
+        right: auto;
+        width: 4px;
+        height: 100%;
+    }
+    
+    .timeline-step {
+        flex-direction: row;
+        margin-bottom: 20px;
+        width: 100%;
+    }
+    
+    .step-icon {
+        margin-right: 15px;
+        margin-bottom: 0;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+    
+    .btn {
+        width: 100%;
+    }
+}
+.sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 16rem;
+    background-color: rgb(201, 201, 201);
+    border-right: 1px solid #e5e7eb;
+    padding: 1.5rem;
+}
+
+.sidebar-header {
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.sidebar-logo {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1f2937;
+    text-decoration: none;
+}
+
+.nav-menu, .bottom-menu {
+    list-style: none;
+    padding: 0;
+}
+
+.nav-item {
+    margin: 0.5rem 0;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    color: #4b5563;
+    text-decoration: none;
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+}
+
+.nav-link:hover {
+    background-color: #f3f4f6;
+    color: #1f2937;
+}
+
+.nav-link.active {
+    background-color: #3b82f6;
+    color: white;
+}
+
+.nav-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+    margin-right: 0.75rem;
+}
+
+.bottom-menu {
+    position: absolute;
+    bottom: 1.5rem;
+    width: calc(100% - 3rem);
+}
+
+.logout-link {
+    color: #ef4444;
+}

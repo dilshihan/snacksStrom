@@ -16,11 +16,11 @@ const mongoose = require('mongoose');
 
 const OTPs = new Map(); // Temporary store for OTPs 
 
-const transporter = nodemailer.createTransport({
+const transporter = nodemailer.createTransport({    
     service: 'gmail',
     auth: {
-        user: 'mohddilshan1234321@gmail.com',
-        pass: 'ykbc aoyd ilqv alka'
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
     }
 });
 
@@ -102,6 +102,100 @@ const resendOTP = async (req, res) => {
         res.render('user/verify', { message: 'Something went wrong.' });
     }
 };
+
+const loadforgotpassword = async(req,res)=>{
+    try{
+        res.render('user/forgotpassword')
+    }catch(error){
+        console.log(error);
+        res.status(500).send("Internal Server Error");
+        
+    }
+}
+
+const forgetsendotp = async (req,res)=>{
+    try {
+        const { email } = req.body;
+        if (!email) {
+            return res.status(400).json({ message: "Email is required" });
+        }
+        const otp = generateOTP();
+        req.session.otp = otp;
+        req.session.email = email;
+        req.session.otpExpires = Date.now() + 1 * 60 * 1000;
+
+        await transporter.sendMail({
+            from: 'mohddilshan1234321@gmail.com',
+            to: email,
+            subject: 'Your OTP for Password Reset',
+            text:  `Your OTP is: ${otp}. This OTP is valid for 1 minutes.`
+        });
+       
+        res.json({ message: "OTP sent successfully", email });
+    }catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+}
+
+const loadforgotPasswordotp= (req, res) => {
+    try {
+        const email = req.query.email;
+        if (!email) {
+            return res.status(400).send("Email is required");
+        }
+        res.render('user/forgotpasswordotp', { email }); 
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Internal Server Error");
+    }
+};
+
+const forgotverifyotp = async(req,res)=>{
+    try {
+        const { email, otp } = req.body;
+        if (!email || !otp) {
+            return res.status(400).json({ message: "Email and OTP are required" });
+        }
+        if (!req.session.otp || !req.session.email || !req.session.otpExpires) {
+            return res.status(400).json({ message: "No OTP found. Please request a new one." });
+        }
+        if (Date.now() > req.session.otpExpires) {
+            return res.status(400).json({ message: "OTP expired. Please request a new one." });
+        }
+
+        // Validate OTP (Convert both to string before comparison)
+        if (String(req.session.otp) !== String(otp)) {
+            return res.status(400).json({ message: "Invalid OTP. Please try again." });
+        }
+
+        if (req.session.email !== email) {
+            return res.status(400).json({ message: "Email does not match. Please try again." });
+        }
+        req.session.otp = null;
+        req.session.email = null;
+        req.session.otpExpires = null;
+
+        res.json({ message: "OTP verified successfully", success: true });
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+}
+
+const newpassword = async(req,res)=>{
+    try{
+        const email = req.query.email;  
+        if (!email) {
+            return res.status(400).send("Email is required");
+        }
+        res.render('user/newpassword',{email})
+    }catch(error){
+        console.log(error)
+        res.status(500).send("Internal Server Error");
+    }
+}
 
 const loginUser = async (req, res) => {
     try {
@@ -237,7 +331,7 @@ const Productdetails = async (req, res) => {
             quantity: item.quantity,
         }));
         const totalPrice = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
-        res.render("user/cart", { cart: cartItems, totalPrice,user });
+        res.render("user/cart", { cart: cartItems, totalPrice,user ,userId});
     } catch (error) {
         console.error(error);
     }
@@ -253,9 +347,6 @@ const Productdetails = async (req, res) => {
         if (!product) {
             return res.status(404).json({ success: false, message: "Product not found!" });
         }
-        if (quantity > product.stock) {
-            return res.status(400).json({ success: false, message: "Not enough stock available!" });
-        }
         let cart = await cartmodel.findOne({ userId });
         if (!cart) {
             cart = new cartmodel({ userId, products: [], totalPrice: 0 });
@@ -263,9 +354,18 @@ const Productdetails = async (req, res) => {
         const existingProductIndex = cart.products.findIndex(
             (item) => item.productId.toString() === productId
         );
+        const existingQuantity = existingProductIndex !== -1 ? cart.products[existingProductIndex].quantity : 0;
+        const totalQuantity = existingQuantity + quantity
+
+        if (totalQuantity > product.stock) {
+            return res.status(400).json({ 
+                success: false, 
+                message: `Cannot add more items. Only ${product.stock} units available in stock!` 
+            });
+        }
 
         if (existingProductIndex !== -1) {
-            cart.products[existingProductIndex].quantity += quantity;
+            cart.products[existingProductIndex].quantity = totalQuantity;
         } else {
             cart.products.push({
                 productId,
@@ -284,6 +384,81 @@ const Productdetails = async (req, res) => {
         res.json({ success: true, message: "Product added to cart!", cart });
     } catch (error) {
         console.error(error);
+    }
+};
+
+const updatecartquantity = async (req, res) => {
+    try {
+        const userId = req.session?.user;
+        const { productId, change } = req.body;
+        const max = 5; 
+
+        if (!userId) {
+            return res.status(401).json({ success: false, message: "User not authenticated" });
+        }
+
+        const cart = await cartmodel.findOne({ userId }).populate("products.productId");
+        if (!cart) {
+            return res.status(404).json({ success: false, message: "Cart not found" });
+        }
+
+        const productIndex = cart.products.findIndex(
+            item => item.productId._id.toString() === productId
+        );
+
+        if (productIndex === -1) {
+            return res.status(404).json({ success: false, message: "Product not found in cart" });
+        }
+        const product = await Productmodel.findById(productId);
+        if (!product) {
+            return res.status(404).json({ success: false, message: "Product not found" });
+        }
+
+        const newQuantity = cart.products[productIndex].quantity + parseInt(change);
+
+        if (newQuantity < 1) {
+            return res.status(400).json({ success: false, message: "Quantity cannot be less than 1" });
+        }
+
+        if (newQuantity > max) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Maximum quantity limit is 5 items per product" 
+            });
+        }
+
+        if (newQuantity > product.stock) {
+            return res.status(400).json({ success: false, message: "Not enough stock available" });
+        }
+        cart.products[productIndex].quantity = newQuantity;
+
+        cart.totalPrice = cart.products.reduce((total, item) => {
+            return total + (item.productId.price * item.quantity);
+        }, 0);
+
+        await cart.save();
+
+        const cartItems = cart.products.map((item) => ({
+            id: item.productId._id,
+            name: item.productId.name,
+            image: item.productId.image,
+            price: item.productId.price,
+            quantity: item.quantity,
+        }));
+
+        const totalPrice = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
+
+        res.json({ 
+            success: true, 
+            message: "Quantity updated successfully",
+            cart: cartItems,
+            totalPrice,
+            newQuantity
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: "Internal server error" });
     }
 };
 
@@ -434,17 +609,27 @@ const loadordersuccess = async(req,res)=>{
     }
 }
 
-const addorderdetails = async(req,res)=>{
+const addorderdetails = async(req, res) => {
     try {
-        const { customerId, products, totalAmount, paymentMethod,addressId } = req.body;
-        
+        const { customerId, products, totalAmount, paymentMethod, addressId } = req.body;
 
         if (!customerId || !products || !totalAmount || !paymentMethod) {
-            return res.status(400).json({ success: false, message: "All fields are required!" });
+            return res.status(400).json({ success: false,  message: "All fields are required!"});
         }
+
         const address = await addressmodel.findById(addressId);
         if (!address) {
-            return res.status(400).json({ message: "Invalid address ID" });
+            return res.status(400).json({ success: false,message: "Invalid address ID"});
+        }
+
+        for (const item of products) {
+            const product = await Productmodel.findById(item.productId);
+            if (!product) {
+                return res.status(400).json({ success: false,message: `Product ${item.productName} not found` });
+            }
+            if (product.stock < item.quantity) {
+                return res.status(400).json({ success: false, message: `Insufficient stock for ${item.productName}. Only ${product.stock} units available.`  });
+            }
         }
 
         const newOrder = new Order({
@@ -452,18 +637,22 @@ const addorderdetails = async(req,res)=>{
             products,
             totalAmount,
             paymentMethod,
-            shippingAddress: addressId 
+            shippingAddress: addressId
         });
-
         await newOrder.save();
-        res.json({ success: true, order: newOrder }); 
 
+        const stockUpdatePromises = products.map(item => 
+            Productmodel.findByIdAndUpdate( item.productId,{ $inc: { stock: -item.quantity } }, { new: true } ));
+
+        await Promise.all(stockUpdatePromises);
+        await cartmodel.findOneAndUpdate( { userId: customerId }, { $set: { products: [], totalPrice: 0 } } );
+
+        res.json({success: true,message: "Order placed successfully",order: newOrder  });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ success: false, message: "Internal Server Error" }); 
+        res.status(500).json({ success: false, message: "Failed to place order"  });
     }
- 
-}
+};
 
 const loaduserprofile = async(req,res)=>{
     try{
@@ -474,7 +663,7 @@ const loaduserprofile = async(req,res)=>{
         }
       
         const addresses = await addressmodel.find({ userId: user._id })
-        const orders = await Order.find({ customerId: new mongoose.Types.ObjectId(user._id) }).sort({ createdAt: -1 }).exec();
+        const orders = await Order.find({ customerId: new mongoose.Types.ObjectId(user._id) }).sort({ orderDate: -1  }).exec();
 
         if(!addresses) {
             addresses = [];
@@ -636,8 +825,6 @@ const loadorderdetils = async(req,res)=>{
    
         const productDetails = order.products.find(item => item._id.toString() === productId);
 
-        
-        
         if (!productDetails) {
             return res.status(404).send("Product not found in this order");
         }
@@ -648,25 +835,44 @@ const loadorderdetils = async(req,res)=>{
     }
 }
 
-const cancelorder =async(req,res)=>{
-    const orderId = req.params.id  
-    try{
-        const updatedOrder = await Order.findByIdAndUpdate(
-            orderId,
-            { status: "canceled" }, 
-            { new: true } 
-        );
-        
-        if (!updatedOrder) {
-            return res.status(404).json({ success: false, message: "Order not found" });
-        }
+const cancelorder = async (req, res) => {
+    try {
+        const orderId = req.params.orderId;
+        const productId = req.params.productId;
 
-        res.json({ success: true, message: "Order canceled successfully" });
-    }catch (error) {
-        console.error( error);
-        res.status(500).json({ success: false, message: "Error canceling order" });
+        const order = await Order.findOneAndUpdate(
+            { 
+                _id: orderId,
+                'products._id': productId 
+            },
+            { 
+                $set: { 
+                    'products.$.status': 'Cancelled',
+                    'products.$.canceledAt': new Date()
+                } 
+            },
+            { 
+                new: true,
+                runValidators: true
+            }
+        );
+
+        if (!order) {
+            return res.status(404).json({ 
+                success: false, 
+                message: "Order or product not found" 
+            });
+        }
+        res.json({ 
+            success: true, 
+            message: "Product canceled successfully",
+            updatedOrder: order 
+        });
+    } catch (error) {
+        console.error('Error in cancelorder:', error);
+        res.status(500).json({success: false, message: "Error canceling product"  });
     }
-}
+};
 
 const handleGoogleLogin = async (req, res) => {
     try {
@@ -755,9 +961,12 @@ const logout = (req,res)=>{
 }
 
 module.exports={registerUser,loadregister,loginUser,
-               verifyOTP,resendOTP,logout,Loadhome,
+               verifyOTP,resendOTP,loadforgotpassword,
+               forgetsendotp,loadforgotPasswordotp,forgotverifyotp,
+               newpassword,
+               logout,Loadhome,
                loadmenu,loadabout,loadcontactus,
-               Productdetails,loadcart,addtocart,
+               Productdetails,loadcart,addtocart,updatecartquantity,
                removefromcart,loadcheckout,checkoutaddaddress,
                checkoutchangeaddress,loadordersuccess,addorderdetails,
                loaduserprofile,updateprofile,updateprofileimage,

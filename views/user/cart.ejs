@@ -154,26 +154,28 @@
                     <h4><%= item.name %></h4>
                     <p class="price">₹<%= item.price %></p>
                   </div>
-                  <div class="quantity_controls">
-                    <button
-                      class="qty_btn"
-                      onclick="updateQuantity('<%= index %>', -1)"
-                    >
-                      -
-                    </button>
-                    <input
-                      type="number"
-                      value="<%= item.quantity %>"
-                      min="1"
-                      class="qty_input"
-                      id="qty_<%= index %>"
-                    />
-                    <button
-                      class="qty_btn"
-                      onclick="updateQuantity('<%= index %>', 1)"
-                    >
-                      +
-                    </button>
+                  <div class="cart-item" data-product-id="<%= item.id %>">
+                    <div class="quantity_controls">
+                      <button
+                        class="qty_btn"
+                        onclick="updateQuantity('<%= index %>', -1)"
+                      >
+                        -
+                      </button>
+                      <input
+                        type="number"
+                        value="<%= item.quantity %>"
+                        min="1"
+                        class="qty_input"
+                        id="qty_<%= index %>"
+                      />
+                      <button
+                        class="qty_btn"
+                        onclick="updateQuantity('<%= index %>', 1)"
+                      >
+                        +
+                      </button>
+                    </div>
                   </div>
                   <div class="item_total">
                     ₹<span id="total_<%= index %>"
@@ -363,6 +365,48 @@
       fetchCart();
     </script>
     <script>
+      function updateQuantity(index, change) {
+    const productId = document.querySelector(`#qty_${index}`).closest('.cart-item').dataset.productId;
+    fetch('/user/update-cart-quantity', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            productId: productId,
+            change: change
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const qtyInput = document.getElementById(`qty_${index}`);
+            qtyInput.value = data.newQuantity;
+
+            const totalPriceElement = document.getElementById('cart-total');
+            if (totalPriceElement) {
+                totalPriceElement.textContent = `₹${data.totalPrice.toFixed(2)}`;
+            }
+            window.location.reload();
+        } else {
+            console.error('Update failed:', data);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: data.message
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Failed to update cart'
+        });
+    });
+}
+      
       async function removefromcart(productId) {
         try {
           const response = await fetch(`cart/remove/${productId}`, {

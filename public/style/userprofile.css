@@ -191,15 +191,18 @@
       }
       .status_delivered {
         background-color: #d4edda;
-        color: #155724;
+        color: green;
       }
       .status_processing {
         background-color: #fff3cd;
-        color: #856404;
+        color: orange;
+      }
+      .status_pending {
+        color: blue;
       }
       .status_cancelled {
         background-color: #f8d7da;
-        color: #721c24;
+        color: red;
       }
       .add_new_btn {
         display: inline-block;

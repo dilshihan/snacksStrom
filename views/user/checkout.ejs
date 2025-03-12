@@ -623,14 +623,10 @@
         // Show selected payment details
         document.getElementById(`${method}-details`).classList.add("active");
     }
-
     // Attach event listener globally
-    window.selectPayment = selectPayment; // Expose function globally for onclick
-
+    window.selectPayment = selectPayment; 
     // Place Order Button Click Event
     document.getElementById("place-order-btn").addEventListener("click", function () {
-        console.log("Place Order Button Clicked!");
-
         // Get selected payment method
         const selectedPaymentMethod = document.querySelector('input[name="payment-method"]:checked');
         if (!selectedPaymentMethod) {
@@ -664,15 +660,14 @@ const paymentMethod = selectedPaymentMethod.id;
 const addressId = document.getElementById("addressId")?.value; 
 // Collect order details
 const orderData = {
-    customerId: userId,  // Replace with actual user data
-    products,  // Now this includes all products
-    totalAmount, // Replace with calculated total
+    customerId: userId,  
+    products, 
+    totalAmount, 
     paymentMethod,
     addressId
 };
 
 console.log(orderData);
-
 
         // Send data to backend
         fetch("/user/order-details", {

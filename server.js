@@ -1,4 +1,4 @@
-
+require('dotenv').config();
 const express = require('express')
 const app = express()
 const path = require('path')
@@ -19,7 +19,14 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(express.json({ limit: '50mb' }));
 
 
-app.use(session({secret:'mysecretkey',resave:false,saveUninitialized:true,Cookie:{maxage:1000*60*60*24}}))
+app.use(session({
+    secret: process.env.SESSION_SECRET,  
+    resave: false,
+    saveUninitialized: true,
+    cookie: {                          
+        maxAge: 1000 * 60 * 60 * 24  
+    }
+}));
 app.use(nocache())
 
 
@@ -33,9 +40,13 @@ app.use((req, res, next) => {
     res.status(404).render('user/404');
 });
 
+app.use((err, req, res, next) => {
+    console.log(err);
+    res.status(500).send("Something went wrong! Please try again later.");
+});
 
 
-
-app.listen(3001,()=>{
+const PORT = process.env.PORT || 3001;
+app.listen(PORT,()=>{
     console.log('server started at:http//localhost:3001')
 })

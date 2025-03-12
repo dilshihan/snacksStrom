@@ -1,8 +1,10 @@
 const mongoose = require('mongoose')
+require('dotenv').config();
 const connectdb = async()=>{
     try{
-        const connect = await mongoose.connect('mongodb://localhost:27017/snack_storm',{})
-        
+        const connect = await mongoose.connect(process.env.MONGODB_URI,{})
+      
+      
 
     }catch(error){
         console.log(error)

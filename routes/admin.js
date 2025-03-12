@@ -22,6 +22,8 @@ router.get('/categories/update/:id',adminauth.checksession, admincontreller.load
 router.post('/categories/update/:id', adminauth.checksession,admincontreller.updateCategory)
 router.post('/categories/listing',adminauth.checksession, admincontreller.Categorylisting);
 router.get('/order',adminauth.checksession,admincontreller.loadorders)
+router.put("/update-order-status/:orderId",adminauth.checksession,admincontreller.updateorderstatus)
+router.get('/vieworderdetils',adminauth.checksession,admincontreller.loadviewoderdeatils)
 router.get('/logout',adminauth.checksession,admincontreller.logout)
 
 
