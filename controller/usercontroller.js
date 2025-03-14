@@ -36,6 +36,7 @@ const registerUser = async (req, res) => {
         if (user) return res.render('user/register', { message: 'User already exists' });
 
         const otp = generateOTP();
+        
         req.session.otp=otp // Store OTP temporarily
         req.session.email=email
         req.session.password=password
@@ -63,7 +64,7 @@ const verifyOTP = async (req, res) => {
         } 
 
         const hashedPassword = await bcrypt.hash(req.session.password, saltround);
-        const user = new userschema({ email: req.session.email, password: hashedPassword });
+        const user = new userschema({ email: req.session.email, password: hashedPassword, authType: 'normal' });
         await user.save();
 
         req.session.otp = null; // Remove OTP after verification
@@ -197,6 +198,35 @@ const newpassword = async(req,res)=>{
     }
 }
 
+const resetpassword = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+
+        if (!email || !password) {
+            return res.status(400).json({success: false,message: "Email and password are required"});
+        }
+
+        const user = await userschema.findOne({ email });
+        if (!user) {return res.status(404).json({success: false,message: "User not found"});
+        }
+
+        const hashedPassword = await bcrypt.hash(password, saltround);
+        await userschema.findOneAndUpdate(
+            { email },
+            { 
+                password: hashedPassword,
+                $unset: { resetPasswordToken: "", resetPasswordExpires: "" } 
+            }
+        );
+
+        res.json({success: true,message: "Password has been reset successfully"});
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({success: false,message: "An error occurred while resetting password"});
+    }
+};
+
 const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -242,36 +272,70 @@ const Loadhome = async (req, res) => {
 
 const loadmenu = async (req, res) => {
     try {
-        const   userid = req.session.user 
+        const userid = req.session.user 
+        const user = await userschema.findById(userid)
+        const priceRange = req.query.priceRange;
+        const sortBy = req.query.sortBy || 'default'; 
+        const filter = { isListed: true };
+        if (priceRange) {
+            switch (priceRange) {
+                case 'under100':
+                    filter.price = { $lt: 100 };
+                    break;
+                case '100-300':
+                    filter.price = { $gte: 100, $lte: 300 };
+                    break;
+                case '300-500':
+                    filter.price = { $gte: 300, $lte: 500 };
+                    break;
+            }
+        }
+
         const page = parseInt(req.query.page) || 1;
         const limit = 9; 
-        const filter = { isListed: true };
-        const user = await userschema.findById(userid)
+        const skip = (page - 1) * limit;
+
         const totalProducts = await Productmodel.countDocuments(filter);
         const totalPages = Math.ceil(totalProducts / limit);
-        const products = await Productmodel.find(filter)
-            .skip((page - 1) * limit)
-            .limit(limit);
 
-            if (req.xhr) { // If AJAX request
-                return res.json({
-                    success: true,
-                    products,
-                    currentPage: page,
-                    totalPages
-                });
-            } else {
-                return res.render("user/menu", { 
-                    products,
-                    currentPage: page,
-                    totalPages,
-                    user
-                });
-            }
+        let query = Productmodel.find(filter).select('name price image category isListed');
+        switch (sortBy) {
+            case 'price-low-high':
+                query = query.sort({ price: 1 });
+                break;
+            case 'price-high-low':
+                query = query.sort({ price: -1 });
+                break;
+            case 'name-a-z':
+                query = query.sort({ name: 1 });
+                break;
+            case 'name-z-a':
+                query = query.sort({ name: -1 });
+                break;
+            default:
+                query = query.sort({ _id: -1 }); 
+        }
+ 
+        const products = await query.skip(skip).limit(limit).lean();
+
+        const queryParams = new URLSearchParams({ ...(priceRange && { priceRange }), ...(sortBy && { sortBy }) }).toString();
+
+        return res.render("user/menu", { 
+            products,
+            user,
+            currentPage: page,
+            totalPages,
+            hasNextPage: page < totalPages,
+            hasPreviousPage: page > 1,
+            selectedPriceRange: priceRange || 'all',
+            selectedSort: sortBy,
+            queryParams 
+        });
     } catch (error) {
         console.error(error);
+        res.status(500).send("Internal Server Error");
     }
-}  
+}
 
 const loadabout = async (req,res)=>{
     try{
@@ -570,36 +634,54 @@ const checkoutaddaddress = async (req, res) => {
     }
 };
 
-const checkoutchangeaddress =  async (req, res) => {
+const checkoutchangeaddress = async (req, res) => {
     try {
         const userId = req.session.user;
-        let { selectedAddressId } = req.body;
+        const { selectedAddressId } = req.body;
 
-        if (!userId) {
-            return res.status(401).json({ success: false, message: 'User not authenticated' });
+        if (!userId || !selectedAddressId) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Missing required information' 
+            });
         }
 
-        if (!selectedAddressId) {
-            return res.status(400).json({ success: false, message: 'Invalid address ID' });
+        // Get the selected address details
+        const selectedAddress = await addressmodel.findById(selectedAddressId);
+        if (!selectedAddress) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'Address not found' 
+            });
         }
 
-        await addressmodel.updateMany({ userId }, { $set: { isDefault: false } });
+        // Update default address flags
+        await addressmodel.updateMany(
+            { userId }, 
+            { $set: { isDefault: false } }
+        );
 
         const updatedAddress = await addressmodel.findOneAndUpdate(
             { _id: selectedAddressId, userId },
             { $set: { isDefault: true } },
             { new: true }
-        ); 
+        );
+
         if (!updatedAddress) {
-            return res.status(404).json({ success: false, message: 'Address not found' });
+            return res.status(404).json({ 
+                success: false, 
+                message: 'Failed to update address' 
+            });
         }
-        res.json({ success: true, message: 'Default address updated', updatedAddress });
+
+        res.json({ 
+            success: true,message: 'Default address updated successfully',address: updatedAddress});
 
     } catch (error) {
         console.error(error);
-        res.status(500).json({ success: false, message: 'Server error' });
+        res.status(500).json({success: false,message: 'Server error'});
     }
-}
+};
 
 const loadordersuccess = async(req,res)=>{
     try{
@@ -614,72 +696,117 @@ const addorderdetails = async(req, res) => {
         const { customerId, products, totalAmount, paymentMethod, addressId } = req.body;
 
         if (!customerId || !products || !totalAmount || !paymentMethod) {
-            return res.status(400).json({ success: false,  message: "All fields are required!"});
+            return res.status(400).json({ success: false, message: "All fields are required!"});
         }
-
         const address = await addressmodel.findById(addressId);
         if (!address) {
-            return res.status(400).json({ success: false,message: "Invalid address ID"});
+            return res.status(400).json({ success: false, message: "Invalid address ID"});
         }
 
         for (const item of products) {
             const product = await Productmodel.findById(item.productId);
             if (!product) {
-                return res.status(400).json({ success: false,message: `Product ${item.productName} not found` });
+                return res.status(400).json({ success: false, message: `Product ${item.productName} not found` });
             }
             if (product.stock < item.quantity) {
-                return res.status(400).json({ success: false, message: `Insufficient stock for ${item.productName}. Only ${product.stock} units available.`  });
+                return res.status(400).json({ 
+                    success: false, 
+                    message: `Insufficient stock for ${item.productName}. Only ${product.stock} units available.`  
+                });
             }
         }
-
         const newOrder = new Order({
             customerId,
             products,
             totalAmount,
             paymentMethod,
-            shippingAddress: addressId
+            shippingAddress: {
+                fullname: address.fullname,
+                phoneNumber: address.phoneNumber,
+                streetAddress: address.streetAddress,
+                city: address.city,
+                state: address.state,
+                zipCode: address.zipCode,
+                addressId: address.id 
+            }
         });
         await newOrder.save();
 
         const stockUpdatePromises = products.map(item => 
-            Productmodel.findByIdAndUpdate( item.productId,{ $inc: { stock: -item.quantity } }, { new: true } ));
+            Productmodel.findByIdAndUpdate(item.productId,{ $inc: { stock: -item.quantity } },{ new: true }));
+         await Promise.all(stockUpdatePromises);
+    
+        await cartmodel.findOneAndUpdate({ userId: customerId }, { $set: { products: [], totalPrice: 0 } });
 
-        await Promise.all(stockUpdatePromises);
-        await cartmodel.findOneAndUpdate( { userId: customerId }, { $set: { products: [], totalPrice: 0 } } );
-
-        res.json({success: true,message: "Order placed successfully",order: newOrder  });
+        res.json({success: true,message: "Order placed successfully",order: newOrder});
     } catch (error) {
         console.error(error);
-        res.status(500).json({ success: false, message: "Failed to place order"  });
+        res.status(500).json({ success: false, message: "Failed to place order" });
     }
 };
 
 const loaduserprofile = async(req,res)=>{
-    try{
+    try {
         const userid = req.session.user 
         const user = await userschema.findById(userid) 
         if (!user) {
             return res.status(404).render('error', { message: 'User not found' });
         }
-      
-        const addresses = await addressmodel.find({ userId: user._id })
-        const orders = await Order.find({ customerId: new mongoose.Types.ObjectId(user._id) }).sort({ orderDate: -1  }).exec();
 
-        if(!addresses) {
-            addresses = [];
-        }
+        const page = parseInt(req.query.page) || 1;
+        const productsPerPage = 3; 
+        const addresses = await addressmodel.find({ userId: user._id }) || [];
         
-        res.render('user/userprofile',{
+        const allOrders = await Order.find({customerId: new mongoose.Types.ObjectId(user._id) })
+        .sort({ orderDate: -1 })
+        .populate('products.productId')
+        .populate('shippingAddress')
+        .exec();
+
+        const totalProducts = allOrders.reduce((sum, order) => sum + order.products.length, 0);
+        const totalPages = Math.ceil(totalProducts / productsPerPage);
+
+        let productsSoFar = 0;
+        let ordersToShow = [];
+        
+        for (let order of allOrders) {
+            let orderCopy = { ...order.toObject() };
+            
+            if (productsSoFar + order.products.length <= (page - 1) * productsPerPage) {
+                productsSoFar += order.products.length;
+                continue;
+            }
+
+            const skipInThisOrder = Math.max(0, (page - 1) * productsPerPage - productsSoFar);
+            const takeFromThisOrder = Math.min(
+                productsPerPage - (ordersToShow.length > 0 ? ordersToShow.reduce((sum, o) => sum + o.products.length, 0) : 0),
+                order.products.length - skipInThisOrder
+            );
+            if (takeFromThisOrder > 0) {
+                orderCopy.products = order.products.slice(skipInThisOrder, skipInThisOrder + takeFromThisOrder);
+                ordersToShow.push(orderCopy);
+            }
+            productsSoFar += order.products.length;
+            if (ordersToShow.reduce((sum, o) => sum + o.products.length, 0) >= productsPerPage) {
+                break;
+            }
+        }
+
+        res.render('user/userprofile', {
             user: user,
             addresses: addresses,
-            orders:orders
+            orders: ordersToShow,
+            currentPage: page,
+            totalPages: totalPages,
+            hasNextPage: page < totalPages,
+            hasPrevPage: page > 1
         });
 
-    }catch(error){
-        console.log(error)
+    } catch(error) {
+        console.log(error);
         res.status(500).render('error', { message: 'Internal server error' });
     }
-}  
+}
 
 const updateprofile = async(req,res)=>{
     try{
@@ -806,33 +933,45 @@ const deleteaddress = async (req,res)=>{
     }
 }
 
-const loadorderdetils = async(req,res)=>{
-    try{
-
-        const   userid = req.session.user
-        const user = await userschema.findById(userid) 
-        const orderId = req.query.orderId
+const loadorderdetils = async(req,res) => {
+    try {
+        const userid = req.session.user;
+        const user = await userschema.findById(userid);
+        const orderId = req.query.orderId;
         const productId = req.query.productId;
-
+    
         if (!orderId || !productId) {
             return res.status(400).send("Order ID and Product ID are required");
         }
-        const order = await Order.findById(orderId).populate('products.productId').populate('shippingAddress'); 
-       
+    
+        const order = await Order.findById(orderId)
+            .populate('products.productId').populate('customerId').populate('shippingAddress');
+    console.log('aaaaa',order);
+    
         if (!order) {
             return res.status(404).send("Order not found");
         }
-   
-        const productDetails = order.products.find(item => item._id.toString() === productId);
-
+    
+        const productDetails = order.products.find(item => 
+            item._id.toString() === productId
+        );
+    
         if (!productDetails) {
             return res.status(404).send("Product not found in this order");
         }
-        res.render('user/orderdetails',{order,user,productDetails})
-    }catch(error){
-        console.log(error)
+    
+        res.render('user/orderdetails', {
+            order,
+            user,
+            productDetails,
+            orderAddress: order.shippingAddress 
+        });
+    
+    } catch(error) {
+        console.log(error);
         res.status(500).send("Internal Server Error");
     }
+    
 }
 
 const cancelorder = async (req, res) => {
@@ -874,19 +1013,53 @@ const cancelorder = async (req, res) => {
     }
 };
 
+const updatepassword = async(req,res)=>{
+    try {
+        const userId = req.session.user;
+        const { currentPassword, newPassword, confirmPassword } = req.body;
+
+        if (!currentPassword || !newPassword || !confirmPassword) {
+            return res.status(400).json({success: false,message: 'All fields are required'});
+        }
+
+        if (newPassword !== confirmPassword) {
+            return res.status(400).json({success: false,message: 'New passwords do not match'});
+        }
+
+        const user = await userschema.findById(userId);
+        if (!user) {
+            return res.status(404).json({success: false, message: 'User not found'});
+        }
+
+        const isMatch = await bcrypt.compare(currentPassword, user.password);
+        if (!isMatch) {
+            return res.status(400).json({success: false,message: 'Current password is incorrect'});
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, saltround);
+        await userschema.findByIdAndUpdate(userId, { password: hashedPassword });
+
+        res.json({success: true, message: 'Password updated successfully' });
+
+    } catch (error) {
+        console.error('Error updating password:', error);
+        res.status(500).json({success: false,message: 'Error updating password'});
+    }
+}
+
 const handleGoogleLogin = async (req, res) => {
     try {
         const { token, userData } = req.body;
-                
-        // Check if user already exists
+           
         let user = await userschema.findOne({ email: userData.email });
         
         if (!user) {
-            // Create new user if doesn't exist
             user = new userschema({
                 email: userData.email,
+                googleId: userData.sub,
                 image:userData.picture,
                 password: await bcrypt.hash(Math.random().toString(36).slice(-8), saltround),
+                authType: 'google',
                 status: 'Active'
             });
             await user.save();
@@ -963,13 +1136,12 @@ const logout = (req,res)=>{
 module.exports={registerUser,loadregister,loginUser,
                verifyOTP,resendOTP,loadforgotpassword,
                forgetsendotp,loadforgotPasswordotp,forgotverifyotp,
-               newpassword,
-               logout,Loadhome,
+               newpassword,resetpassword, logout,Loadhome,
                loadmenu,loadabout,loadcontactus,
                Productdetails,loadcart,addtocart,updatecartquantity,
                removefromcart,loadcheckout,checkoutaddaddress,
                checkoutchangeaddress,loadordersuccess,addorderdetails,
                loaduserprofile,updateprofile,updateprofileimage,
                addaddress,editaddress,deleteaddress,
-               loadorderdetils,cancelorder,
+               loadorderdetils,cancelorder,updatepassword,
                handleGoogleLogin,handleGoogleCallback}

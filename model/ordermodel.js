@@ -1,3 +1,4 @@
+// Order Schema
 const mongoose = require('mongoose');
 
 const orderSchema = new mongoose.Schema({
@@ -51,9 +52,16 @@ const orderSchema = new mongoose.Schema({
         default: 'Pending'
     },
     shippingAddress: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Address',
-        required: true
+        fullname: String,
+        phoneNumber: String,
+        streetAddress: String,
+        city: String,
+        state: String,
+        zipCode: String,
+        addressId: {  
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Address'
+        }
     }
 });
 

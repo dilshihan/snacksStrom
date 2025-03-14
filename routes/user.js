@@ -14,6 +14,7 @@ router.post('/send-otp',usercontroller.forgetsendotp)
 router.get('/forgotpasswordotp',usercontroller.loadforgotPasswordotp)
 router.post('/verify-otp',usercontroller.forgotverifyotp);
 router.get('/newpassword',usercontroller.newpassword)
+router.post('/reset-password',usercontroller.resetpassword)
 router.post('/login',usercontroller.loginUser)
 router.get('/home',usercontroller.Loadhome)
 router.get('/menu',usercontroller.loadmenu)
@@ -37,6 +38,7 @@ router.post('/edit-address',userauth.checksession,userauth.checkBan,usercontroll
 router.delete('/delete/:id',userauth.checksession,userauth.checkBan,usercontroller.deleteaddress)
 router.get('/orderdetails',userauth.checksession,userauth.checkBan,usercontroller.loadorderdetils)
 router.delete("/cancel-order/:orderId/:productId", userauth.checksession, userauth.checkBan, usercontroller.cancelorder);
+router.post('/update-password',userauth.checksession,userauth.checkBan,usercontroller.updatepassword)
 router.post('/logout',userauth.checksession,usercontroller.logout)
 router.get('/auth/google/callback', usercontroller.handleGoogleCallback)
 router.post('/auth/google/callback', usercontroller.handleGoogleLogin)

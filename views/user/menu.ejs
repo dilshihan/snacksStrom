@@ -138,77 +138,116 @@
 
   <section class="food_section layout_padding">
     <div class="container">
-      <div class="heading_container heading_center">
-        <h2>Our Menu</h2>
-      </div>
+        <div class="heading_container heading_center">
+            <h2>Our Menu</h2>
+        </div>
+            <ul class="filters_menu">
+            <li class="active" data-filter="*">All</li>
+            <li data-filter=".burger">Burger</li>
+            <li data-filter=".pizza">Pizza</li>
+            <li data-filter=".drinks">Drinks</li>
+           </ul>
+            <div class="filters_price">
+              <form action="/user/menu" method="GET" id="filterForm" class="filter-items">
+                <!-- Price Range Filter -->
+                <select name="priceRange" onchange="this.form.submit()">
+                    <option value="all" <%= selectedPriceRange === 'all' ? 'selected' : '' %>>All Prices</option>
+                    <option value="under100" <%= selectedPriceRange === 'under100' ? 'selected' : '' %>>Under ₹100</option>
+                    <option value="100-300" <%= selectedPriceRange === '100-300' ? 'selected' : '' %>>₹100 - ₹300</option>
+                    <option value="300-500" <%= selectedPriceRange === '300-500' ? 'selected' : '' %>>₹300 - ₹500</option>
+                </select>
+                <!-- Sorting Dropdown -->
+                <select name="sortBy" onchange="this.form.submit()">
+                    <option value="default" <%= selectedSort === 'default' ? 'selected' : '' %>>Default</option>
+                    <option value="price-low-high" <%= selectedSort === 'price-low-high' ? 'selected' : '' %>>Price: Low to High</option>
+                    <option value="price-high-low" <%= selectedSort === 'price-high-low' ? 'selected' : '' %>>Price: High to Low</option>
+                    <option value="name-a-z" <%= selectedSort === 'name-a-z' ? 'selected' : '' %>>Name: A to Z</option>
+                    <option value="name-z-a" <%= selectedSort === 'name-z-a' ? 'selected' : '' %>>Name: Z to A</option>
+                </select>
+            </form>
+            </div>
 
-      <ul class="filters_menu">
-        <li class="active" data-filter="*">All</li>
-        <li data-filter=".burger">Burger</li>
-        <li data-filter=".pizza">Pizza</li>
-        <li data-filter=".drinks">Drinks</li>
-      </ul>
-
-      <div class="filters-content">
-        <div class="product-grid">
-          <% products.forEach(product=> { %>
-            <% if (product.isListed) { %>
-              <div class="product-card <%= product.category.toLowerCase() %>">
-                <div class="product-image">
-                  <a href="/user/productdetails/<%= product._id %>" class="image-link">
-                    <img src="/uploads/<%= product.image[0] %>" alt="<%= product.name %>" />
-                  </a>
-                </div>
-                <div class="product-info">
-                  <h3 class="product-name">
-                    <%= product.name %>
-                  </h3>
-                  <div class="product-footer">
-                    <span class="price">₹<%= product.price %></span>
-                    <% if (user) { %>
-                      <a onclick="addToCart('<%= product._id %>', 1, '<%= product.name %>', '<%= user._id %>')"
-                        class="add-to-cart">
-                        <% } else { %>
-                          <a onclick="Swal('Please log in to add items to the cart.')" class="add-to-cart">
-                            <% } %>
-                              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor"
-                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="9" cy="21" r="1"></circle>
-                                <circle cx="20" cy="21" r="1"></circle>
-                                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-                              </svg>
-                              <span>Add to Cart</span>
-                          </a>
-                  </div>
-                </div>
-              </div>
-              <% } %> <!-- End of isListed condition -->
+        <div class="filters-content">
+            <div class="product-grid">
+                <% products.forEach(product => { %>
+                    <div class="product-card <%= product.category.toLowerCase() %>">
+                        <div class="product-image">
+                            <a href="/user/productdetails/<%= product._id %>" class="image-link">
+                                <img src="/uploads/<%= product.image[0] %>" 
+                                     alt="<%= product.name %>">
+                            </a>
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-name"><%= product.name %></h3>
+                            <div class="product-footer">
+                                <span class="price">₹<%= product.price %></span>
+                                <% if (user) { %>
+                                    <button onclick="addToCart('<%= product._id %>', 1, '<%= product.name %>', '<%= user._id %>')"
+                                            class="add-to-cart">
+                                        <span>Add to Cart</span>
+                                    </button>
+                                <% } else { %>
+                                    <button onclick="Swal.fire('Please log in to add items to the cart.')" 
+                                            class="add-to-cart">
+                                        <span>Add to Cart</span>
+                                    </button>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
                 <% }); %>
+            </div>
+
+            <!-- Add pagination -->
+            <div class="pagination-container">
+              <div class="pagination">
+                  <% if (hasPreviousPage) { %>
+                      <a href="?page=<%= currentPage - 1 %>&<%= queryParams %>" class="page-link">
+                          <i class="fa fa-angle-left"></i>
+                      </a>
+                  <% } %>
+                  
+                  <% 
+                  let startPage = Math.max(1, currentPage - 2);
+                  let endPage = Math.min(totalPages, startPage + 4);
+                  
+                  if (endPage - startPage < 4) {
+                      startPage = Math.max(1, endPage - 4);
+                  }
+                  
+                  if (startPage > 1) { %>
+                      <a href="?page=1&<%= queryParams %>" class="page-link">1</a>
+                      <% if (startPage > 2) { %>
+                          <span class="dots">...</span>
+                      <% } %>
+                  <% } %>
+          
+                  <% for(let i = startPage; i <= endPage; i++) { %>
+                      <a href="?page=<%= i %>&<%= queryParams %>" 
+                         class="page-link <%= currentPage === i ? 'active' : '' %>">
+                          <%= i %>
+                      </a>
+                  <% } %>
+          
+                  <% if (endPage < totalPages) { %>
+                      <% if (endPage < totalPages - 1) { %>
+                          <span class="dots">...</span>
+                      <% } %>
+                      <a href="?page=<%= totalPages %>&<%= queryParams %>" class="page-link">
+                          <%= totalPages %>
+                      </a>
+                  <% } %>
+                  
+                  <% if (hasNextPage) { %>
+                      <a href="?page=<%= currentPage + 1 %>&<%= queryParams %>" class="page-link">
+                          <i class="fa fa-angle-right"></i>
+                      </a>
+                  <% } %>
+              </div>
+          </div>
         </div>
-
-        <div class="pagination">
-          <% if (currentPage> 1) { %>
-            <button class="page-btn" data-page="<%= currentPage - 1 %>">Previous</button>
-            <% } %>
-
-              <% for(let i=1; i <=totalPages; i++) { %>
-                <button class="page-btn <%= currentPage === i ? 'active' : '' %>" data-page="<%= i %>">
-                  <%= i %>
-                </button>
-                <% } %>
-
-                  <% if (currentPage < totalPages) { %>
-                    <button class="page-btn" data-page="<%= currentPage + 1 %>">Next</button>
-                    <% } %>
-        </div>
-
-        <div class="view-more">
-          <a href="/user/menu" class="view-more-button">View More</a>
-        </div>
-      </div>
     </div>
-  </section>
-
+</section>
   <!-- end food section -->
 
   <!-- footer section -->
@@ -300,29 +339,6 @@
   <!-- End Google Map -->
   <script>
     $(document).ready(function () {
-      // Initialize Isotope with proper layout options
-      var $grid = $(".product-grid").isotope({
-        itemSelector: ".product-card",
-        layoutMode: "fitRows",
-        // Add these options to maintain layout
-        fitRows: {
-          gutter: 20, // Adjust spacing between items
-        },
-      });
-
-      // Filter items on button click
-      $(".filters_menu li").on("click", function () {
-        $(".filters_menu li").removeClass("active");
-        $(this).addClass("active");
-
-        var filterValue = $(this).attr("data-filter");
-        $grid.isotope({ filter: filterValue });
-      });
-    });
-  </script>
-  <script>
-    $(document).ready(function () {
-      // Initialize Isotope
       var $grid = $(".product-grid").isotope({
         itemSelector: ".product-card",
         layoutMode: "fitRows",
@@ -330,127 +346,36 @@
           gutter: 20,
         },
       });
-
-      // Handle pagination clicks
-      $(document).on("click", ".page-btn", function (e) {
-        e.preventDefault();
-        const page = $(this).data("page");
-
-        $.ajax({
-          url: "/user/menu",
-          data: { page: page },
-          success: function (response) {
-            if (response.success) {
-              // Generate HTML for new products
-              const productsHTML = response.products
-                .map(
-                  (product) => `
-                          <div class="product-card ${product.category.toLowerCase()}">
-                              <div class="product-image">
-                                  <a href="/user/productdetails/${product._id
-                    }" class="image-link">
-                                      <img src="/uploads/${product.image[0]
-                    }" alt="${product.name}">
-                                  </a>
-                              </div>
-                              <div class="product-info">
-                                  <h3 class="product-name">${product.name}</h3>
-                                  <div class="product-footer">
-                                      <span class="price">$${product.price
-                    }</span>
-                                      <a href=""class="add-to-cart" data-id="${product._id}" data-name="${product.name}" data-price=" ${product.price}" data-image="${product.image[0]}">
-                        <svg
-                          viewBox="0 0 24 24"
-                          width="24"
-                          height="24"
-                          fill="none"
-                          stroke="currentColor"
-                          stroke-width="2"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                        >
-                          <circle cx="9" cy="21" r="1"></circle>
-                          <circle cx="20" cy="21" r="1"></circle>
-                          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-                        </svg>
-                        <span>Add to Cart</span>
-                      </a>
-                                  </div>
-                              </div>
-                          </div>
-                      `
-                )
-                .join("");
-
-              // Update the product grid
-              $(".product-grid").html(productsHTML);
-
-              // Update pagination
-              updatePagination(response.currentPage, response.totalPages);
-
-              // Reinitialize Isotope
-              $grid.isotope("destroy");
-              $grid = $(".product-grid").isotope({
-                itemSelector: ".product-card",
-                layoutMode: "fitRows",
-                fitRows: {
-                  gutter: 20,
-                },
-              });
-
-              // Reapply active filter
-              const activeFilter = $(".filters_menu li.active").attr(
-                "data-filter"
-              );
-              if (activeFilter) {
-                $grid.isotope({ filter: activeFilter });
-              }
-
-              // Scroll to top of product section
-              $("html, body").animate(
-                {
-                  scrollTop: $(".product-grid").offset().top - 100,
-                },
-                500
-              );
-            }
-          },
-          error: function (xhr, status, error) {
-            console.error("Error loading products:", error);
-          },
-        });
-      });
-
-      // Function to update pagination buttons
-      function updatePagination(currentPage, totalPages) {
-        let paginationHTML = "";
-
-        if (currentPage > 1) {
-          paginationHTML += `<button class="page-btn" data-page="${currentPage - 1
-            }">Previous</button>`;
-        }
-
-        for (let i = 1; i <= totalPages; i++) {
-          paginationHTML += `<button class="page-btn ${currentPage === i ? "active" : ""
-            }" data-page="${i}">${i}</button>`;
-        }
-
-        if (currentPage < totalPages) {
-          paginationHTML += `<button class="page-btn" data-page="${currentPage + 1
-            }">Next</button>`;
-        }
-
-        $(".pagination").html(paginationHTML);
-      }
-
-      // Filter items on button click
       $(".filters_menu li").on("click", function () {
         $(".filters_menu li").removeClass("active");
         $(this).addClass("active");
+
         var filterValue = $(this).attr("data-filter");
         $grid.isotope({ filter: filterValue });
       });
     });
+
+    function applyPriceFilter(range) {
+    const currentUrl = new URL(window.location.href);
+    if (range === 'all') {
+        currentUrl.searchParams.delete('priceRange');
+    } else {
+        currentUrl.searchParams.set('priceRange', range);
+    }
+    currentUrl.searchParams.set('page', '1');
+    window.location.href = currentUrl.toString();
+}
+document.querySelectorAll('select').forEach(select => {
+    select.addEventListener('change', function() {
+        let url = new URL(window.location.href);
+        let params = new URLSearchParams(url.search);
+        params.set(this.name, this.value);
+        if (params.has('page')) {
+            params.set('page', '1'); 
+        }
+        window.location.href = `${url.pathname}?${params.toString()}`;
+    });
+});
   </script>
   <script>
 
@@ -492,7 +417,11 @@
       }
     }
   </script>
-
+ <script>
+  document.addEventListener('DOMContentLoaded', function() {
+      document.body.classList.add('page-loaded');
+  });
+</script>
 
 </body>
 

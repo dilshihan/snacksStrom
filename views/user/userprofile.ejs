@@ -2,1043 +2,1133 @@
 <html>
 
 <head>
-    <!-- Basic -->
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <!-- Mobile Metas -->
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-    <!-- Site Metas -->
-    <meta name="keywords" content="" />
-    <meta name="description" content="" />
-    <meta name="author" content="" />
-    <link rel="shortcut icon" href="/images/favicon.png" type="" />
-    <title>SNACK STORM - User Profile</title>
-    <link rel="stylesheet" type="text/css" href="/css/bootstrap.css" />
-    <link rel="stylesheet" type="text/css"
-        href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" />
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/jquery-nice-select/1.1.0/css/nice-select.min.css"
-        integrity="sha512-CruCP+TD3yXzlvvijET8wV5WxxEh5H8P4cmz0RFbKK6FlZ2sYl3AEsKlLPHbniXKSrDdFewhbmBK5skbdsASbQ=="
-        crossorigin="anonymous" />
-    <link rel="stylesheet" type="text/css" href="/css/style.css" />
-    <link rel="stylesheet" type="text/css" href="/css/responsive.css" />
-    <link href="/css/font-awesome.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="/style/userprofile.css" />
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- Basic -->
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <!-- Mobile Metas -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <!-- Site Metas -->
+  <meta name="keywords" content="" />
+  <meta name="description" content="" />
+  <meta name="author" content="" />
+  <link rel="shortcut icon" href="/images/favicon.png" type="" />
+  <title>SNACK STORM - User Profile</title>
+  <link rel="stylesheet" type="text/css" href="/css/bootstrap.css" />
+  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-nice-select/1.1.0/css/nice-select.min.css" integrity="sha512-CruCP+TD3yXzlvvijET8wV5WxxEh5H8P4cmz0RFbKK6FlZ2sYl3AEsKlLPHbniXKSrDdFewhbmBK5skbdsASbQ==" crossorigin="anonymous" />
+  <link rel="stylesheet" type="text/css" href="/css/style.css" />
+  <link rel="stylesheet" type="text/css" href="/css/responsive.css" />
+  <link href="/css/font-awesome.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="/style/userprofile.css" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <body class="sub_page">
-    <header class="header_section">
-        <div class="container">
-            <nav class="navbar navbar-expand-lg custom_nav-container">
-                <a class="navbar-brand" href="/user/home">
-                    <span> SNACK STORM </span>
-                </a>
+  <header class="header_section">
+    <div class="container">
+      <nav class="navbar navbar-expand-lg custom_nav-container">
+        <a class="navbar-brand" href="/user/home">
+          <span> SNACK STORM </span>
+        </a>
 
-                <button class="navbar-toggler" type="button" data-toggle="collapse"
-                    data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
-                    aria-label="Toggle navigation">
-                    <span class=""> </span>
-                </button>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class=""> </span>
+        </button>
 
-                <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    <ul class="navbar-nav mx-auto">
-                        <li class="nav-item">
-                            <a class="nav-link" href="/user/home">Home </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/user/menu">Menu </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/user/about">About</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/user/contactus">Contact Us</a>
-                        </li>
-                    </ul>
-                    <div class="user_option">
-                        <a class="cart_link" href="/user/cart">
-                            <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg"
-                                xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 456.029 456.029"
-                                style="enable-background: new 0 0 456.029 456.029" xml:space="preserve">
-                                <g>
-                                    <g>
-                                        <path d="M345.6,338.862c-29.184,0-53.248,23.552-53.248,53.248c0,29.184,23.552,53.248,53.248,53.248
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav mx-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="/user/home">Home </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/user/menu">Menu </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/user/about">About</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/user/contactus">Contact Us</a>
+            </li>
+          </ul>
+          <div class="user_option">
+            <a class="cart_link" href="/user/cart">
+              <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 456.029 456.029" style="enable-background: new 0 0 456.029 456.029" xml:space="preserve">
+                <g>
+                  <g>
+                    <path d="M345.6,338.862c-29.184,0-53.248,23.552-53.248,53.248c0,29.184,23.552,53.248,53.248,53.248
                      c29.184,0,53.248-23.552,53.248-53.248C398.336,362.926,374.784,338.862,345.6,338.862z" />
-                                    </g>
-                                </g>
-                                <g>
-                                    <g>
-                                        <path d="M439.296,84.91c-1.024,0-2.56-0.512-4.096-0.512H112.64l-5.12-34.304C104.448,27.566,84.992,10.67,61.952,10.67H20.48
+                  </g>
+                </g>
+                <g>
+                  <g>
+                    <path d="M439.296,84.91c-1.024,0-2.56-0.512-4.096-0.512H112.64l-5.12-34.304C104.448,27.566,84.992,10.67,61.952,10.67H20.48
                      C9.216,10.67,0,19.886,0,31.15c0,11.264,9.216,20.48,20.48,20.48h41.472c2.56,0,4.608,2.048,5.12,4.608l31.744,216.064
                      c4.096,27.136,27.648,47.616,55.296,47.616h212.992c26.624,0,49.664-18.944,55.296-45.056l33.28-166.4
                      C457.728,97.71,450.56,86.958,439.296,84.91z" />
-                                    </g>
-                                </g>
-                                <g>
-                                    <g>
-                                        <path d="M215.04,389.55c-1.024-28.16-24.576-50.688-52.736-50.688c-29.696,1.536-52.224,26.112-51.2,55.296
+                  </g>
+                </g>
+                <g>
+                  <g>
+                    <path d="M215.04,389.55c-1.024-28.16-24.576-50.688-52.736-50.688c-29.696,1.536-52.224,26.112-51.2,55.296
                      c1.024,28.16,24.064,50.688,52.224,50.688h1.024C193.536,443.31,216.576,418.734,215.04,389.55z" />
-                                    </g>
-                                </g>
-                            </svg>
-                        </a>
-                        <form class="form-inline">
-                            <button class="btn my-2 my-sm-0 nav_search-btn" type="submit">
-                                <i class="fa fa-search" aria-hidden="true"></i>
-                            </button>
-                        </form>
-                        <a href="/user/userprofile" class="user_link">
-                            <% if (user && user.image) { %>
-                                <img src="<%= user.image %>"
-                                    style="width: 30px; height: 30px; object-fit: cover; border-radius: 50%;"
-                                    alt="Profile" />
-                                <% } else { %>
-                                    <i class="fa fa-user" aria-hidden="true"></i>
-                                    <% } %>
-                        </a>
-                    </div>
-                </div>
-            </nav>
+                  </g>
+                </g>
+              </svg>
+            </a>
+            <form class="form-inline">
+              <button class="btn my-2 my-sm-0 nav_search-btn" type="submit">
+                <i class="fa fa-search" aria-hidden="true"></i>
+              </button>
+            </form>
+            <a href="/user/userprofile" class="user_link">
+              <% if (user && user.image) { %>
+              <img src="<%= user.image %>" style="width: 30px; height: 30px; object-fit: cover; border-radius: 50%;" alt="Profile" />
+              <% } else { %>
+              <i class="fa fa-user" aria-hidden="true"></i>
+              <% } %>
+            </a>
+          </div>
         </div>
-    </header>
-    <div class="hero_area"></div>
+      </nav>
+    </div>
+  </header>
+  <div class="hero_area"></div>
 
-    <!-- profile section -->
-    <section class="profile_section layout_padding">
-        <div class="container">
-            <div class="heading_container">
-                <h2>My Profile</h2>
-            </div>
-            <div class="row mt-4">
-                <!-- Sidebar -->
-                <div class="col-md-3">
-                    <div class="sidebar">
-                        <ul class="sidebar_nav">
-                            <li>
-                                <a href="#" class="active" data-tab="profile">
-                                    <i class="fa fa-user"></i> Personal Info
-                                </a>
-                            </li>
-                            <li>
-                                <a href="#" data-tab="addresses">
-                                    <i class="fa fa-map-marker"></i> My Addresses
-                                </a>
-                            </li>
-                            <li>
-                                <a href="#" data-tab="orders">
-                                    <i class="fa fa-shopping-bag"></i> Order History
-                                </a>
-                            </li>
-                            <li>
-                                <a href="#" data-tab="password">
-                                    <i class="fa fa-lock"></i> Change Password
-                                </a>
-                            </li>
-                            <li>
-                                <form action="/user/logout" method="POST" style="display: inline;">
-                                    <button type="submit"
-                                        style="background: none; border: none; color: inherit; cursor: pointer;">
-                                        <i class="fa fa-sign-out"></i> Logout
-                                    </button>
-                                </form>
+  <!-- profile section -->
+  <section class="profile_section layout_padding">
+    <div class="container">
+      <div class="heading_container">
+        <h2>My Profile</h2>
+      </div>
+      <div class="row mt-4">
+        <!-- Sidebar -->
+        <div class="col-md-3">
+          <div class="sidebar">
+            <ul class="sidebar_nav">
+              <li>
+                <a href="#" class="active" data-tab="profile">
+                  <i class="fa fa-user"></i> Personal Info
+                </a>
+              </li>
+              <li>
+                <a href="#" data-tab="addresses">
+                  <i class="fa fa-map-marker"></i> My Addresses
+                </a>
+              </li>
+              <li>
+                <a href="#" data-tab="orders">
+                  <i class="fa fa-shopping-bag"></i> Order History
+                </a>
+              </li>
+              <li>
+                <% if (user.authType==='normal' ) { %>
+                <a href="#" data-tab="password">
+                  <i class="fa fa-lock"></i> Change Password
+                </a>
+                <% } %>
+              </li>
+              <li>
+                <form action="/user/logout" method="POST" style="display: inline;">
+                  <button type="submit" style="background: none; border: none; color: inherit; cursor: pointer;">
+                    <i class="fa fa-sign-out"></i> Logout
+                  </button>
+                </form>
 
-                            </li>
-                        </ul>
-                    </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9">
+          <div class="profile_container">
+            <!-- Profile Tab -->
+            <div id="profile" class="tab_content active">
+              <div class="profile_header">
+                <div class="profile_avatar" id="profile_image_container" style="cursor: pointer;" title="Click to change profile picture">
+                  <% if (user.image) { %>
+                  <img id="profile_image" src="<%= user.image %>" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" />
+                  <% } else { %>
+                  <i class="fa fa-user" id="default_avatar"></i>
+                  <img id="profile_image" style="display: none; width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" />
+                  <% } %>
+                  <div class="camera-icon">
+                    <i id="camera_icon" class="fa fa-camera"></i>
+                  </div>
                 </div>
+                <div class="profile_title">
+                  <h3>
+                    <%= user.name || '' %>
+                  </h3>
+                  <p>
+                    <%= user.email %>
+                  </p>
+                </div>
+              </div>
+              <input type="file" id="profile_picture_input" style="display: none;" accept="image/*" />
 
-                <!-- Main Content -->
-                <div class="col-md-9">
-                    <div class="profile_container">
-                        <!-- Profile Tab -->
-                        <div id="profile" class="tab_content active">
-                            <div class="profile_header">
-                                <div class="profile_avatar" id="profile_image_container" style="cursor: pointer;"
-                                    title="Click to change profile picture">
-                                    <% if (user.image) { %>
-                                        <img id="profile_image" src="<%= user.image %>"
-                                            style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" />
-                                        <% } else { %>
-                                            <i class="fa fa-user" id="default_avatar"></i>
-                                            <img id="profile_image"
-                                                style="display: none; width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" />
-                                            <% } %>
-                                                <div class="camera-icon">
-                                                    <i id="camera_icon" class="fa fa-camera"></i>
-                                                </div>
-                                </div>
-                                <div class="profile_title">
-                                    <h3>
-                                        <%= user.name || '' %>
-                                    </h3>
-                                    <p>
-                                        <%= user.email %>
-                                    </p>
-                                </div>
-                            </div>
-                            <input type="file" id="profile_picture_input" style="display: none;" accept="image/*" />
-
-                            <!-- View Mode (default) -->
-                            <div id="profile_view_mode">
-                                <div class="profile_info">
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="info_item">
-                                                <div class="info_label">Full Name</div>
-                                                <div class="info_value">
-                                                    <%= user.name || '' %>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="info_item">
-                                                <div class="info_label">Email Address</div>
-                                                <div class="info_value">
-                                                    <%= user.email %>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="info_item">
-                                                <div class="info_label">Phone Number</div>
-                                                <div class="info_value">
-                                                    <%= user.phoneNumber || '' %>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="btn_container">
-                                    <button id="edit_profile_btn" class="btn_edit">Edit Profile</button>
-                                </div>
-                            </div>
+              <!-- View Mode (default) -->
+              <div id="profile_view_mode">
+                <div class="profile_info">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="info_item">
+                        <div class="info_label">Full Name</div>
+                        <div class="info_value">
+                          <%= user.name || '' %>
                         </div>
-                        <!-- Edit Mode (hidden by default) -->
-                        <div id="profile_edit_mode" class="edit_form">
-                            <form id="profile-form" action="/user/update-profile" method="POST">
-                                <div class="row">
-                                    <div class="col-md-12">
-                                        <div class="form_group">
-                                            <label class="form_label">Full Name</label>
-                                            <input type="text" name="name" class="form_control"
-                                                value="<%= user.name || '' %>" />
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form_group">
-                                            <label class="form_label">Email Address</label>
-                                            <input type="email" name="email" class="form_control"
-                                                value="<%= user.email %>" readonly
-                                                style="background-color: #f5f5f5; cursor: not-allowed;" />
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form_group">
-                                            <label class="form_label">Phone Number</label>
-                                            <input type="tel" name="phoneNumber" class="form_control"
-                                                value="<%= user.phoneNumber || '' %>" />
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="btn_container">
-                                    <button type="button" id="cancel_edit_btn" class="btn_cancel">Cancel</button>
-                                    <button type="submit" class="btn_update">Update Profile</button>
-                                </div>
-                            </form>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="info_item">
+                        <div class="info_label">Email Address</div>
+                        <div class="info_value">
+                          <%= user.email %>
                         </div>
-
-                        <!-- Addresses Tab -->
-                        <div id="addresses" class="tab_content">
-                            <a href="#" id="add_address_btn" class="add_new_btn"><i class="fa fa-plus"></i> Add New
-                                Address</a>
-                            <div id="addresses_list">
-                                <% addresses.forEach(address=> { %>
-                                    <div class="address_card">
-                                        <% if (address.isDefault) { %>
-                                            <div class="default_badge">Default</div>
-                                            <% } %>
-                                                <h5>
-                                                    <%= address.fullname %>
-                                                </h5>
-                                                <p>
-                                                    <%= address.streetAddress %><br>
-                                                        <%= address.city %>, <%= address.state %>
-                                                                <%= address.zipCode %><br>
-                                                                    United States
-                                                </p>
-                                                <p><strong>Phone:</strong>
-                                                    <%= address.phoneNumber %>
-                                                </p>
-                                                <div class="address_actions">
-                                                    <button class="edit_address_btn"
-                                                        data-address-id="<%= address._id %>">
-                                                        <i class="fa fa-pencil"></i> Edit
-                                                    </button>
-                                                    <button class="delete_address_btn"
-                                                        data-address-id="<%= address._id %>">
-                                                        <i class="fa fa-trash"></i> Delete
-                                                    </button>
-                                                </div>
-                                    </div>
-                                    <% }); %>
-                            </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="info_item">
+                        <div class="info_label">Phone Number</div>
+                        <div class="info_value">
+                          <%= user.phoneNumber || '' %>
                         </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="btn_container">
+                  <button id="edit_profile_btn" class="btn_edit">Edit Profile</button>
+                </div>
+              </div>
+            </div>
+            <!-- Edit Mode (hidden by default) -->
+            <div id="profile_edit_mode" class="edit_form">
+              <form id="profile-form" action="/user/update-profile" method="POST">
+                <div class="row">
+                  <div class="col-md-12">
+                    <div class="form_group">
+                      <label class="form_label">Full Name</label>
+                      <input type="text" name="name" class="form_control" value="<%= user.name || '' %>" />
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form_group">
+                      <label class="form_label">Email Address</label>
+                      <input type="email" name="email" class="form_control" value="<%= user.email %>" readonly style="background-color: #f5f5f5; cursor: not-allowed;" />
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form_group">
+                      <label class="form_label">Phone Number</label>
+                      <input type="tel" name="phoneNumber" class="form_control" value="<%= user.phoneNumber || '' %>" />
+                    </div>
+                  </div>
+                </div>
+                <div class="btn_container">
+                  <button type="button" id="cancel_edit_btn" class="btn_cancel">Cancel</button>
+                  <button type="submit" class="btn_update">Update Profile</button>
+                </div>
+              </form>
+            </div>
 
-                        <div id="address_form_container" style="display: none;">
-                            <div class="form_header">
-                                <h4 id="address_form_title">Add New Address</h4>
-                            </div>
-                            <form id="address_form" action="/user/add-address" method="POST">
-                                <input type="hidden" id="address_id" name="id" value="">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form_group">
-                                            <label class="form_label">Full Name</label>
-                                            <input type="text" name="fullName" id="address_fullName"
-                                                class="form_control">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form_group">
-                                            <label class="form_label">Phone Number</label>
-                                            <input type="tel" name="phoneNumber" id="address_phoneNumber"
-                                                class="form_control">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-12">
-                                        <div class="form_group">
-                                            <label class="form_label">Street Address</label>
-                                            <input type="text" name="street" id="address_street" class="form_control">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form_group">
-                                            <label class="form_label">City</label>
-                                            <input type="text" name="city" id="address_city" class="form_control">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form_group">
-                                            <label class="form_label">State</label>
-                                            <input type="text" name="state" id="address_state" class="form_control">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form_group">
-                                            <label class="form_label">ZIP Code</label>
-                                            <input type="text" name="zipCode" id="address_zipCode" class="form_control">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-12">
-                                        <div class="form_group checkbox_group">
-                                            <input type="checkbox" name="isDefault" id="address_isDefault"
-                                                class="form_checkbox">
-                                            <label for="address_isDefault" class="checkbox_label">Set as default
-                                                address</label>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="btn_container">
-                                    <button type="button" id="cancel_address_btn" class="btn_cancel">Cancel</button>
-                                    <button type="submit" class="btn_update">Save Address</button>
-                                </div>
-                            </form>
-                        </div>
+            <!-- Addresses Tab -->
+            <div id="addresses" class="tab_content">
+              <a href="#" id="add_address_btn" class="add_new_btn"><i class="fa fa-plus"></i> Add New
+                Address</a>
+              <div id="addresses_list">
+                <% addresses.forEach(address=> { %>
+                <div class="address_card">
+                  <% if (address.isDefault) { %>
+                  <div class="default_badge">Default</div>
+                  <% } %>
+                  <h5>
+                    <%= address.fullname %>
+                  </h5>
+                  <p>
+                    <%= address.streetAddress %><br>
+                    <%= address.city %>, <%= address.state %>
+                    <%= address.zipCode %><br>
+                    United States
+                  </p>
+                  <p><strong>Phone:</strong>
+                    <%= address.phoneNumber %>
+                  </p>
+                  <div class="address_actions">
+                    <button class="edit_address_btn" data-address-id="<%= address._id %>">
+                      <i class="fa fa-pencil"></i> Edit
+                    </button>
+                    <button class="delete_address_btn" data-address-id="<%= address._id %>">
+                      <i class="fa fa-trash"></i> Delete
+                    </button>
+                  </div>
+                </div>
+                <% }); %>
+              </div>
+            </div>
+
+            <div id="address_form_container" style="display: none;">
+              <div class="form_header">
+                <h4 id="address_form_title">Add New Address</h4>
+              </div>
+              <form id="address_form" action="/user/add-address" method="POST">
+                <input type="hidden" id="address_id" name="id" value="">
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form_group">
+                      <label class="form_label">Full Name</label>
+                      <input type="text" name="fullName" id="address_fullName" class="form_control">
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form_group">
+                      <label class="form_label">Phone Number</label>
+                      <input type="tel" name="phoneNumber" id="address_phoneNumber" class="form_control">
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                </div>
+                <div class="row">
+                  <div class="col-md-12">
+                    <div class="form_group">
+                      <label class="form_label">Street Address</label>
+                      <input type="text" name="street" id="address_street" class="form_control">
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form_group">
+                      <label class="form_label">City</label>
+                      <input type="text" name="city" id="address_city" class="form_control">
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form_group">
+                      <label class="form_label">State</label>
+                      <input type="text" name="state" id="address_state" class="form_control">
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form_group">
+                      <label class="form_label">ZIP Code</label>
+                      <input type="text" name="zipCode" id="address_zipCode" class="form_control">
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-12">
+                    <div class="form_group checkbox_group">
+                      <input type="checkbox" name="isDefault" id="address_isDefault" class="form_checkbox">
+                      <label for="address_isDefault" class="checkbox_label">Set as default
+                        address</label>
+                    </div>
+                  </div>
+                </div>
+                <div class="btn_container">
+                  <button type="button" id="cancel_address_btn" class="btn_cancel">Cancel</button>
+                  <button type="submit" class="btn_update">Save Address</button>
+                </div>
+              </form>
+            </div>
 
 
-                        <!-- Orders Tab -->
-                        <div id="orders" class="tab_content"> 
-                            <% if (orders.length > 0) { %>
-                                <% orders.forEach(order => { %>
-                                    <% order.products.forEach(product => { %>
-                                        <div class="order_card">
-                                            <div class="order_details">
-                                                <div>
-                                                    <h5><%= product.productName %></h5> 
-                                                    <p>Placed on <%= order.orderDate.toDateString() %></p>
-                                                </div>
-                                                <div>
-                                                    <span class="order_status 
-                                                    <%= product.status === 'Delivered' ? 'status_delivered' : 
+            <!-- Orders Tab -->
+            <div id="orders" class="tab_content">
+              <% if (orders && orders.length> 0) { %>
+              <% orders.forEach(order=> { %>
+              <% order.products.forEach(product=> { %>
+              <div class="order_card">
+                <div class="order_details">
+                  <div>
+                    <h5>
+                      <%= product.productName %>
+                    </h5>
+                    <p>Placed on <%= order.orderDate.toDateString() %>
+                    </p>
+                  </div>
+                  <div>
+                    <span class="order_status <%= 
+                                                        product.status === 'Delivered' ? 'status_delivered' : 
                                                         product.status === 'Processing' ? 'status_processing' : 
                                                         product.status === 'Cancelled' ? 'status_cancelled' :
-                                                        'status_pending' %>">
-                                                    <%= product.status %>
-                                                </span>
-                                                </div>
-                                            </div>
-                                            <p><strong>Price:</strong> $<%= product.price.toFixed(2) %></p>
-                                            <p><strong>Quantity:</strong> <%= product.quantity %></p>
-                                            <p><strong>Total:</strong> $<%= (product.price * product.quantity).toFixed(2) %></p>
-                                            <div class="order_actions">
-                                                <button class="view_details_btn" data-order-id="<%= order._id %>" data-product-id="<%= product._id %>">
-                                                    <i class="fa fa-eye"></i> View Details
-                                                </button>
-                                                                                             
-                                                <% if (product.status !== "Cancelled"&&product.status !== "Delivered") { %>
-                                                    <button class="cancel_order_btn"data-order-id="<%= order._id %>" 
-                                                        data-product-id="<%= product._id %>">
-                                                        <i class="fa fa-ban"></i> Cancel Order
-                                                    </button>
-                                                <% } %>
-                                                
-                                            </div>
-                                        </div>
-                                    <% }); %>
-                                <% }); %>
-                            <% } else { %>
-                                <p>No orders found.</p>
-                            <% } %>
-                        </div>  
-                        
-                        
-
-
-
-
-
-                        <!-- Password Tab -->
-                        <div id="password" class="tab_content">
-                            <form id="password-form">
-                                <div class="form_group">
-                                    <label class="form_label">Current Password</label>
-                                    <input type="password" class="form_control" />
-                                </div>
-                                <div class="form_group">
-                                    <label class="form_label">New Password</label>
-                                    <input type="password" class="form_control" />
-                                </div>
-                                <div class="form_group">
-                                    <label class="form_label">Confirm New Password</label>
-                                    <input type="password" class="form_control" />
-                                </div>
-                                <div class="btn_container">
-                                    <button type="submit" class="btn_update">Update Password</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
+                                                        'status_pending' 
+                                                    %>">
+                      <%= product.status %>
+                    </span>
+                  </div>
                 </div>
-            </div>
-        </div>
-        </div>
-    </section>
-
-    <!-- footer section -->
-    <footer class="footer_section">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-4 footer-col">
-                    <div class="footer_contact">
-                        <h4>Contact Us</h4>
-                        <div class="contact_link_box">
-                            <a href="">
-                                <i class="fa fa-map-marker" aria-hidden="true"></i>
-                                <span> Location </span>
-                            </a>
-                            <a href="">
-                                <i class="fa fa-phone" aria-hidden="true"></i>
-                                <span> Call +91 8089113204 </span>
-                            </a>
-                            <a href="">
-                                <i class="fa fa-envelope" aria-hidden="true"></i>
-                                <span> mohddilshan1234321@gmail.com </span>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4 footer-col">
-                    <div class="footer_detail">
-                        <a href="" class="footer-logo"> SNACK STORM </a>
-                        <p>
-                            Necessary, making this the first true generator on the Internet.
-                            It uses a dictionary of over 200 Latin words, combined with
-                        </p>
-                        <div class="footer_social">
-                            <a href="">
-                                <i class="fa fa-facebook" aria-hidden="true"></i>
-                            </a>
-                            <a href="">
-                                <i class="fa fa-twitter" aria-hidden="true"></i>
-                            </a>
-                            <a href="">
-                                <i class="fa fa-linkedin" aria-hidden="true"></i>
-                            </a>
-                            <a href="">
-                                <i class="fa fa-instagram" aria-hidden="true"></i>
-                            </a>
-                            <a href="">
-                                <i class="fa fa-pinterest" aria-hidden="true"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4 footer-col">
-                    <h4>Opening Hours</h4>
-                    <p>Everyday</p>
-                    <p>10.00 Am -10.00 Pm</p>
-                </div>
-            </div>
-            <div class="footer-info">
-                <p>
-                    &copy; <span id="displayYear"></span> All Rights Reserved By
-                    <a href="">muhammed dilshihan</a><br /><br />
-                    &copy; <span id="displayYear"></span> Distributed By
-                    <a href="" target="_blank">dilshihan</a>
+                <p><strong>Price:</strong> $<%= product.price.toFixed(2) %>
                 </p>
+                <p><strong>Quantity:</strong>
+                  <%= product.quantity %>
+                </p>
+                <% const productTotal=product.price * product.quantity; const
+                                                shippingCharge=5; const taxRate=0.1; const productTax=productTotal *
+                                                taxRate; const totalWithShippingAndTax=productTotal + shippingCharge +
+                                                productTax; %>
+                <p><strong>Total:</strong> $<%= totalWithShippingAndTax.toFixed(2) %>
+                </p>
+                <div class="order_actions">
+                  <button class="view_details_btn" data-order-id="<%= order._id %>" data-product-id="<%= product._id %>">
+                    <i class="fa fa-eye"></i> View Details
+                  </button>
+
+                  <% if (product.status !=="Cancelled" && product.status
+                                                        !=="Delivered" ) { %>
+                  <button class="cancel_order_btn" data-order-id="<%= order._id %>" data-product-id="<%= product._id %>">
+                    <i class="fa fa-ban"></i> Cancel Order
+                  </button>
+                  <% } %>
+                </div>
+              </div>
+              <% }); %>
+              <% }); %>
+
+              <!-- Pagination Controls -->
+              <div class="pagination">
+                <% if (currentPage> 1) { %>
+                <a href="?page=<%= currentPage - 1 %>" class="page-link">&laquo;
+                  Previous</a>
+                <% } %>
+
+                <% for(let i=1; i <=totalPages; i++) { %>
+                <a href="?page=<%= i %>" class="page-link <%= currentPage === i ? 'active' : '' %>">
+                  <%= i %>
+                </a>
+                <% } %>
+
+                <% if (currentPage < totalPages) { %>
+                <a href="?page=<%= currentPage + 1 %>" class="page-link">Next &raquo;</a>
+                <% } %>
+              </div>
+              <% } else { %>
+              <p>No orders found.</p>
+              <% } %>
             </div>
+
+
+
+
+
+            <!-- Password Tab -->
+            <% if (user.authType==='normal' ) { %>
+            <div id="password" class="tab_content">
+              <form id="password-form">
+                <div class="form_group">
+                  <label class="form_label">Current Password</label>
+                  <input type="password" name="currentPassword" class="form_control" required />
+                </div>
+                <div class="form_group">
+                  <label class="form_label">New Password</label>
+                  <input type="password" name="newPassword" class="form_control" required />
+                </div>
+                <div class="form_group">
+                  <label class="form_label">Confirm New Password</label>
+                  <input type="password" name="confirmPassword" class="form_control" required />
+                </div>
+                <div class="btn_container">
+                  <button type="submit" class="btn_update">Update Password</button>
+                </div>
+              </form>
+            </div>
+            <% } %>
+          </div>
         </div>
-    </footer>
-    <!-- jQery -->
-    <script src="/js/jquery-3.4.1.min.js"></script>
-    <!-- popper js -->
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
-        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
-        crossorigin="anonymous"></script>
-    <!-- bootstrap js -->
-    <script src="/js/bootstrap.js"></script>
-    <!-- owl slider -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
-    <!-- isotope js -->
-    <script src="https://unpkg.com/isotope-layout@3.0.4/dist/isotope.pkgd.min.js"></script>
-    <!-- nice select -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-nice-select/1.1.0/js/jquery.nice-select.min.js"></script>
-    <!-- custom js -->
-    <script src="/js/custom.js"></script>
+      </div>
+    </div>
+    </div>
+  </section>
 
-    <script>
-        // Tab navigation
-        document.addEventListener('DOMContentLoaded', function () {
-            const tabLinks = document.querySelectorAll('.sidebar_nav a[data-tab]');
-            tabLinks.forEach(link => {
-                link.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    // Remove active class from all tabs and links
-                    document.querySelectorAll('.tab_content').forEach(tab => {
-                        tab.classList.remove('active');
-                    });
-                    document.querySelectorAll('.sidebar_nav a').forEach(navLink => {
-                        navLink.classList.remove('active');
-                    });
-                    // Add active class to selected tab and link
-                    const tabId = this.getAttribute('data-tab');
-                    document.getElementById(tabId).classList.add('active');
-                    this.classList.add('active');
-                });
-            });
+  <!-- footer section -->
+  <footer class="footer_section">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4 footer-col">
+          <div class="footer_contact">
+            <h4>Contact Us</h4>
+            <div class="contact_link_box">
+              <a href="">
+                <i class="fa fa-map-marker" aria-hidden="true"></i>
+                <span> Location </span>
+              </a>
+              <a href="">
+                <i class="fa fa-phone" aria-hidden="true"></i>
+                <span> Call +91 8089113204 </span>
+              </a>
+              <a href="">
+                <i class="fa fa-envelope" aria-hidden="true"></i>
+                <span> mohddilshan1234321@gmail.com </span>
+              </a>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 footer-col">
+          <div class="footer_detail">
+            <a href="" class="footer-logo"> SNACK STORM </a>
+            <p>
+              Necessary, making this the first true generator on the Internet.
+              It uses a dictionary of over 200 Latin words, combined with
+            </p>
+            <div class="footer_social">
+              <a href="">
+                <i class="fa fa-facebook" aria-hidden="true"></i>
+              </a>
+              <a href="">
+                <i class="fa fa-twitter" aria-hidden="true"></i>
+              </a>
+              <a href="">
+                <i class="fa fa-linkedin" aria-hidden="true"></i>
+              </a>
+              <a href="">
+                <i class="fa fa-instagram" aria-hidden="true"></i>
+              </a>
+              <a href="">
+                <i class="fa fa-pinterest" aria-hidden="true"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 footer-col">
+          <h4>Opening Hours</h4>
+          <p>Everyday</p>
+          <p>10.00 Am -10.00 Pm</p>
+        </div>
+      </div>
+      <div class="footer-info">
+        <p>
+          &copy; <span id="displayYear"></span> All Rights Reserved By
+          <a href="">muhammed dilshihan</a><br /><br />
+          &copy; <span id="displayYear"></span> Distributed By
+          <a href="" target="_blank">dilshihan</a>
+        </p>
+      </div>
+    </div>
+  </footer>
+  <!-- jQery -->
+  <script src="/js/jquery-3.4.1.min.js"></script>
+  <!-- popper js -->
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+  <!-- bootstrap js -->
+  <script src="/js/bootstrap.js"></script>
+  <!-- owl slider -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
+  <!-- isotope js -->
+  <script src="https://unpkg.com/isotope-layout@3.0.4/dist/isotope.pkgd.min.js"></script>
+  <!-- nice select -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-nice-select/1.1.0/js/jquery.nice-select.min.js"></script>
+  <!-- custom js -->
+  <script src="/js/custom.js"></script>
 
-            // Edit profile toggle
-            document.getElementById('edit_profile_btn').addEventListener('click', function () {
-                document.getElementById('profile_view_mode').style.display = 'none';
-                document.getElementById('profile_edit_mode').style.display = 'block';
-            });
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const tabLinks = document.querySelectorAll('.sidebar_nav a[data-tab]');
+      tabLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+          e.preventDefault();
+          document.querySelectorAll('.tab_content').forEach(tab => {
+            tab.classList.remove('active');
+          });
+          document.querySelectorAll('.sidebar_nav a').forEach(navLink => {
+            navLink.classList.remove('active');
+          });
+          const tabId = this.getAttribute('data-tab');
+          document.getElementById(tabId).classList.add('active');
+          this.classList.add('active');
+        });
+      });
 
-            // Cancel edit profile
-            document.getElementById('cancel_edit_btn').addEventListener('click', function () {
-                document.getElementById('profile_edit_mode').style.display = 'none';
-                document.getElementById('profile_view_mode').style.display = 'block';
-            });
+      // Edit profile toggle
+      document.getElementById('edit_profile_btn').addEventListener('click', function() {
+        document.getElementById('profile_view_mode').style.display = 'none';
+        document.getElementById('profile_edit_mode').style.display = 'block';
+      });
 
-            // Form submission handlers
-            document.getElementById('profile-form').addEventListener('submit', function (e) {
-                const form = document.getElementById("profile-form")
-                e.preventDefault();
+      // Cancel edit profile
+      document.getElementById('cancel_edit_btn').addEventListener('click', function() {
+        document.getElementById('profile_edit_mode').style.display = 'none';
+        document.getElementById('profile_view_mode').style.display = 'block';
+      });
 
-                // Validate full name
-                const nameInput = form.querySelector('input[name="name"]');
-                if (!nameInput.value.trim()) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Validation Error',
-                        text: 'Please enter your full name'
-                    });
-                    return;
-                }
-                // Validate phone number
-                const phoneInput = form.querySelector('input[name="phoneNumber"]');
-                const phoneNumber = phoneInput.value.trim();
-                const phoneRegex = /^\d{10}$/;
+      // Form submission handlers
+      document.getElementById('profile-form').addEventListener('submit', function(e) {
+        const form = document.getElementById("profile-form")
+        e.preventDefault();
 
-                if (!phoneNumber) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Validation Error',
-                        text: 'Please enter your phone number'
-                    });
-                    return;
-                }
+        // Validate full name
+        const nameInput = form.querySelector('input[name="name"]');
+        if (!nameInput.value.trim()) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Validation Error',
+            text: 'Please enter your full name'
+          });
+          return;
+        }
+        const phoneInput = form.querySelector('input[name="phoneNumber"]');
+        const phoneNumber = phoneInput.value.trim();
+        const phoneRegex = /^[6-9]\d{9}$/;
 
-                if (!phoneRegex.test(phoneNumber)) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Invalid Phone Number',
-                        text: 'Please enter a valid 10-digit phone number'
-                    });
-                    return;
-                }
+        if (!phoneNumber) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Validation Error',
+            text: 'Please enter your phone number'
+          });
+          return;
+        }
 
+        if (!phoneRegex.test(phoneNumber)) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Invalid Phone Number',
+            text: 'Phone number must start with 6-9 and be 10 digits long'
+          });
+          return;
+        }
 
-                // Show success message
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Profile Updated!',
-                    text: 'Your profile information has been updated successfully.',
-                    showConfirmButton: false,
-                    timer: 1500
-                }).then(() => {
-                    // Return to view mode after update
-                    document.getElementById('profile_edit_mode').style.display = 'none';
-                    document.getElementById('profile_view_mode').style.display = 'block';
-                    form.submit()
+        const repeatedDigitsRegex = /^(\d)\1{9}$/;
+        if (repeatedDigitsRegex.test(phoneNumber)) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Invalid Phone Number',
+            text: 'Phone number cannot contain all repeated digits'
+          });
+          return;
+        }
+        Swal.fire({
+          icon: 'success',
+          title: 'Profile Updated!',
+          text: 'Your profile information has been updated successfully.',
+          showConfirmButton: false,
+          timer: 1500
+        }).then(() => {
+          document.getElementById('profile_edit_mode').style.display = 'none';
+          document.getElementById('profile_view_mode').style.display = 'block';
+          form.submit()
 
-                })
-            });
+        })
+      });
 
-            document.getElementById('password-form').addEventListener('submit', function (e) {
-                e.preventDefault();
+      document.getElementById('password-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
 
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Password Updated!',
-                    text: 'Your password has been changed successfully.',
-                    showConfirmButton: false,
-                    timer: 1500
-                });
-            });
+    const formData = {
+        currentPassword: this.currentPassword.value,
+        newPassword: this.newPassword.value,
+        confirmPassword: this.confirmPassword.value
+    };
+
+    try {
+        const response = await fetch('/user/update-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
         });
 
-        // Header scroll behavior
-        let lastScrollTop = 0;
-        const header = document.querySelector(".header_section");
-        let headerHeight = header.offsetHeight;
+        const data = await response.json();
 
-        window.addEventListener(
-            "scroll",
-            function () {
-                let currentScroll =
-                    window.pageYOffset || document.documentElement.scrollTop;
-
-                if (currentScroll > lastScrollTop && currentScroll > headerHeight) {
-                    // Scrolling down
-                    header.style.transform = "translateY(-100%)";
-                } else {
-                    // Scrolling up
-                    header.style.transform = "translateY(0)";
-                }
-                lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
-            },
-            false
-        );
-    </script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const profilePictureInput = document.getElementById('profile_picture_input');
-            const cameraIcon = document.getElementById('camera_icon');
-            const profileImage = document.getElementById('profile_image');
-            const defaultAvatar = document.getElementById('default_avatar');
-
-            if (cameraIcon) {
-                cameraIcon.addEventListener('click', function (event) {
-                    event.stopPropagation();
-                    profilePictureInput.click();
-                });
-            }
-
-            profilePictureInput.addEventListener('change', function () {
-                if (this.files && this.files[0]) {
-                    const formData = new FormData();
-                    formData.append('profilePicture', this.files[0]);
-
-                    fetch('profile/update-image', {
-                        method: 'POST',
-                        body: formData
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                profileImage.src = data.imageUrl;
-                                profileImage.style.display = 'block';
-                                if (defaultAvatar) defaultAvatar.style.display = 'none';
-
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Success!',
-                                    text: data.message,
-                                    confirmButtonColor: '#3085d6',
-                                });
-                            } else {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Error!',
-                                    text: 'Error uploading image',
-                                    confirmButtonColor: '#d33',
-                                });
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error!',
-                                text: 'Something went wrong. Please try again.',
-                                confirmButtonColor: '#d33',
-                            });
-                        });
-                }
-            });
-        });
-    </script>
-    <script>
-        // Get DOM elements
-        const addAddressBtn = document.getElementById('add_address_btn');
-        const editButtons = document.querySelectorAll('.edit_address_btn');
-        const addressFormContainer = document.getElementById('address_form_container');
-        const addressesList = document.getElementById('addresses_list');
-        const addressForm = document.getElementById('address_form');
-        const cancelAddressBtn = document.getElementById('cancel_address_btn');
-        const addressFormTitle = document.getElementById('address_form_title');
-
-        // Show form when "Add New Address" is clicked
-        addAddressBtn.addEventListener('click', function (e) {
-            e.preventDefault();
-            addressFormContainer.style.display = 'block';
-            addressesList.style.display = 'none';
-            addressFormTitle.textContent = 'Add New Address';
-            addressForm.reset(); // Clear form fields
-            document.getElementById('address_id').value = ''; // Clear hidden ID field
-        });
-
-        // Handle form submission
-        addressForm.addEventListener('submit', async function (e) {
-            e.preventDefault();
-
-            // Form validation
-            const requiredFields = [
-                { id: 'address_fullName', name: 'Full Name' },
-                { id: 'address_phoneNumber', name: 'Phone Number' },
-                { id: 'address_street', name: 'Street Address' },
-                { id: 'address_city', name: 'City' },
-                { id: 'address_state', name: 'State' },
-                { id: 'address_zipCode', name: 'ZIP Code' }
-            ];
-
-            for (const field of requiredFields) {
-                const input = document.getElementById(field.id);
-                if (!input.value.trim()) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Validation Error',
-                        text: `${field.name} is required!`
-                    });
-                    return;
-                }
-            }
-
-            // Phone number validation
-            const phoneNumber = document.getElementById('address_phoneNumber').value;
-            const phoneRegex = /^\d{10}$/;
-            if (!phoneRegex.test(phoneNumber)) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Invalid Phone Number',
-                    text: 'Please enter a valid 10-digit phone number'
-                });
-                return;
-            }
-
-            // ZIP code validation
-            const zipCode = document.getElementById('address_zipCode').value;
-            const zipRegex = /^\d{6}(-\d{4})?$/;
-            if (!zipRegex.test(zipCode)) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Invalid ZIP Code',
-                    text: 'Please enter a valid ZIP code (e.g., 12345 or 12345-6789)'
-                });
-                return;
-            }
-
-            try {
-                const formData = new FormData(addressForm);
-                const response = await fetch(addressForm.action, {
-                    method: 'POST',
-                    body: new URLSearchParams(formData),
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    }
-                });
-
-                if (response.ok) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success!',
-                        text: 'Address saved successfully',
-                        showConfirmButton: false,
-                        timer: 1500
-                    }).then(() => {
-                        window.location.reload();
-                    });
-                } else {
-                    throw new Error('Failed to save address');
-                }
-            } catch (error) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Failed to save address. Please try again.'
-                });
-            }
-        });
-
-        // Handle cancel button click
-        cancelAddressBtn.addEventListener('click', function () {
-            addressFormContainer.style.display = 'none';
-            addressesList.style.display = 'block';
-            addressForm.reset();
-        });
-
-        editButtons.forEach(button => {
-            button.addEventListener('click', function (e) {
-                e.preventDefault();
-                const addressCard = this.closest('.address_card');
-                const addressId = this.getAttribute('data-address-id');
-
-                // Get values from the address card
-                const fullName = addressCard.querySelector('h5').textContent.replace(/\s+/g, ' ').trim();
-                const addressLines = addressCard.querySelectorAll('p');
-                const streetAddress = addressLines[0].innerHTML.split('<br>')[0].trim();
-                const cityStateZip = addressLines[0].innerHTML.split('<br>')[1].trim();
-                const phone = addressLines[1].textContent.replace('Phone:', '').trim();
-                const isDefault = addressCard.querySelector('.default_badge') !== null;
-
-                // Improved state & ZIP extraction
-                let state = "", zipCode = "";
-                const cityStateZipParts = cityStateZip.split(',');
-
-                if (cityStateZipParts.length >= 2) {
-                    const stateZipParts = cityStateZipParts[1].trim().split(' ');
-                    state = stateZipParts.slice(0, -1).join(' '); // Get state (all words except last)
-                    zipCode = stateZipParts[stateZipParts.length - 1]; // Get ZIP code (last part)
-                } else {
-                    console.error("State and ZIP extraction failed:", cityStateZip);
-                }
-
-                // Populate the form
-                document.getElementById('address_id').value = addressId;
-                document.getElementById('address_fullName').value = fullName;
-                document.getElementById('address_phoneNumber').value = phone;
-                document.getElementById('address_street').value = streetAddress;
-                document.getElementById('address_city').value = cityStateZipParts[0].trim();
-                document.getElementById('address_state').value = state;
-                document.getElementById('address_zipCode').value = zipCode;
-                document.getElementById('address_isDefault').checked = isDefault;
-
-                // Update form title and action
-                addressFormTitle.textContent = 'Edit Address';
-                addressForm.action = '/user/edit-address';
-
-                // Show form and hide address list
-                addressFormContainer.style.display = 'block';
-                addressesList.style.display = 'none';
-            });
-        });
-        // Handle cancel button
-        document.getElementById('cancel_address_btn').addEventListener('click', function () {
-            addressFormContainer.style.display = 'none';
-            addressesList.style.display = 'block';
-            addressForm.reset();
-            // Reset form action to add address
-            addressForm.action = '/user/add-address';
-        });
-
-        // Handle form submission with validation
-        addressForm.addEventListener('submit', function (e) {
-            e.preventDefault();
-
-            // Validate required fields
-            const requiredFields = {
-                'address_fullName': 'Full Name',
-                'address_phoneNumber': 'Phone Number',
-                'address_street': 'Street Address',
-                'address_city': 'City',
-                'address_state': 'State',
-                'address_zipCode': 'ZIP Code'
-            };
-
-            for (const [id, label] of Object.entries(requiredFields)) {
-                const input = document.getElementById(id);
-                if (!input.value.trim()) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Required Field Missing',
-                        text: `Please enter ${label}`
-                    });
-                    return;
-                }
-            }
-
-            // Phone number validation
-            const phoneNumber = document.getElementById('address_phoneNumber').value.trim();
-            const phoneRegex = /^\d{10}$/;
-            if (!phoneRegex.test(phoneNumber)) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Invalid Phone Number',
-                    text: 'Please enter a valid 10-digit phone number'
-                });
-                return;
-            }
-
-            // ZIP code validation
-            const zipCode = document.getElementById('address_zipCode').value.trim();
-            const zipRegex = /^\d{5}(-\d{4})?$/;
-            if (!zipRegex.test(zipCode)) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Invalid ZIP Code',
-                    text: 'Please enter a valid ZIP code (e.g., 12345 or 12345-6789)'
-                });
-                return;
-            }
-
-            // If validation passes, submit the form
+        if (data.success) {
             Swal.fire({
                 icon: 'success',
-                title: 'Success!',
-                text: addressFormTitle.textContent === 'Edit Address' ?
-                    'Address updated successfully!' :
-                    'New address added successfully!',
-                showConfirmButton: false,
-                timer: 1500
-            }).then(() => {
-                this.submit();
+                title: 'Password Updated!',
+                text: data.message,
+                confirmButtonColor: '#3085d6'
             });
+            this.reset(); 
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Update Failed',
+                text: data.message,
+                confirmButtonColor: '#d33'
+            });
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Oops!',
+            text: 'An error occurred while updating the password',
+            confirmButtonColor: '#d33'
         });
+    }
+});
 
-        document.addEventListener('DOMContentLoaded', () => {
-            document.querySelectorAll('.delete_address_btn').forEach(button => {
-                button.addEventListener('click', async (event) => {
-                    const addressId = event.target.getAttribute('data-address-id');
+    });
 
-                    Swal.fire({
-                        title: 'Are you sure?',
-                        text: 'This action cannot be undone!',
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#d33',
-                        cancelButtonColor: '#3085d6',
-                        confirmButtonText: 'Yes, delete it!'
-                    }).then(async (result) => {
-                        if (result.isConfirmed) {
-                            try {
-                                const response = await fetch(`delete/${addressId}`, {
-                                    method: 'DELETE',
-                                });
+    // Header scroll behavior
+    let lastScrollTop = 0;
+    const header = document.querySelector(".header_section");
+    let headerHeight = header.offsetHeight;
 
-                                const result = await response.json();
+    window.addEventListener(
+      "scroll",
+      function() {
+        let currentScroll =
+          window.pageYOffset || document.documentElement.scrollTop;
 
-                                if (result.success) {
-                                    Swal.fire({
-                                        title: 'Deleted!',
-                                        text: result.message,
-                                        icon: 'success',
-                                        confirmButtonText: 'OK'
-                                    }).then(() => {
-                                        location.reload();
-                                    });
-                                } else {
-                                    Swal.fire({
-                                        title: 'Error!',
-                                        text: result.message,
-                                        icon: 'error',
-                                        confirmButtonText: 'OK'
-                                    });
-                                }
-                            } catch (error) {
-                                console.error('Error deleting address:', error);
-                                Swal.fire({
-                                    title: 'Error!',
-                                    text: 'Something went wrong. Please try again.',
-                                    icon: 'error',
-                                    confirmButtonText: 'OK'
-                                });
-                            }
-                        }
-                    });
+        if (currentScroll > lastScrollTop && currentScroll > headerHeight) {
+          // Scrolling down
+          header.style.transform = "translateY(-100%)";
+        } else {
+          // Scrolling up
+          header.style.transform = "translateY(0)";
+        }
+        lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
+      },
+      false
+    );
+  </script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const profilePictureInput = document.getElementById('profile_picture_input');
+      const cameraIcon = document.getElementById('camera_icon');
+      const profileImage = document.getElementById('profile_image');
+      const defaultAvatar = document.getElementById('default_avatar');
+
+      if (cameraIcon) {
+        cameraIcon.addEventListener('click', function(event) {
+          event.stopPropagation();
+          profilePictureInput.click();
+        });
+      }
+
+      profilePictureInput.addEventListener('change', function() {
+        if (this.files && this.files[0]) {
+          const formData = new FormData();
+          formData.append('profilePicture', this.files[0]);
+
+          fetch('profile/update-image', {
+              method: 'POST',
+              body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+              if (data.success) {
+                profileImage.src = data.imageUrl;
+                profileImage.style.display = 'block';
+                if (defaultAvatar) defaultAvatar.style.display = 'none';
+
+                Swal.fire({
+                  icon: 'success',
+                  title: 'Success!',
+                  text: data.message,
+                  confirmButtonColor: '#3085d6',
                 });
+              } else {
+                Swal.fire({
+                  icon: 'error',
+                  title: 'Error!',
+                  text: 'Error uploading image',
+                  confirmButtonColor: '#d33',
+                });
+              }
+            })
+            .catch(error => {
+              console.error('Error:', error);
+              Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'Something went wrong. Please try again.',
+                confirmButtonColor: '#d33',
+              });
             });
+        }
+      });
+    });
+  </script>
+  <script>
+    // Get DOM elements
+    const addAddressBtn = document.getElementById('add_address_btn');
+    const editButtons = document.querySelectorAll('.edit_address_btn');
+    const addressFormContainer = document.getElementById('address_form_container');
+    const addressesList = document.getElementById('addresses_list');
+    const addressForm = document.getElementById('address_form');
+    const cancelAddressBtn = document.getElementById('cancel_address_btn');
+    const addressFormTitle = document.getElementById('address_form_title');
+
+    // Show form when "Add New Address" is clicked
+    addAddressBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      addressFormContainer.style.display = 'block';
+      addressesList.style.display = 'none';
+      addressFormTitle.textContent = 'Add New Address';
+      addressForm.reset(); // Clear form fields
+      document.getElementById('address_id').value = ''; // Clear hidden ID field
+    });
+
+    // Handle form submission
+    addressForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      // Form validation
+      const requiredFields = [{
+          id: 'address_fullName',
+          name: 'Full Name'
+        },
+        {
+          id: 'address_phoneNumber',
+          name: 'Phone Number'
+        },
+        {
+          id: 'address_street',
+          name: 'Street Address'
+        },
+        {
+          id: 'address_city',
+          name: 'City'
+        },
+        {
+          id: 'address_state',
+          name: 'State'
+        },
+        {
+          id: 'address_zipCode',
+          name: 'ZIP Code'
+        }
+      ];
+
+      for (const field of requiredFields) {
+        const input = document.getElementById(field.id);
+        if (!input.value.trim()) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Validation Error',
+            text: `${field.name} is required!`
+          });
+          return;
+        }
+      }
+
+      // Phone number validation
+      const phoneNumber = document.getElementById('address_phoneNumber').value.trim();
+      const phoneRegex = /^[6-9]\d{9}$/;
+      if (!phoneNumber) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Validation Error',
+          text: 'Please enter your phone number'
+        });
+        return;
+      }
+
+      if (!phoneRegex.test(phoneNumber)) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Invalid Phone Number',
+          text: 'Phone number must start with 6-9 and be 10 digits long'
+        });
+        return;
+      }
+
+      const repeatedDigitsRegex = /^(\d)\1{9}$/;
+      if (repeatedDigitsRegex.test(phoneNumber)) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Invalid Phone Number',
+          text: 'Phone number cannot contain all repeated digits'
+        });
+        return;
+      }
+
+      // ZIP code validation
+      const zipCode = document.getElementById('address_zipCode').value;
+      const zipRegex = /^\d{6}(-\d{4})?$/;
+      if (!zipRegex.test(zipCode)) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Invalid ZIP Code',
+          text: 'Please enter a valid ZIP code (e.g., 12345 or 12345-6789)'
+        });
+        return;
+      }
+
+      try {
+        const formData = new FormData(addressForm);
+        const response = await fetch(addressForm.action, {
+          method: 'POST',
+          body: new URLSearchParams(formData),
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          }
         });
 
+        if (response.ok) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: 'Address saved successfully',
+            showConfirmButton: false,
+            timer: 1500
+          }).then(() => {
+            window.location.reload();
+          });
+        } else {
+          throw new Error('Failed to save address');
+        }
+      } catch (error) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Failed to save address. Please try again.'
+        });
+      }
+    });
 
+    // Handle cancel button click
+    cancelAddressBtn.addEventListener('click', function() {
+      addressFormContainer.style.display = 'none';
+      addressesList.style.display = 'block';
+      addressForm.reset();
+    });
 
-    </script>
-    <script>
-   document.querySelectorAll('.view_details_btn').forEach(button => {
-    button.addEventListener('click', function () {
+    editButtons.forEach(button => {
+      button.addEventListener('click', function(e) {
+        e.preventDefault();
+        const addressCard = this.closest('.address_card');
+        const addressId = this.getAttribute('data-address-id');
+
+        // Get values from the address card
+        const fullName = addressCard.querySelector('h5').textContent.replace(/\s+/g, ' ').trim();
+        const addressLines = addressCard.querySelectorAll('p');
+        const streetAddress = addressLines[0].innerHTML.split('<br>')[0].trim();
+        const cityStateZip = addressLines[0].innerHTML.split('<br>')[1].trim();
+        const phone = addressLines[1].textContent.replace('Phone:', '').trim();
+        const isDefault = addressCard.querySelector('.default_badge') !== null;
+
+        // Improved state & ZIP extraction
+        let state = "",
+          zipCode = "";
+        const cityStateZipParts = cityStateZip.split(',');
+
+        if (cityStateZipParts.length >= 2) {
+          const stateZipParts = cityStateZipParts[1].trim().split(' ');
+          state = stateZipParts.slice(0, -1).join(' '); // Get state (all words except last)
+          zipCode = stateZipParts[stateZipParts.length - 1]; // Get ZIP code (last part)
+        } else {
+          console.error("State and ZIP extraction failed:", cityStateZip);
+        }
+
+        // Populate the form
+        document.getElementById('address_id').value = addressId;
+        document.getElementById('address_fullName').value = fullName;
+        document.getElementById('address_phoneNumber').value = phone;
+        document.getElementById('address_street').value = streetAddress;
+        document.getElementById('address_city').value = cityStateZipParts[0].trim();
+        document.getElementById('address_state').value = state;
+        document.getElementById('address_zipCode').value = zipCode;
+        document.getElementById('address_isDefault').checked = isDefault;
+
+        // Update form title and action
+        addressFormTitle.textContent = 'Edit Address';
+        addressForm.action = '/user/edit-address';
+
+        // Show form and hide address list
+        addressFormContainer.style.display = 'block';
+        addressesList.style.display = 'none';
+      });
+    });
+    // Handle cancel button
+    document.getElementById('cancel_address_btn').addEventListener('click', function() {
+      addressFormContainer.style.display = 'none';
+      addressesList.style.display = 'block';
+      addressForm.reset();
+      // Reset form action to add address
+      addressForm.action = '/user/add-address';
+    });
+
+    // Handle form submission with validation
+    addressForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      // Validate required fields
+      const requiredFields = {
+        'address_fullName': 'Full Name',
+        'address_phoneNumber': 'Phone Number',
+        'address_street': 'Street Address',
+        'address_city': 'City',
+        'address_state': 'State',
+        'address_zipCode': 'ZIP Code'
+      };
+
+      for (const [id, label] of Object.entries(requiredFields)) {
+        const input = document.getElementById(id);
+        if (!input.value.trim()) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Required Field Missing',
+            text: `Please enter ${label}`
+          });
+          return;
+        }
+      }
+
+      // Phone number validation
+      const phoneNumber = document.getElementById('address_phoneNumber').value.trim();
+      const phoneRegex = /^[6-9]\d{9}$/;
+      if (!phoneNumber) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Validation Error',
+          text: 'Please enter your phone number'
+        });
+        return;
+      }
+      if (!phoneRegex.test(phoneNumber)) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Invalid Phone Number',
+          text: 'Phone number must start with 6-9 and be 10 digits long'
+        });
+        return;
+      }
+      const repeatedDigitsRegex = /^(\d)\1{9}$/;
+      if (repeatedDigitsRegex.test(phoneNumber)) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Invalid Phone Number',
+          text: 'Phone number cannot contain all repeated digits'
+        });
+        return;
+      }
+
+      // ZIP code validation
+      const zipCode = document.getElementById('address_zipCode').value.trim();
+      const zipRegex = /^\d{5}(-\d{4})?$/;
+      if (!zipRegex.test(zipCode)) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Invalid ZIP Code',
+          text: 'Please enter a valid ZIP code (e.g., 12345 or 12345-6789)'
+        });
+        return;
+      }
+
+      // If validation passes, submit the form
+      Swal.fire({
+        icon: 'success',
+        title: 'Success!',
+        text: addressFormTitle.textContent === 'Edit Address' ?
+          'Address updated successfully!' : 'New address added successfully!',
+        showConfirmButton: false,
+        timer: 1500
+      }).then(() => {
+        this.submit();
+      });
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.delete_address_btn').forEach(button => {
+        button.addEventListener('click', async (event) => {
+          const addressId = event.target.getAttribute('data-address-id');
+
+          Swal.fire({
+            title: 'Are you sure?',
+            text: 'This action cannot be undone!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, delete it!'
+          }).then(async (result) => {
+            if (result.isConfirmed) {
+              try {
+                const response = await fetch(`delete/${addressId}`, {
+                  method: 'DELETE',
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                  Swal.fire({
+                    title: 'Deleted!',
+                    text: result.message,
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                  }).then(() => {
+                    location.reload();
+                  });
+                } else {
+                  Swal.fire({
+                    title: 'Error!',
+                    text: result.message,
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                  });
+                }
+              } catch (error) {
+                console.error('Error deleting address:', error);
+                Swal.fire({
+                  title: 'Error!',
+                  text: 'Something went wrong. Please try again.',
+                  icon: 'error',
+                  confirmButtonText: 'OK'
+                });
+              }
+            }
+          });
+        });
+      });
+    });
+  </script>
+  <script>
+    document.querySelectorAll('.view_details_btn').forEach(button => {
+      button.addEventListener('click', function() {
         const orderId = this.getAttribute('data-order-id');
         const productId = this.getAttribute('data-product-id');
         if (orderId && productId) {
-            window.location.href = `/user/orderdetails?orderId=${orderId}&productId=${productId}`;
+          window.location.href = `/user/orderdetails?orderId=${orderId}&productId=${productId}`;
         } else {
-            alert("Order ID or Product ID is missing!");
+          alert("Order ID or Product ID is missing!");
         }
+      });
     });
-});
-document.addEventListener("DOMContentLoaded", function () {
-    document.querySelectorAll(".cancel_order_btn").forEach(button => {
-        button.addEventListener("click", function () {
-            const orderId = this.getAttribute("data-order-id");
-            const productId = this.getAttribute("data-product-id");
+    document.addEventListener("DOMContentLoaded", function() {
+      document.querySelectorAll(".cancel_order_btn").forEach(button => {
+        button.addEventListener("click", function() {
+          const orderId = this.getAttribute("data-order-id");
+          const productId = this.getAttribute("data-product-id");
 
-            Swal.fire({
-                title: "Are you sure?",
-                text: "Do you really want to cancel this product from your order?",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonText: "Yes, cancel it",
-                cancelButtonText: "No, keep it",
-                dangerMode: true
-            }).then((result) => {
-                if (!result.isConfirmed) return;
+          Swal.fire({
+            title: "Are you sure?",
+            text: "Do you really want to cancel this product from your order?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, cancel it",
+            cancelButtonText: "No, keep it",
+            dangerMode: true
+          }).then((result) => {
+            if (!result.isConfirmed) return;
 
-                fetch(`cancel-order/${orderId}/${productId}`, {
-                    method: "DELETE",
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        Swal.fire("Canceled!", "Product has been canceled successfully.", "success")
-                        .then(() => location.reload());
-                    } else {
-                        Swal.fire("Failed!", data.message || "Could not cancel the product.", "error");
-                    }
-                })
-                .catch(error => {
-                    console.error("Error:", error);
-                    Swal.fire("Error!", "Something went wrong. Please try again.", "error");
-                });
-            });
+            fetch(`cancel-order/${orderId}/${productId}`, {
+                method: "DELETE",
+              })
+              .then(response => response.json())
+              .then(data => {
+                if (data.success) {
+                  Swal.fire("Canceled!", "Product has been canceled successfully.", "success")
+                    .then(() => location.reload());
+                } else {
+                  Swal.fire("Failed!", data.message || "Could not cancel the product.", "error");
+                }
+              })
+              .catch(error => {
+                console.error("Error:", error);
+                Swal.fire("Error!", "Something went wrong. Please try again.", "error");
+              });
+          });
         });
+      });
     });
-});
-
-
-    </script>
+  </script>
 </body>
 
 </html>

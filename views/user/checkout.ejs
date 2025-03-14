@@ -410,8 +410,8 @@
                 <% }); %>
               </div>
 
-              <% let shipping = subtotal > 0 ? 5.99 : 0; %> <% let tax =
-              subtotal * 0.08; %> <% let discount = 0; %> <% let total =
+              <% let shipping = subtotal > 0 ? 5.00 : 0; %> <% let tax =
+              subtotal * 0.1; %> <% let discount = 0; %> <% let total =
               subtotal + shipping + tax - discount; %>
 
               <div class="price_details">
@@ -454,46 +454,34 @@
     <!-- Address Modal -->
     <div id="addressModal" class="address_modal">
       <div class="address_modal_content">
-        <div class="address_modal_header">
-          <h4 class="address_modal_title">Select a Delivery Address</h4>
-          <button class="address_modal_close" onclick="closeAddressModal()">
-            &times;
-          </button>
-        </div>
-
-        <div id="savedAddresses">
-          <% addresses.forEach((address, index) => { %>
-          <div
-            class="saved_address <%= index === 0 ? 'selected' : '' %>"
-            onclick="selectAddress(this, <%= index %>)"
-          >
-            <div class="saved_address_title"><%= address.title %></div>
-            <div class="saved_address_details">
-              <p><strong><%= address.fullname %></strong></p>
-              <input
-                type="hidden"
-                class="addressId"
-                id="addressId"
-                value="<%= address._id %>"
-              />
-              <p><%= address.streetAddress %>, <%= address.city %></p>
-              <p><%= address.state %>, <%= address.zipCode %></p>
-              <p>Phone: <%= address.phoneNumber %></p>
-            </div>
+          <div class="address_modal_header">
+              <h4 class="address_modal_title">Select a Delivery Address</h4>
+              <button class="address_modal_close" onclick="closeAddressModal()">&times;</button>
           </div>
-          <% }); %>
-        </div>
-
-        <div class="address_actions">
-          <button
-            class="use_selected_address_btn"
-            onclick="useSelectedAddress()"
-          >
-            Use This Address
-          </button>
-        </div>
+  
+          <div id="savedAddresses">
+              <% addresses.forEach((address, index) => { %>
+                  <div class="saved_address <%= address.isDefault ? 'selected' : '' %>"
+                       onclick="selectAddress(this, <%= index %>)">
+                      <div class="saved_address_title"><%= address.title %></div>
+                      <div class="saved_address_details">
+                          <p><strong><%= address.fullname %></strong></p>
+                          <input type="hidden" class="addressId" value="<%= address._id %>">
+                          <p><%= address.streetAddress %>, <%= address.city %></p>
+                          <p><%= address.state %>, <%= address.zipCode %></p>
+                          <p>Phone: <%= address.phoneNumber %></p>
+                      </div>
+                  </div>
+              <% }); %>
+          </div>
+  
+          <div class="address_actions">
+              <button class="use_selected_address_btn" onclick="useSelectedAddress()">
+                  Use This Address
+              </button>
+          </div>
       </div>
-    </div>
+  </div>
 
     <!-- footer section -->
     <footer class="footer_section">
@@ -599,35 +587,21 @@
         },
         false
       );
-
-     // Payment method selection
      document.addEventListener("DOMContentLoaded", function () {
-    // Select Payment Method
     function selectPayment(method) {
-        // Remove active class from all options
         document.querySelectorAll(".payment_option").forEach(option => {
             option.classList.remove("active");
         });
-
-        // Add active class to selected payment option
         document.querySelector(`[onclick="selectPayment('${method}')"]`).classList.add("active");
 
-        // Update radio button selection
         document.getElementById(method).checked = true;
-
-        // Hide all payment details
         document.querySelectorAll(".payment_details").forEach(details => {
             details.classList.remove("active");
         });
-
-        // Show selected payment details
         document.getElementById(`${method}-details`).classList.add("active");
     }
-    // Attach event listener globally
     window.selectPayment = selectPayment; 
-    // Place Order Button Click Event
     document.getElementById("place-order-btn").addEventListener("click", function () {
-        // Get selected payment method
         const selectedPaymentMethod = document.querySelector('input[name="payment-method"]:checked');
         if (!selectedPaymentMethod) {
             Swal.fire({
@@ -639,12 +613,11 @@
         } 
         const products = [];
 
-document.querySelectorAll(".summary_item").forEach(item => {
+        document.querySelectorAll(".summary_item").forEach(item => {
     const productId = item.querySelector("#productId").value;
     const productName = item.querySelector("#productName").value;
     const productQuantity = item.querySelector("#quantity").value;
     const productPrice = item.querySelector("#productPrice").value;
-   
 
     products.push({
         productId,
@@ -654,54 +627,76 @@ document.querySelectorAll(".summary_item").forEach(item => {
     });
 });
 
+const selectedAddress = document.querySelector('.saved_address.selected');
+if (!selectedAddress) {
+    Swal.fire({
+        icon: "warning",
+        title: "Select Address",
+        text: "Please select a delivery address",
+        confirmButtonColor: "#ffbe33",
+    });
+    return;
+}
+
+const addressId = selectedAddress.querySelector(".addressId").value;
 const totalAmount = document.getElementById("TotalAmount").value;
-const userId = document.getElementById("userId").value
+const userId = document.getElementById("userId").value;
 const paymentMethod = selectedPaymentMethod.id;
-const addressId = document.getElementById("addressId")?.value; 
-// Collect order details
+if (!addressId) {
+    Swal.fire({
+        icon: "warning",
+        title: "Address Required",
+        text: "Please select a delivery address",
+        confirmButtonColor: "#ffbe33",
+    });
+    return;
+}
 const orderData = {
-    customerId: userId,  
-    products, 
-    totalAmount, 
+    customerId: userId,
+    products,
+    totalAmount,
     paymentMethod,
-    addressId
+    addressId  
 };
 
-console.log(orderData);
-
-        // Send data to backend
-        fetch("/user/order-details", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(orderData)
-        })
-        .then(response => response.json())
-        .then(data => {
-          console.log(data);
-          
-            if (data.success) {
-                Swal.fire({
-                    icon: "success",
-                    title: "Order Placed Successfully!",
-                    text: "Thank you for your order!",
-                    confirmButtonColor: "#ffbe33",
-                }).then(() => {
-                    window.location.href = "/user/Ordersuccess";
-                });
-            } else {
-                Swal.fire({
-                    icon: "error",
-                    title: "Order Failed!",
-                    text: "Please try again.",
-                    confirmButtonColor: "#ffbe33",
-                });
-            }
-        })
-        .catch(error => {
-            console.error("Order Error:", error);
+fetch("/user/order-details", {
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json"
+    },
+    body: JSON.stringify(orderData)
+})
+.then(response => response.json())
+.then(data => {
+    console.log('Response:', data);
+    
+    if (data.success) {
+        Swal.fire({
+            icon: "success",
+            title: "Order Placed Successfully!",
+            text: "Thank you for your order!",
+            confirmButtonColor: "#ffbe33",
+        }).then(() => {
+            window.location.href = "/user/Ordersuccess";
         });
+    } else {
+        Swal.fire({
+            icon: "error",
+            title: "Order Failed!",
+            text: data.message || "Please try again.",
+            confirmButtonColor: "#ffbe33",
+        });
+    }
+})
+.catch(error => {
+    console.error("Order Error:", error);
+    Swal.fire({
+        icon: "error",
+        title: "Order Failed!",
+        text: "An error occurred while placing your order.",
+        confirmButtonColor: "#ffbe33",
+    });
+});
     });
 });
 
@@ -869,77 +864,87 @@ console.log(orderData);
     </script>
     <script>
       // Selected address index tracker
-      let selectedAddressId = null; 
+      let selectedAddressId = null;
+
+function selectAddress(element, index) {
+    // Remove selection from all addresses
+    document.querySelectorAll('.saved_address').forEach(addr => {
+        addr.classList.remove('selected');
+    });
     
-      function selectAddress(element, index) {
-        const addresses = document.querySelectorAll(".saved_address");
-        addresses.forEach((addr) => addr.classList.remove("selected"));
+    // Add selection to clicked address
+    element.classList.add('selected');
     
-        // Add selection to clicked address
-        element.classList.add("selected");
-    
-        // Retrieve and store the selected address ID
-        selectedAddressId = element.querySelector(".addressId").value;
-      }
-    
-      function useSelectedAddress() {
-        const selectedAddress = document.querySelector(".saved_address.selected");
-        if (!selectedAddress) {
-          Swal.fire({
+    // Update the selectedAddressId with the new selection
+    selectedAddressId = element.querySelector('.addressId').value;
+    console.log('Selected Address ID:', selectedAddressId); // Debug log
+}
+
+function useSelectedAddress() {
+    if (!selectedAddressId) {
+        Swal.fire({
             icon: "warning",
             title: "No address selected!",
             text: "Please select an address before proceeding.",
-          });
-          return;
-        }
-    
-        console.log("Selected Address ID:", selectedAddressId);
-    
-        const addressDetails = selectedAddress.querySelector(
-          ".saved_address_details"
-        ).innerHTML;
-    
-        const addressDisplay = document.querySelector(".selected-address-display");
-        if (addressDisplay) {
-          addressDisplay.innerHTML = addressDetails.replace(/<br>/g, ", ");
-        }
-    
-        fetch("/user/set-default-address", {
-          method: "POST",
-          headers: {
+        });
+        return;
+    }
+
+    const selectedAddress = document.querySelector(".saved_address.selected");
+    if (!selectedAddress) {
+        Swal.fire({
+            icon: "warning",
+            title: "Error",
+            text: "Please select an address first.",
+        });
+        return;
+    }
+
+    const addressDetails = selectedAddress.querySelector(".saved_address_details").innerHTML;
+
+    fetch("/user/set-default-address", {
+        method: "POST",
+        headers: {
             "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ selectedAddressId }),
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            if (data.success) {
-              Swal.fire({
+        },
+        body: JSON.stringify({ 
+            selectedAddressId: selectedAddressId // Make sure we're sending the correct ID
+        }),
+    })
+    .then((response) => response.json())
+    .then((data) => {
+        if (data.success) {
+            // Update address display if it exists
+            const addressDisplay = document.querySelector(".selected-address-display");
+            if (addressDisplay) {
+                addressDisplay.innerHTML = addressDetails.replace(/<br>/g, ", ");
+            }
+
+            Swal.fire({
                 icon: "success",
                 title: "Success!",
                 text: "Default address updated successfully!",
                 confirmButtonText: "OK",
-              }).then(() => {
+            }).then(() => {
                 location.reload();
-              });
-            } else {
-              Swal.fire({
+            });
+        } else {
+            Swal.fire({
                 icon: "error",
                 title: "Error!",
-                text: "Error updating default address: " + data.message,
-              });
-            }
-          })
-          .catch((error) => {
-            console.error("Error:", error);
-            Swal.fire({
-              icon: "error",
-              title: "Oops...",
-              text: "Something went wrong while updating the address!",
+                text: data.message || "Error updating address",
             });
-          });
-      }
-    
+        }
+    })
+    .catch((error) => {
+        console.error("Error:", error);
+        Swal.fire({
+            icon: "error",
+            title: "Oops...",
+            text: "Something went wrong while updating the address!",
+        });
+    });
+} 
       // Modal control functions
       function openAddressModal() {
         document.getElementById("addressModal").style.display = "block";

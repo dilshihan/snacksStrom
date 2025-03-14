@@ -11,7 +11,24 @@
         <div class="order-card">
             <div class="order-header">
                 <div class="order-id"><%= order._id %></div>
-                <div class="order-status"><%= order.status %></div>
+                <div class="order-status">
+                    <% 
+                    const allProductsCancelled = order.products.every(product => product.status === 'Cancelled');
+                    if (allProductsCancelled) { 
+                    %>
+                        <span style="color: red; font-weight: bold;">Cancelled</span>
+                    <% 
+                    } else { 
+                        order.products.forEach(product => { 
+                            if (product.status !== 'Cancelled') { 
+                    %>
+                                <%= product.status %>      
+                    <% 
+                            } 
+                        }); 
+                    } 
+                    %>
+               </div>
             </div>
             
             <div class="order-body">
@@ -72,6 +89,7 @@
                                 <th>Description</th>
                                 <th>Quantity</th>
                                 <th>Price</th>
+                                <th>status</th>
                                 <th>Total</th>
                             </tr>
                         </thead>
@@ -84,30 +102,41 @@
                                 <td><%= item.productId.name %></td>
                                 <td><%= item.quantity %></td>
                                 <td class="price">$<%= item.productId.price %></td>
+                                <td><%= item.status %></td>
                             <td class="price">$<%= (item.productId.price * item.quantity).toFixed(2) %></td>
                         </tr>
                         <% }); %>
                         </tbody>
                     </table>
                     
-                    <div class="order-summary">
-                        <div class="summary-row">
-                            <div>Subtotal</div>
-                            <div>$<%= subtotal %></div>
-                        </div>
-                        <div class="summary-row">
-                            <div>Shipping</div>
-                            <div>$<%= shippingCharge %></div>
-                        </div>
-                        <div class="summary-row">
-                            <div>Tax</div>
-                            <div>$<%= tax %></div>
-                        </div>
-                        <div class="summary-row total-row">
-                            <div>Total</div>
-                            <div>$<%= totalAmount %></div>
-                        </div>
+                    <% 
+                    const subtotal = order.products
+                        .filter(p => p.status !== 'Cancelled')
+                        .reduce((total, p) => total + (p.price * p.quantity), 0);
+                    const shippingCharge = 5;
+                    const taxRate = 0.1;
+                    const tax = subtotal * taxRate;
+                    const totalAmount = subtotal + shippingCharge + tax;
+                %>
+                
+                <div class="order-summary">
+                    <div class="summary-row">
+                        <div>Subtotal</div>
+                        <div>$<%= subtotal.toFixed(2) %></div>
                     </div>
+                    <div class="summary-row">
+                        <div>Shipping</div>
+                        <div>$<%= shippingCharge.toFixed(2) %></div>
+                    </div>
+                    <div class="summary-row">
+                        <div>Tax</div>
+                        <div>$<%= tax.toFixed(2) %></div>
+                    </div>
+                    <div class="summary-row total-row">
+                        <div>Total</div>
+                        <div>$<%= totalAmount.toFixed(2) %></div>
+                    </div>
+                </div>
                 </div>
                 
                 <div class="action-buttons">

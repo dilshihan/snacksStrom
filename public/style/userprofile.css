@@ -198,6 +198,7 @@
         color: orange;
       }
       .status_pending {
+        background-color: #cddaff;
         color: blue;
       }
       .status_cancelled {
@@ -426,4 +427,29 @@
   border-radius: 4px;
   font-size: 12px;
   font-weight: 600;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.page-link {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  text-decoration: none;
+  color: #333;
+}
+
+.page-link:hover {
+  background-color: #f5f5f5;
+}
+
+.page-link.active {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
 }

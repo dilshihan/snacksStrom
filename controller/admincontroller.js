@@ -384,7 +384,7 @@ const loadorders = async (req, res) => {
     }
 };
 
-const updateorderstatus = async(req,res)=>{
+const updateorderstatus = async (req, res) => {
     try {
         const { orderId } = req.params;
         const { status } = req.body;
@@ -398,15 +398,16 @@ const updateorderstatus = async(req,res)=>{
         if (!order) {
             return res.status(404).json({ success: false, message: "Order not found" });
         }
-       
-        if (order.status === "Cancelled") {
-            return res.status(403).json({ success: false, message: "Cannot change status of a cancelled order" });
-        }
 
-        order.status = status;
+        order.products.forEach(product => {
+            if (product.status !== "Cancelled") {
+                product.status = status;
+            }
+        });
+
         await order.save();
 
-        res.json({ success: true, message: "Order status updated successfully", order });
+        res.json({ success: true, message: "Product statuses updated successfully", order });
     } catch (error) {
         console.error(error);
         res.status(500).json({ success: false, message: "Server error" });
