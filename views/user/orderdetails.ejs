@@ -161,7 +161,7 @@
               <h4>
                 <%= productDetails.productId.name %>
               </h4>
-              <p><strong>Price:</strong> $<%= productDetails.productId.price ? productDetails.productId.price.toFixed(2)
+              <p><strong>Price:</strong> ₹<%= productDetails.productId.price ? productDetails.productId.price.toFixed(2)
                   : '0.00' %>
               </p>
               <p><strong>Quantity:</strong>
@@ -170,7 +170,7 @@
               <% const productTotal=productDetails.price * productDetails.quantity; const shippingCharge=5; const
                 taxRate=0.1; const productTax=productTotal * taxRate; const totalWithShippingAndTax=productTotal +
                 shippingCharge + productTax; %>
-                <p><strong>Total:</strong> $<%= totalWithShippingAndTax.toFixed(2) %>
+                <p><strong>Total:</strong> ₹<%= totalWithShippingAndTax.toFixed(2) %>
                 </p>
             </div>
           </div>
@@ -210,10 +210,7 @@
                   <p><strong>Method:</strong>
                     <%= order.paymentMethod %>
                   </p>
-                  <% const productTotal=productDetails.productId.price * productDetails.quantity; const
-                    shippingCharge=5; const taxRate=0.1; const productTax=productTotal * taxRate const
-                    totalWithShippingAndTax=productTotal + shippingCharge + productTax; %>
-                    <p><strong>Order Total:</strong> $<%= totalWithShippingAndTax.toFixed(2) %>
+                  <strong>Order Total:</strong> ₹<%= order.totalAmount.toFixed(2) %>
                     </p>
                 </div>
               </div>
@@ -394,6 +391,7 @@
   <script src="/js/custom.js"></script>
 
   <script>
+
     document.addEventListener('DOMContentLoaded', function () {
       const trackButtons = document.querySelectorAll('.track-btn');
       const modal = document.getElementById('trackingModal');

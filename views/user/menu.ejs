@@ -114,11 +114,21 @@
                   <g></g>
                 </svg>
               </a>
-              <form class="form-inline">
-                <button class="btn my-2 my-sm-0 nav_search-btn" type="submit">
-                  <i class="fa fa-search" aria-hidden="true"></i>
-                </button>
-              </form>
+              <form class="form-inline" onsubmit="handleSearch(event)">
+                <div class="search-container" style="position: relative;">
+                  <input 
+                    type="search" 
+                    name="q" 
+                    class="form-control search-input" 
+                    placeholder="Search products..." 
+                    style="display: none; position: absolute; right: 100%; top: 0; width: 200px;" 
+                    id="searchInput"
+                  >
+                  <button type="button" class="btn my-2 my-sm-0 nav_search-btn" onclick="toggleSearch()">
+                    <i class="fa fa-search" aria-hidden="true"></i>
+                  </button>
+                </div>
+              </form>             
               <a href="/user/userprofile" class="user_link">
                 <% if (user && user.image) { %>
                   <img src="<%= user.image %>" style="width: 30px; height: 30px; object-fit: cover; border-radius: 50%;" alt="Profile" />
@@ -421,6 +431,142 @@ document.querySelectorAll('select').forEach(select => {
   document.addEventListener('DOMContentLoaded', function() {
       document.body.classList.add('page-loaded');
   });
+
+  function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+async function handleSearch(event) {
+  event.preventDefault();
+  const searchInput = document.getElementById('searchInput');
+  const searchQuery = searchInput.value.trim();
+  
+  if (!searchQuery) return;
+
+  try {
+    const productsContainer = document.querySelector('.product-grid');
+    
+    if (!productsContainer) {
+      console.error('Products container not found');
+      return;
+    }
+
+    // Center the loading message
+    productsContainer.innerHTML = `
+      <div class="search-message" style="">
+        <div class="text-center">Searching...</div>
+      </div>`;
+
+    // Show error if search query is too short
+    if (searchQuery.length < 2) {
+      productsContainer.innerHTML = `
+        <div class="search-message">
+          <div class="text-center"  >
+            <h4>Please enter at least 2 characters</h4>
+            <div class="mt-3">
+              <button class="btn btn-primary" onclick="clearSearch()">Show All Products</button>
+            </div>
+          </div>
+        </div>`;
+      return;
+    }
+
+    const response = await fetch(`/user/search?q=${encodeURIComponent(searchQuery)}`);
+    const data = await response.json();
+    
+    if (!data.success || !data.results || data.results.length === 0) {
+      productsContainer.innerHTML = `
+        <div class="search-message">
+          <div class="text-center">
+            <h4>${data.message || 'No products found'}</h4>
+            <div class="mt-3">
+              <button class="btn btn-primary" onclick="clearSearch()">Show All Products</button>
+            </div>
+          </div>
+        </div>`;
+      return;
+    }
+
+    const productsHTML = data.results.map(product => `
+      <div class="product-card ${product.category.toLowerCase()}">
+        <div class="product-image">
+          <a href="/user/productdetails/${product._id}" class="image-link">
+            <img src="/uploads/${product.image[0]}" alt="${product.name}">
+          </a>
+        </div>
+        <div class="product-info">
+          <h3 class="product-name">${product.name}</h3>
+          <div class="product-footer">
+            <span class="price">₹${product.price}</span>
+            ${window.user ? `
+              <button onclick="addToCart('${product._id}', 1, '${product.name}', '${window.user._id}')"
+                      class="add-to-cart">
+                <span>Add to Cart</span>
+              </button>
+            ` : `
+              <button onclick="Swal.fire('Please log in to add items to the cart.')" 
+                      class="add-to-cart">
+                <span>Add to Cart</span>
+              </button>
+            `}
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+    productsContainer.innerHTML = productsHTML;
+
+  } catch (error) {
+    console.error('Search error:', error);
+    const productsContainer = document.querySelector('.product-grid');
+    if (productsContainer) {
+      productsContainer.innerHTML = `
+        <div class="search-message"<div class="search-message" style="display: flex; justify-content: center; align-items: center; width: 100%; margin: 20px 0; background-color: #f8f9fa; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          <div class="text-center">
+            <h4>Something went wrong</h4>
+            <p>Please try again later</p>
+            <div class="mt-3">
+              <button class="btn btn-primary" onclick="clearSearch()">Show All Products</button>
+            </div>
+          </div>
+        </div>`;
+    }
+  }
+}
+const debouncedSearch = debounce((event) => handleSearch(event), 300);
+function toggleSearch() {
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput.style.display === 'none') {
+    searchInput.style.display = 'block';
+    searchInput.focus();
+  } else {
+    if (searchInput.value.trim()) {
+      debouncedSearch(new Event('submit'));
+    } else {
+      searchInput.style.display = 'none';
+    }
+  }
+}
+
+document.getElementById('searchInput').addEventListener('input', (e) => {
+  debouncedSearch(e);
+});
+
+function clearSearch() {
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.value = '';
+    }
+    window.location.href = '/user/menu';
+}
 </script>
 
 </body>

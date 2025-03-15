@@ -367,7 +367,7 @@ const Productdetails = async (req, res) => {
             }
             const relatedProducts = await Productmodel.find({
                 category: products.category,
-                _id: { $ne: req.params.id } // Exclude current product
+                _id: { $ne: req.params.id } 
             }).limit(4);
             
             res.render('user/productdetails', { products,relatedProducts,user});
@@ -754,6 +754,7 @@ const loaduserprofile = async(req,res)=>{
         }
 
         const page = parseInt(req.query.page) || 1;
+        const activeTab = req.query.tab || 'profile';
         const productsPerPage = 3; 
         const addresses = await addressmodel.find({ userId: user._id }) || [];
         
@@ -799,7 +800,8 @@ const loaduserprofile = async(req,res)=>{
             currentPage: page,
             totalPages: totalPages,
             hasNextPage: page < totalPages,
-            hasPrevPage: page > 1
+            hasPrevPage: page > 1,
+            activeTab: activeTab
         });
 
     } catch(error) {
@@ -876,7 +878,7 @@ const addaddress = async (req, res) => {
 
         await newAddress.save();
 
-        res.redirect('/user/userprofile'); 
+        res.redirect('/user/userprofile?tab=addresses'); 
     } catch (error) {
         console.log(error);
         res.status(500).json({ success: false, message: 'Error adding address' });
@@ -912,7 +914,7 @@ const editaddress = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Address not found' });
         }
 
-        res.redirect('/user/userprofile');
+        res.redirect('/user/userprofile?tab=addresses');
     } catch (error) {
         console.log(error);
         res.status(500).json({ success: false, message: 'Error updating address' });
@@ -946,7 +948,6 @@ const loadorderdetils = async(req,res) => {
     
         const order = await Order.findById(orderId)
             .populate('products.productId').populate('customerId').populate('shippingAddress');
-    console.log('aaaaa',order);
     
         if (!order) {
             return res.status(404).send("Order not found");
@@ -978,8 +979,21 @@ const cancelorder = async (req, res) => {
     try {
         const orderId = req.params.orderId;
         const productId = req.params.productId;
-
-        const order = await Order.findOneAndUpdate(
+        const order = await Order.findOne({ _id: orderId,'products._id': productId});
+    
+        if (!order) {
+            return res.status(404).json({success: false,message: "Order or product not found"});
+        }
+        const cancelledProduct = order.products.find(p => p._id.toString() === productId);
+        
+        if (!cancelledProduct) {
+            return res.status(404).json({success: false,message: "Product not found in order"});
+        }
+        await Productmodel.findByIdAndUpdate(
+            cancelledProduct.productId,
+            { $inc: { stock: cancelledProduct.quantity } }
+        );
+        const updatedOrder = await Order.findOneAndUpdate(
             { 
                 _id: orderId,
                 'products._id': productId 
@@ -995,21 +1009,11 @@ const cancelorder = async (req, res) => {
                 runValidators: true
             }
         );
-
-        if (!order) {
-            return res.status(404).json({ 
-                success: false, 
-                message: "Order or product not found" 
-            });
-        }
-        res.json({ 
-            success: true, 
-            message: "Product canceled successfully",
-            updatedOrder: order 
-        });
+        res.json({
+            success: true,message: "Product canceled successfully",updatedOrder});
     } catch (error) {
-        console.error('Error in cancelorder:', error);
-        res.status(500).json({success: false, message: "Error canceling product"  });
+        console.error(error);
+        res.status(500).json({success: false,message: "Error canceling product"});
     }
 };
 
@@ -1044,6 +1048,39 @@ const updatepassword = async(req,res)=>{
     } catch (error) {
         console.error('Error updating password:', error);
         res.status(500).json({success: false,message: 'Error updating password'});
+    }
+}
+
+const search = async(req,res)=>{
+    try {
+        const searchQuery = req.query.q
+        
+        if (!searchQuery) {
+            return res.json({success: true,results: [],message: 'Please enter a search term'});
+        }
+
+        if (searchQuery.length < 2) {
+            return res.json({success: true,results: [],message: 'Please enter at least 2 characters' });
+        }
+
+        const searchResults = await Productmodel.find({
+            $or: [
+                { name: { $regex: `^${searchQuery}`, $options: 'i' } }, 
+                { name: { $regex: searchQuery, $options: 'i' } }, 
+                { description: { $regex: searchQuery, $options: 'i' } },
+                { category: { $regex: searchQuery, $options: 'i' } }
+            ]
+        }).sort({ name: 1 }).limit(12); 
+
+        res.json({
+            success: true,
+            results: searchResults,
+            message: searchResults.length === 0 
+        ? `No products found matching "${searchQuery}"` : `Found ${searchResults.length} products`});
+
+    } catch (error) {
+        console.error(error);
+        res.json({success: false,error: 'Error performing search',message: error.message});
     }
 }
 
@@ -1144,4 +1181,4 @@ module.exports={registerUser,loadregister,loginUser,
                loaduserprofile,updateprofile,updateprofileimage,
                addaddress,editaddress,deleteaddress,
                loadorderdetils,cancelorder,updatepassword,
-               handleGoogleLogin,handleGoogleCallback}
+               search,handleGoogleLogin,handleGoogleCallback}

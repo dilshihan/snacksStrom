@@ -383,10 +383,10 @@
     let currentScroll = window.pageYOffset || document.documentElement.scrollTop;
 
     if (currentScroll > lastScrollTop && currentScroll > headerHeight) {
-      // Scrolling down
+      
       header.style.transform = 'translateY(-100%)';
     } else {
-      // Scrolling up
+      
       header.style.transform = 'translateY(0)';
     }
     lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
@@ -396,33 +396,23 @@
   function magnify(imgID, zoom) {
     var img, glass, w, h, bw;
     img = document.getElementById(imgID);
-
-    /* Create magnifier glass: */
     glass = document.createElement("DIV");
     glass.setAttribute("class", "img-magnifier-glass");
 
-    /* Insert magnifier glass: */
     img.parentElement.insertBefore(glass, img);
-
-    /* Set background properties for the magnifier glass: */
     glass.style.backgroundImage = "url('" + img.src + "')";
     glass.style.backgroundRepeat = "no-repeat";
     glass.style.backgroundSize = (img.width * zoom) + "px " + (img.height * zoom) + "px";
     bw = 3;
     w = glass.offsetWidth / 2;
     h = glass.offsetHeight / 2;
-
-    /* Execute a function when someone moves the magnifier glass over the image: */
     glass.addEventListener("mousemove", moveMagnifier);
     img.addEventListener("mousemove", moveMagnifier);
-
-    /* Show glass when entering image */
     img.addEventListener("mouseenter", function () {
       glass.style.display = "block";
       document.body.style.cursor = "none";
     });
 
-    /* Hide glass when leaving image */
     img.addEventListener("mouseleave", function () {
       glass.style.display = "none";
       document.body.style.cursor = "default";
@@ -430,9 +420,8 @@
 
     function moveMagnifier(e) {
       var pos, x, y;
-      /* Prevent any other actions that may occur when moving over the image */
+      
       e.preventDefault();
-      /* Get the cursor's x and y positions: */
       pos = getCursorPos(e);
       x = pos.x;
       y = pos.y;
@@ -467,68 +456,13 @@
   function changeMainImage(newSrc) {
     const mainImage = document.getElementById('mainImage');
     mainImage.src = newSrc;
-    // Reinitialize magnifier after changing image
     setTimeout(() => {
       magnify("mainImage", 3);
     }, 100);
   }
-
-  // Initialize magnifier when page loads
   document.addEventListener('DOMContentLoaded', function () {
     magnify("mainImage", 3);
   });
-</script>
-<script>
-  document.querySelectorAll('.add-to-cart').forEach(button => {
-    button.addEventListener('click', function (event) {
-      event.preventDefault();
-
-      const productId = this.getAttribute('data-id');
-      const productName = this.getAttribute('data-name');
-      const productPrice = this.getAttribute('data-price');
-      const productImage = this.getAttribute('data-image');
-
-      fetch('/user/add-to-cart', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          id: productId,
-          name: productName,
-          price: productPrice,
-          image: productImage,
-          quantity: 1
-        })
-      })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            Swal.fire({
-              icon: "success",
-              title: "Added to Cart!",
-              text: `${productName} has been added to your cart.`,
-              showConfirmButton: false,
-              timer: 1500
-            });
-          } else {
-            Swal.fire({
-              icon: "error",
-              title: "Oops...",
-              text: "Failed to add product to cart. Please try again.",
-            });
-          }
-        })
-        .catch(error => {
-          Swal.fire({
-            icon: "error",
-            title: "Error!",
-            text: "Something went wrong. Try again later.",
-          });
-        });
-    });
-  });
-
 </script>
 <script>
 

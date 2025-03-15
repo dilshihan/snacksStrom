@@ -101,9 +101,9 @@
                                 </td>
                                 <td><%= item.productId.name %></td>
                                 <td><%= item.quantity %></td>
-                                <td class="price">$<%= item.productId.price %></td>
+                                <td class="price">₹<%= item.productId.price %></td>
                                 <td><%= item.status %></td>
-                            <td class="price">$<%= (item.productId.price * item.quantity).toFixed(2) %></td>
+                            <td class="price">₹<%= (item.productId.price * item.quantity).toFixed(2) %></td>
                         </tr>
                         <% }); %>
                         </tbody>
@@ -122,26 +122,25 @@
                 <div class="order-summary">
                     <div class="summary-row">
                         <div>Subtotal</div>
-                        <div>$<%= subtotal.toFixed(2) %></div>
+                        <div>₹<%= subtotal.toFixed(2) %></div>
                     </div>
                     <div class="summary-row">
                         <div>Shipping</div>
-                        <div>$<%= shippingCharge.toFixed(2) %></div>
+                        <div>₹<%= shippingCharge.toFixed(2) %></div>
                     </div>
                     <div class="summary-row">
                         <div>Tax</div>
-                        <div>$<%= tax.toFixed(2) %></div>
+                        <div>₹<%= tax.toFixed(2) %></div>
                     </div>
                     <div class="summary-row total-row">
                         <div>Total</div>
-                        <div>$<%= totalAmount.toFixed(2) %></div>
+                        <div>₹<%= totalAmount.toFixed(2) %></div>
                     </div>
                 </div>
                 </div>
                 
                 <div class="action-buttons">
                     <button class="btn btn-primary">Download Invoice</button>
-                    <button class="btn btn-outline">Return Items</button>
                 </div>
             </div>
         </div>

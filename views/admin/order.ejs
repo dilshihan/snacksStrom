@@ -76,13 +76,16 @@
                             <td>
                                 <% 
                                 const areAllProductsCancelled = order.products.every(product => product.status === 'Cancelled');
+                                const areAllProductsDelivered = order.products.every(product => product.status === 'Delivered');
                                 %>
                                 
                                 <% if (areAllProductsCancelled) { %>
                                     <span class="status-text" style="color: red; font-weight: bold;">Cancelled</span>
+                                <% } else if (areAllProductsDelivered) { %>
+                                    <span class="status-text" style="color: green; font-weight: bold;">Delivered</span>
                                 <% } else { %>
                                     <select class="status-dropdown" data-order-id="<%= order._id %>" onchange="updateProductStatus(this)">
-                                        <% ['Pending', 'Processing', 'Shipped', 'Delivered'].forEach(status => { %>
+                                        <% ['Pending', 'Processing', 'Shipped', 'Delivered','Cancelled'].forEach(status => { %>
                                             <option value="<%= status %>" <%= order.products.some(p => p.status === status) ? 'selected' : '' %>><%= status %></option>
                                         <% }); %>
                                     </select>

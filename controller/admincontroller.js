@@ -398,13 +398,23 @@ const updateorderstatus = async (req, res) => {
         if (!order) {
             return res.status(404).json({ success: false, message: "Order not found" });
         }
-
-        order.products.forEach(product => {
-            if (product.status !== "Cancelled") {
-                product.status = status;
+        if (status === "Cancelled") {
+            for (const product of order.products) {
+                if (product.status !== "Cancelled" && product.status !== "Delivered") {
+                    await ProductModel.findByIdAndUpdate(
+                        product.productId,
+                        { $inc: { stock: product.quantity } } 
+                    );
+                    product.status = status;
+                }
             }
-        });
-
+        } else {
+            order.products.forEach(product => {
+                if (product.status !== "Cancelled" && product.status !== "Delivered") {
+                    product.status = status;
+                }
+            });
+        }
         await order.save();
 
         res.json({ success: true, message: "Product statuses updated successfully", order });

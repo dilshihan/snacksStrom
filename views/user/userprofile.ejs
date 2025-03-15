@@ -365,7 +365,7 @@
                     </span>
                   </div>
                 </div>
-                <p><strong>Price:</strong> $<%= product.price.toFixed(2) %>
+                <p><strong>Price:</strong> ₹<%= product.price.toFixed(2) %>
                 </p>
                 <p><strong>Quantity:</strong>
                   <%= product.quantity %>
@@ -374,7 +374,7 @@
                                                 shippingCharge=5; const taxRate=0.1; const productTax=productTotal *
                                                 taxRate; const totalWithShippingAndTax=productTotal + shippingCharge +
                                                 productTax; %>
-                <p><strong>Total:</strong> $<%= totalWithShippingAndTax.toFixed(2) %>
+                <p><strong>Total:</strong> ₹<%= totalWithShippingAndTax.toFixed(2) %>
                 </p>
                 <div class="order_actions">
                   <button class="view_details_btn" data-order-id="<%= order._id %>" data-product-id="<%= product._id %>">
@@ -394,21 +394,20 @@
 
               <!-- Pagination Controls -->
               <div class="pagination">
-                <% if (currentPage> 1) { %>
-                <a href="?page=<%= currentPage - 1 %>" class="page-link">&laquo;
-                  Previous</a>
-                <% } %>
+    <% if (currentPage > 1) { %>
+    <a href="?tab=orders&page=<%= currentPage - 1 %>" class="page-link">&laquo; Previous</a>
+    <% } %>
 
-                <% for(let i=1; i <=totalPages; i++) { %>
-                <a href="?page=<%= i %>" class="page-link <%= currentPage === i ? 'active' : '' %>">
-                  <%= i %>
-                </a>
-                <% } %>
+    <% for(let i=1; i <= totalPages; i++) { %>
+    <a href="?tab=orders&page=<%= i %>" class="page-link <%= currentPage === i ? 'active' : '' %>">
+        <%= i %>
+    </a>
+    <% } %>
 
-                <% if (currentPage < totalPages) { %>
-                <a href="?page=<%= currentPage + 1 %>" class="page-link">Next &raquo;</a>
-                <% } %>
-              </div>
+    <% if (currentPage < totalPages) { %>
+    <a href="?tab=orders&page=<%= currentPage + 1 %>" class="page-link">Next &raquo;</a>
+    <% } %>
+</div>
               <% } else { %>
               <p>No orders found.</p>
               <% } %>
@@ -529,21 +528,44 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      const tabLinks = document.querySelectorAll('.sidebar_nav a[data-tab]');
-      tabLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-          e.preventDefault();
-          document.querySelectorAll('.tab_content').forEach(tab => {
+    // Function to switch tabs
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab_content').forEach(tab => {
             tab.classList.remove('active');
-          });
-          document.querySelectorAll('.sidebar_nav a').forEach(navLink => {
-            navLink.classList.remove('active');
-          });
-          const tabId = this.getAttribute('data-tab');
-          document.getElementById(tabId).classList.add('active');
-          this.classList.add('active');
         });
-      });
+        document.querySelectorAll('.sidebar_nav a').forEach(navLink => {
+            navLink.classList.remove('active');
+        });
+        document.getElementById(tabId).classList.add('active');
+        document.querySelector(`.sidebar_nav a[data-tab="${tabId}"]`).classList.add('active');
+    }
+
+    // Handle URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabFromUrl = urlParams.get('tab');
+    if (tabFromUrl) {
+        switchTab(tabFromUrl);
+    }
+
+    // Handle click events
+    const tabLinks = document.querySelectorAll('.sidebar_nav a[data-tab]');
+    tabLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const tabId = this.getAttribute('data-tab');
+            switchTab(tabId);
+            
+            // Preserve page parameter if it exists and we're on the orders tab
+            const currentPage = urlParams.get('page');
+            let newUrl = `?tab=${tabId}`;
+            if (tabId === 'orders' && currentPage) {
+                newUrl += `&page=${currentPage}`;
+            }
+            
+            history.pushState({}, '', newUrl);
+        });
+    });
+});
 
       // Edit profile toggle
       document.getElementById('edit_profile_btn').addEventListener('click', function() {
@@ -661,8 +683,6 @@
         });
     }
 });
-
-    });
 
     // Header scroll behavior
     let lastScrollTop = 0;

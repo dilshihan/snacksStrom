@@ -46,11 +46,6 @@ const orderSchema = new mongoose.Schema({
         enum: ['cod', 'credit', 'UPI', 'Net Banking'],
         required: true
     },
-    status: {
-        type: String,
-        enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'],
-        default: 'Pending'
-    },
     shippingAddress: {
         fullname: String,
         phoneNumber: String,
