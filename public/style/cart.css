@@ -5,6 +5,7 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   padding: 24px;
   margin-bottom: 30px;
+  min-width: 600px;
 }
 
 .cart_item {
@@ -94,6 +95,7 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   position: sticky;
   top: 20px;
+  min-width: 350px;
 }
 
 .cart_summary h3 {

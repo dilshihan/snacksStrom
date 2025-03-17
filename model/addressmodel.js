@@ -37,6 +37,10 @@ const AddressSchema = new mongoose.Schema({
   isDefault: {
     type: Boolean,
     default: false
+},
+createdAt: {
+  type: Date,
+  default: Date.now
 }
 });
 

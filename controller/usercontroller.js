@@ -50,6 +50,7 @@ const registerUser = async (req, res) => {
         res.render('user/verify', { email, message: 'OTP sent to your email' });
 
     } catch (error) {
+        console.log(error);
         res.render('user/register', { message: 'Something went wrong' });
     }
 };
@@ -78,6 +79,7 @@ const verifyOTP = async (req, res) => {
 
     } catch (error) {
         console.log(error);
+        res.status(500).send("Internal Server Error");
     }
 };
 
@@ -165,7 +167,6 @@ const forgotverifyotp = async(req,res)=>{
             return res.status(400).json({ message: "OTP expired. Please request a new one." });
         }
 
-        // Validate OTP (Convert both to string before comparison)
         if (String(req.session.otp) !== String(otp)) {
             return res.status(400).json({ message: "Invalid OTP. Please try again." });
         }
@@ -245,11 +246,12 @@ const loginUser = async (req, res) => {
             return res.render("user/register", { message: "Invalid password" });
         }
 
-        req.session.user = user._id; //Store ObjectId
+        req.session.user = user._id; 
         req.session.email = user.email;
         res.redirect("/user/home");
     } catch (error) {
         console.error(error);
+        res.status(500).send("Internal Server Error");
     }
 };
 
@@ -267,16 +269,24 @@ const Loadhome = async (req, res) => {
         res.render("user/home", { products ,catogorys,user}); 
     } catch (error) {
         console.error(error);
+        res.status(500).send("Internal Server Error");
     }
 };
 
 const loadmenu = async (req, res) => {
     try {
-        const userid = req.session.user 
-        const user = await userschema.findById(userid)
+        const userid = req.session.user;
+        const user = await userschema.findById(userid);
         const priceRange = req.query.priceRange;
-        const sortBy = req.query.sortBy || 'default'; 
+        const sortBy = req.query.sortBy || 'default';
+        const category = req.query.category || 'all';
+        const searchQuery = req.query.search || ''; 
         const filter = { isListed: true };
+
+        if (category && category !== 'all') {
+            filter.category = category.toLowerCase();
+        }
+
         if (priceRange) {
             switch (priceRange) {
                 case 'under100':
@@ -291,8 +301,12 @@ const loadmenu = async (req, res) => {
             }
         }
 
+        if (searchQuery) {
+            filter.name = { $regex: searchQuery, $options: 'i' }; 
+        }
+
         const page = parseInt(req.query.page) || 1;
-        const limit = 9; 
+        const limit = 9;
         const skip = (page - 1) * limit;
 
         const totalProducts = await Productmodel.countDocuments(filter);
@@ -313,14 +327,23 @@ const loadmenu = async (req, res) => {
                 query = query.sort({ name: -1 });
                 break;
             default:
-                query = query.sort({ _id: -1 }); 
+                query = query.sort({ _id: -1 });
         }
- 
+
         const products = await query.skip(skip).limit(limit).lean();
+        let noProductsMessage = '';
+        if (products.length === 0) {
+            noProductsMessage = 'No products found for your search criteria.';
+        }
 
-        const queryParams = new URLSearchParams({ ...(priceRange && { priceRange }), ...(sortBy && { sortBy }) }).toString();
+        const queryParams = new URLSearchParams({
+            ...(priceRange && { priceRange }),
+            ...(sortBy && { sortBy }),
+            ...(category !== 'all' && { category }),
+            ...(searchQuery && { search: searchQuery }) 
+        }).toString();
 
-        return res.render("user/menu", { 
+        return res.render("user/menu", {
             products,
             user,
             currentPage: page,
@@ -329,7 +352,9 @@ const loadmenu = async (req, res) => {
             hasPreviousPage: page > 1,
             selectedPriceRange: priceRange || 'all',
             selectedSort: sortBy,
-            queryParams 
+            selectedCategory: category,
+            queryParams,
+            noProductsMessage 
         });
     } catch (error) {
         console.error(error);
@@ -344,6 +369,7 @@ const loadabout = async (req,res)=>{
         res.render('user/about',{user})
     }catch(error){
         console.log(error)
+        res.status(500).send("Internal Server Error");
     }
 }
 
@@ -354,6 +380,7 @@ const loadcontactus = async(req,res)=>{
         res.render('user/contactus',{user})
     }catch(error){
         console.log(error)
+        res.status(500).send("Internal Server Error");
     }
 }
 
@@ -373,10 +400,11 @@ const Productdetails = async (req, res) => {
             res.render('user/productdetails', { products,relatedProducts,user});
         } catch (error) {
             console.error(error);
+            res.status(500).send("Internal Server Error");
         }
  }
 
- const loadcart = async (req, res) => {
+const loadcart = async (req, res) => {
     try {
         const userId = req.session?.user
         if (!userId) {
@@ -398,56 +426,66 @@ const Productdetails = async (req, res) => {
         res.render("user/cart", { cart: cartItems, totalPrice,user ,userId});
     } catch (error) {
         console.error(error);
+        res.status(500).send("Internal Server Error");
     }
 };
 
- const addtocart = async (req, res) => {
+const addtocart = async (req, res) => {
     try {
-        const { userId, productId, quantity } = req.body;
-        if (!userId || !productId || !quantity) {
-            return res.status(400).json({ success: false, message: "Missing required fields!" });
-        }
-        const product = await Productmodel.findById(productId);
-        if (!product) {
-            return res.status(404).json({ success: false, message: "Product not found!" });
-        }
-        let cart = await cartmodel.findOne({ userId });
-        if (!cart) {
-            cart = new cartmodel({ userId, products: [], totalPrice: 0 });
-        }
-        const existingProductIndex = cart.products.findIndex(
-            (item) => item.productId.toString() === productId
-        );
-        const existingQuantity = existingProductIndex !== -1 ? cart.products[existingProductIndex].quantity : 0;
-        const totalQuantity = existingQuantity + quantity
+      const { userId, productId, quantity } = req.body;
+      if (!userId || !productId || !quantity) {
+        return res.status(400).json({ success: false, message: "Missing required fields!" });
+      }
+  
+      const product = await Productmodel.findById(productId);
+      if (!product) {
+        return res.status(404).json({ success: false, message: "Product not found!" });
+      }
+  
+      let cart = await cartmodel.findOne({ userId });
+      if (!cart) {
+        cart = new cartmodel({ userId, products: [], totalPrice: 0 });
+      }
+  
+      const existingProductIndex = cart.products.findIndex(
+        (item) => item.productId.toString() === productId
+      );
+      const existingQuantity = existingProductIndex !== -1 ? cart.products[existingProductIndex].quantity : 0;
+      const totalQuantity = existingQuantity + quantity;
+  
+      if (totalQuantity > 5) {
+        return res.status(400).json({
+          success: false,
+          message: `Cannot add more than 5 units of this product to the cart!`
+        });
+      }
+      if (totalQuantity > product.stock) {
+        return res.status(400).json({
+          success: false,
+          message: `Cannot add more items. Only ${product.stock} units available in stock!`
+        });
+      }
+  
+      if (existingProductIndex !== -1) {
+        cart.products[existingProductIndex].quantity = totalQuantity;
+      } else {
+        cart.products.push({productId,quantity,});
+      }
+  
 
-        if (totalQuantity > product.stock) {
-            return res.status(400).json({ 
-                success: false, 
-                message: `Cannot add more items. Only ${product.stock} units available in stock!` 
-            });
+      cart.totalPrice = 0;
+      for (let item of cart.products) {
+        const product = await Productmodel.findById(item.productId);
+        if (product) {
+          cart.totalPrice += product.price * item.quantity;
         }
-
-        if (existingProductIndex !== -1) {
-            cart.products[existingProductIndex].quantity = totalQuantity;
-        } else {
-            cart.products.push({
-                productId,
-                quantity,
-            });
-        }
-        cart.totalPrice = 0;
-        for (let item of cart.products) {
-            const product = await Productmodel.findById(item.productId);
-            if (product) {
-                cart.totalPrice += product.price * item.quantity;
-            }
-        }
-        await cart.save();
-
-        res.json({ success: true, message: "Product added to cart!", cart });
+      }
+      await cart.save();
+  
+      res.json({ success: true, message: "Product added to cart!", cart });
     } catch (error) {
-        console.error(error);
+      console.error(error);
+      res.status(500).send("Internal Server Error");
     }
 };
 
@@ -559,6 +597,7 @@ const removefromcart = async (req, res) => {
         
     } catch (error) {
         console.error(error);
+        res.status(500).send("Internal Server Error");
     }
 };  
 
@@ -646,7 +685,7 @@ const checkoutchangeaddress = async (req, res) => {
             });
         }
 
-        // Get the selected address details
+
         const selectedAddress = await addressmodel.findById(selectedAddressId);
         if (!selectedAddress) {
             return res.status(404).json({ 
@@ -654,8 +693,6 @@ const checkoutchangeaddress = async (req, res) => {
                 message: 'Address not found' 
             });
         }
-
-        // Update default address flags
         await addressmodel.updateMany(
             { userId }, 
             { $set: { isDefault: false } }
@@ -688,6 +725,7 @@ const loadordersuccess = async(req,res)=>{
         res.render('user/Ordersuccess')
     }catch(error){
         console.log(error)
+        res.status(500).send("Internal Server Error");
     }
 }
 
@@ -756,7 +794,7 @@ const loaduserprofile = async(req,res)=>{
         const page = parseInt(req.query.page) || 1;
         const activeTab = req.query.tab || 'profile';
         const productsPerPage = 3; 
-        const addresses = await addressmodel.find({ userId: user._id }) || [];
+        const addresses = await addressmodel.find({ userId: user._id }).sort({ createdAt: -1 }) || [];
         
         const allOrders = await Order.find({customerId: new mongoose.Types.ObjectId(user._id) })
         .sort({ orderDate: -1 })
@@ -873,7 +911,8 @@ const addaddress = async (req, res) => {
             city,
             state,
             zipCode,
-            isDefault: shouldBeDefault
+            isDefault: shouldBeDefault,
+            createdAt: new Date()
         });
 
         await newAddress.save();
@@ -1051,39 +1090,6 @@ const updatepassword = async(req,res)=>{
     }
 }
 
-const search = async(req,res)=>{
-    try {
-        const searchQuery = req.query.q
-        
-        if (!searchQuery) {
-            return res.json({success: true,results: [],message: 'Please enter a search term'});
-        }
-
-        if (searchQuery.length < 2) {
-            return res.json({success: true,results: [],message: 'Please enter at least 2 characters' });
-        }
-
-        const searchResults = await Productmodel.find({
-            $or: [
-                { name: { $regex: `^${searchQuery}`, $options: 'i' } }, 
-                { name: { $regex: searchQuery, $options: 'i' } }, 
-                { description: { $regex: searchQuery, $options: 'i' } },
-                { category: { $regex: searchQuery, $options: 'i' } }
-            ]
-        }).sort({ name: 1 }).limit(12); 
-
-        res.json({
-            success: true,
-            results: searchResults,
-            message: searchResults.length === 0 
-        ? `No products found matching "${searchQuery}"` : `Found ${searchResults.length} products`});
-
-    } catch (error) {
-        console.error(error);
-        res.json({success: false,error: 'Error performing search',message: error.message});
-    }
-}
-
 const handleGoogleLogin = async (req, res) => {
     try {
         const { token, userData } = req.body;
@@ -1181,4 +1187,4 @@ module.exports={registerUser,loadregister,loginUser,
                loaduserprofile,updateprofile,updateprofileimage,
                addaddress,editaddress,deleteaddress,
                loadorderdetils,cancelorder,updatepassword,
-               search,handleGoogleLogin,handleGoogleCallback}
+               handleGoogleLogin,handleGoogleCallback}
