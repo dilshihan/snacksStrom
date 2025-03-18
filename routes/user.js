@@ -39,6 +39,9 @@ router.delete('/delete/:id',userauth.checksession,userauth.checkBan,usercontroll
 router.get('/orderdetails',userauth.checksession,userauth.checkBan,usercontroller.loadorderdetils)
 router.delete("/cancel-order/:orderId/:productId", userauth.checksession, userauth.checkBan, usercontroller.cancelorder);
 router.post('/update-password',userauth.checksession,userauth.checkBan,usercontroller.updatepassword)
+router.get('/wishlist',userauth.checksession,userauth.checkBan,usercontroller.loadwishlist)
+router.post('/add-to-wishlist', userauth.checksession, userauth.checkBan, usercontroller.addtowishlist);
+router.delete('/wishlist/remove/:productId',userauth.checksession,userauth.checkBan,usercontroller.removefromwishlist);
 router.post('/logout',userauth.checksession,usercontroller.logout)
 router.get('/auth/google/callback', usercontroller.handleGoogleCallback)
 router.post('/auth/google/callback', usercontroller.handleGoogleLogin)

@@ -500,3 +500,46 @@ body {
   .thumbnail:hover {
     border-color: #ffbe33;
   }
+  .product-box {
+    position: relative;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+}
+
+.img-box {
+    position: relative;
+    overflow: hidden;
+}
+
+.wishlist-icon {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 2;
+}
+
+.wishlist-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #f9f9f9; 
+    border: none;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+
+.product-box:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+.nav_wishlist-btn:hover i,
+.nav-link:hover i {
+    color: #FFD700 !important; 
+    transform: scale(1.1); 
+    transition: all 0.3s ease; 
+}

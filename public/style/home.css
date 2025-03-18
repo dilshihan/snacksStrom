@@ -17,7 +17,6 @@
     z-index: -1;
 }
 
-/* Optional: Add a subtle overlay to improve text readability */
 .bg-box::after {
     content: '';
     position: absolute;
@@ -25,7 +24,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.4); /* Adjust opacity as needed */
+    background: rgba(0, 0, 0, 0.4); 
     z-index: -1;
 }
 .pagination-box {
@@ -142,4 +141,11 @@
   width: 20px;
   height: 20px;
   fill: #f1612d;
+}
+
+.nav_wishlist-btn:hover i,
+.nav-link:hover i {
+    color: #FFD700 !important; 
+    transform: scale(1.1); 
+    transition: all 0.3s ease; 
 }

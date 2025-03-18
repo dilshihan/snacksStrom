@@ -271,3 +271,9 @@
     color: #000;
     text-decoration: none;
   }
+  .nav_wishlist-btn:hover i,
+.nav-link:hover i {
+    color: #FFD700 !important; 
+    transform: scale(1.1); 
+    transition: all 0.3s ease; 
+}

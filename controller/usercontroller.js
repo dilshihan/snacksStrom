@@ -7,6 +7,7 @@ const Category = require('../model/categorymodel')
 const cartmodel = require('../model/cartmodel')
 const addressmodel = require('../model/addressmodel')
 const Order = require("../model/ordermodel")
+const wishlistmodel = require('../model/wishlistmodel')
 const { use } = require('passport')
 const mongoose = require('mongoose');
 
@@ -385,24 +386,56 @@ const loadcontactus = async(req,res)=>{
 }
 
 const Productdetails = async (req, res) => {
-        try { 
-            const   userid = req.session.user 
-            const user = await userschema.findById(userid)
-            const products = await Productmodel.findById(req.params.id);
-            if (!products) {
-                return res.redirect('/user/menu');
-            }
-            const relatedProducts = await Productmodel.find({
-                category: products.category,
-                _id: { $ne: req.params.id } 
-            }).limit(4);
-            
-            res.render('user/productdetails', { products,relatedProducts,user});
-        } catch (error) {
-            console.error(error);
-            res.status(500).send("Internal Server Error");
+    try { 
+        const userid = req.session.user 
+        const user = await userschema.findById(userid)
+        const products = await Productmodel.findById(req.params.id);
+        
+        if (!products) {
+            return res.redirect('/user/menu');
         }
- }
+
+        let isInWishlist = false;
+        if (userid) {
+            const wishlist = await wishlistmodel.findOne({userId: userid,'products.productId': req.params.id });
+            isInWishlist = !!wishlist;
+        }
+        let isInCart = false;
+        if (userid) {
+            const cart = await cartmodel.findOne({userId: userid,'products.productId': req.params.id});
+            isInCart = !!cart;
+        }
+
+        const relatedProducts = await Productmodel.find({
+            category: products.category,_id: { $ne: req.params.id } }).limit(4);
+        
+        const relatedProductsWithWishlist = await Promise.all(
+            relatedProducts.map(async (product) => {
+                const isInWishlist = await wishlistmodel.findOne({
+                    userId: userid,
+                    'products.productId': product._id
+                });
+                return {
+                    ...product.toObject(),
+                    isInWishlist: !!isInWishlist,
+                    isInCart: !!isInCart
+                };
+            })
+        );
+
+        res.render('user/productdetails', { 
+            products,
+            relatedProducts: relatedProductsWithWishlist,
+            user,
+            isInWishlist,
+            isInCart
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Internal Server Error");
+    }
+}
 
 const loadcart = async (req, res) => {
     try {
@@ -1171,6 +1204,88 @@ const handleGoogleCallback = async (req, res) => {
     }
 };
 
+const loadwishlist = async(req,res)=>{
+    try{
+        const userid = req.session.user;
+        const user = await userschema.findById(userid);
+        const wishlist = await wishlistmodel.findOne({ userId: userid })
+            .populate({
+                path: 'products.productId',select: 'name price image stock category'});
+
+        const wishlistItems = wishlist ? wishlist.products : [];
+        const categories = wishlistItems.map(item => item.productId.category);
+        const relatedProducts = await Productmodel.find({
+            category: { $in: categories },
+            _id: { $nin: wishlistItems.map(item => item.productId._id) },isListed: true,stock: { $gt: 0 }})
+        .select('name price image stock category') .limit(4);
+
+        res.render('user/wishlist', {
+            user,
+            wishlistItems,
+            relatedProducts,
+            userId: userid 
+        });
+    } catch(error) {
+        console.log(error);
+        res.status(500).send("Internal Server Error");
+    }
+}
+
+const addtowishlist = async (req, res) => {
+        try {
+            const userId = req.session.user;
+            const productId = req.body.productId;
+    
+            if (!userId || !productId) {
+                return res.status(400).json({success: false,message: 'Missing required information'});
+            }
+            let wishlist = await wishlistmodel.findOne({ userId });
+            
+            if (!wishlist) {
+                wishlist = new wishlistmodel({userId,products: [{ productId }]});
+            } else {
+                const existingProduct = wishlist.products.find(
+                    item => item.productId.toString() === productId);
+    
+                if (existingProduct) {
+                    return res.json({success: false,message: 'Product already in wishlist'});
+                }
+    
+                wishlist.products.push({ productId });
+            }
+            await wishlist.save();
+            return res.json({success: true,message: 'Product added to wishlist successfully'});
+    
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({success: false,message: 'Error adding product to wishlist'});
+        }
+};
+
+const removefromwishlist = async (req, res) => {
+    try {
+        const userId = req.session.user;
+        const productId = req.params.productId;
+
+        if (!userId || !productId) {
+            return res.status(400).json({success: false,message: 'Missing required information'});
+        }
+
+        const result = await wishlistmodel.findOneAndUpdate(
+            { userId },{ $pull: { products: { productId: productId } } },{ new: true });
+
+        if (!result) {
+            return res.status(404).json({success: false,message: 'Wishlist not found'});
+        }
+
+        res.json({success: true,message: 'Product removed from wishlist successfully'});
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({success: false,message: 'Error removing product from wishlist'});
+    }
+};
+
 const logout = (req,res)=>{
     req.session.user=null;
     res.redirect('/user/register')
@@ -1187,4 +1302,5 @@ module.exports={registerUser,loadregister,loginUser,
                loaduserprofile,updateprofile,updateprofileimage,
                addaddress,editaddress,deleteaddress,
                loadorderdetils,cancelorder,updatepassword,
+               loadwishlist,addtowishlist,removefromwishlist,
                handleGoogleLogin,handleGoogleCallback}

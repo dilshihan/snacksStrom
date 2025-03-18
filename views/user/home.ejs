@@ -147,9 +147,9 @@
                 </svg>
               </a>
               <form class="form-inline">
-                <button class="btn  my-2 my-sm-0 nav_search-btn" type="submit">
-                  <i class="fa fa-search" aria-hidden="true"></i>
-                </button>
+                <a href="/user/wishlist" class="btn my-2 my-sm-0 nav_wishlist-btn" style="color: white;">
+                  <i class="fa fa-heart" aria-hidden="true"></i>
+              </a>
               </form>
               <a href="/user/userprofile" class="user_link">
                 <% if (user && user.image) { %>
@@ -736,43 +736,61 @@
   </script>
   <script>
 
-    async function addToCart(productId, quantity, productName, userId) {
-      try {
+async function addToCart(productId, quantity, productName, userId) {
+    try {
+        try {
+            const removeResponse = await fetch(`/user/wishlist/remove/${productId}`, {
+                method: 'DELETE',
+            });
+            const removeData = await removeResponse.json();
+            if (removeData.success) {
+                console.log('Product removed from wishlist');
+            }
+        } catch (removeError) {
+            console.error('Error removing from wishlist:', removeError);
+        }
         const response = await fetch("/user/add-to-cart", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId, productId, quantity }),
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+                userId, 
+                productId, 
+                quantity: quantity || 1 
+            }),
         });
 
         const data = await response.json();
         if (data.success) {
-          Swal.fire({
-            title: "Added to Cart!",
-            text: `${productName} has been added successfully.`,
-            icon: "success",
-            showConfirmButton: false,
-            timer: 1500
-          });
+            Swal.fire({
+                title: "Added to Cart!",
+                text: `${productName} has been added successfully.`,
+                icon: "success",
+                showConfirmButton: false,
+                timer: 1500
+            });
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
         } else {
-          Swal.fire({
-            title: "Error!",
-            text: data.message,
+            Swal.fire({
+                title: "Error!",
+                text: data.message,
+                icon: "error",
+                showConfirmButton: false,
+                timer: 2000
+            });
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        Swal.fire({
+            title: "Oops!",
+            text: "Something went wrong. Please try again later.",
             icon: "error",
             showConfirmButton: false,
             timer: 2000
-          });
-        }
-      } catch (error) {
-        console.error("Error:", error);
-        Swal.fire({
-          title: "Oops!",
-          text: "Something went wrong. Please try again later.",
-          icon: "error",
-          showConfirmButton: false,
-          timer: 2000
         });
-      }
     }
+}
 
   </script>
 
