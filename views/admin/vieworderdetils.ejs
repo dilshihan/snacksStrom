@@ -81,63 +81,67 @@
                 </div>
                 
                 <div class="order-section">
-                    <h2 class="section-title">Order Items</h2>
-                    <table class="order-items">
-                        <thead>
-                            <tr>
-                                <th>Product</th>
-                                <th>Description</th>
-                                <th>Quantity</th>
-                                <th>Price</th>
-                                <th>status</th>
-                                <th>Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <% order.products.forEach(item => { %>
-                            <tr>
-                                <td>
-                                    <img src="/uploads/<%= item.productId.image[0] %>" alt="Product" class="item-image">
-                                </td>
-                                <td><%= item.productId.name %></td>
-                                <td><%= item.quantity %></td>
-                                <td class="price">₹<%= item.productId.price %></td>
-                                <td><%= item.status %></td>
-                            <td class="price">₹<%= (item.productId.price * item.quantity).toFixed(2) %></td>
-                        </tr>
-                        <% }); %>
-                        </tbody>
-                    </table>
-                    
-                    <% 
-                    const subtotal = order.products
-                        .filter(p => p.status !== 'Cancelled')
-                        .reduce((total, p) => total + (p.price * p.quantity), 0);
-                    const shippingCharge = 5;
-                    const taxRate = 0.1;
-                    const tax = subtotal * taxRate;
-                    const totalAmount = subtotal + shippingCharge + tax;
-                %>
-                
-                <div class="order-summary">
-                    <div class="summary-row">
-                        <div>Subtotal</div>
-                        <div>₹<%= subtotal.toFixed(2) %></div>
-                    </div>
-                    <div class="summary-row">
-                        <div>Shipping</div>
-                        <div>₹<%= shippingCharge.toFixed(2) %></div>
-                    </div>
-                    <div class="summary-row">
-                        <div>Tax</div>
-                        <div>₹<%= tax.toFixed(2) %></div>
-                    </div>
-                    <div class="summary-row total-row">
-                        <div>Total</div>
-                        <div>₹<%= totalAmount.toFixed(2) %></div>
-                    </div>
-                </div>
-                </div>
+    <h2 class="section-title">Order Items</h2>
+    <table class="order-items">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Description</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Status</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% order.products.forEach(item => { %>
+            <tr>
+                <td>
+                    <img src="/uploads/<%= item.productId.image[0] %>" alt="Product" class="item-image">
+                </td>
+                <td><%= item.productId.name %></td>
+                <td><%= item.quantity %></td>
+                <td class="price">
+                    ₹<%= item.price.toFixed(2) %>
+                </td>
+                <td><%= item.status %></td>
+                <td class="price">
+                    ₹<%= (item.price * item.quantity).toFixed(2) %>
+                </td>
+            </tr>
+            <% }); %>
+        </tbody>
+    </table>
+    
+    <% 
+    const subtotal = order.products
+        .filter(p => p.status !== 'Cancelled')
+        .reduce((total, p) => total + (p.price * p.quantity), 0);
+    const shippingCharge = 5;
+    const taxRate = 0.1;
+    const tax = subtotal * taxRate;
+    const totalAmount = subtotal + shippingCharge + tax;
+    %>
+
+    <div class="order-summary">
+        <div class="summary-row">
+            <div>Subtotal</div>
+            <div>₹<%= subtotal.toFixed(2) %></div>
+        </div>
+        <div class="summary-row">
+            <div>Shipping</div>
+            <div>₹<%= shippingCharge.toFixed(2) %></div>
+        </div>
+        <div class="summary-row">
+            <div>Tax</div>
+            <div>₹<%= tax.toFixed(2) %></div>
+        </div>
+        <div class="summary-row total-row">
+            <div>Total</div>
+            <div>₹<%= order.totalAmount %></div>
+        </div>
+    </div>
+</div>
                 
                 <div class="action-buttons">
                     <button class="btn btn-primary">Download Invoice</button>

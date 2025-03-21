@@ -277,3 +277,46 @@
     transform: scale(1.1); 
     transition: all 0.3s ease; 
 }
+.price_info {
+  margin: 10px 0;
+}
+
+.original-price {
+  color: #666;
+  font-size: 14px;
+  text-decoration: line-through;
+  margin-right: 8px;
+}
+
+.discounted-price {
+  color: #ff4c4c;
+  font-weight: 600;
+  font-size: 16px;
+  margin-right: 8px;
+}
+
+.offer-text {
+  color: #28a745;
+  font-size: 12px;
+  background: #e8f5e9;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.total_breakdown {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #eee;
+}
+
+.total_breakdown p {
+  margin: 5px 0;
+  color: #666;
+}
+
+.final_total {
+  font-size: 18px;
+  color: #333 !important;
+  font-weight: 600;
+  margin-top: 10px !important;
+}

@@ -8,6 +8,7 @@ const cartmodel = require('../model/cartmodel')
 const addressmodel = require('../model/addressmodel')
 const Order = require("../model/ordermodel")
 const wishlistmodel = require('../model/wishlistmodel')
+const couponmodel = require('../model/couponmodel')
 const { use } = require('passport')
 const mongoose = require('mongoose');
 
@@ -262,12 +263,37 @@ const loadregister = async (req,res)=>{
 
 const Loadhome = async (req, res) => {
     try {
-      const   userid = req.session.user 
-        const products = await Productmodel.find({});
-        const catogorys = await Category.find({});
-        const user = await userschema.findById(userid) 
+        const userid = req.session.user;
+        const user = await userschema.findById(userid);
+        
+        const products = await Productmodel.find({ isListed: true })
+            .select('name price image category isListed offer').sort({ createdAt: -1 }).lean();
+            
+        const categories = await Category.find().lean();
+        const categoryOffersMap = new Map(
+            categories.map(cat => [cat.name.toLowerCase(), cat.offer || 0])
+        );
+        const productsWithDiscount = products.map(product => {
+            const productOffer = product.offer || 0;
+            const categoryOffer = categoryOffersMap.get(product.category.toLowerCase()) || 0;
+            const maxOffer = Math.max(productOffer, categoryOffer);
+            const discountedPrice = maxOffer ? Math.round(product.price - (product.price * maxOffer / 100)) : product.price;
+            
+            return {
+                ...product,
+                maxOffer: maxOffer,
+                offer: maxOffer,
+                discountedPrice: discountedPrice,
+                offerType: maxOffer === categoryOffer && categoryOffer > 0 ? 'category' : 'product',
+                originalPrice: product.price
+            };
+        });
 
-        res.render("user/home", { products ,catogorys,user}); 
+        res.render("user/home", { 
+            products: productsWithDiscount,
+            catogorys: categories,
+            user 
+        }); 
     } catch (error) {
         console.error(error);
         res.status(500).send("Internal Server Error");
@@ -288,20 +314,18 @@ const loadmenu = async (req, res) => {
             filter.category = category.toLowerCase();
         }
 
-        if (priceRange) {
-            switch (priceRange) {
-                case 'under100':
-                    filter.price = { $lt: 100 };
-                    break;
-                case '100-300':
-                    filter.price = { $gte: 100, $lte: 300 };
-                    break;
-                case '300-500':
-                    filter.price = { $gte: 300, $lte: 500 };
-                    break;
-            }
-        }
-
+if (priceRange) {
+    switch (priceRange) {
+        case 'under100':
+            filter.$expr = { $lt: [ { $subtract: ['$price',{ $multiply: ['$price',{ $divide: [{ $ifNull: ['$offer', 0] },100]}]}]},100]};break;
+        case '100-300':
+            filter.$expr = {$and: [{ $gte: [{$subtract: ['$price',{$multiply: ['$price',{$divide: [{ $ifNull: ['$offer', 0] },100]}]}]},100]},
+        {$lte: [{$subtract: ['$price',{$multiply: ['$price',{$divide: [{ $ifNull: ['$offer', 0] },100]}]}]},300]}]};break;
+        case '300-500':
+            filter.$expr = {
+        $and: [{$gte: [{$subtract: ['$price',{$multiply: ['$price',{$divide: [{ $ifNull: ['$offer', 0] },100]}]}]},300]},
+        {$lte: [{$subtract: ['$price',{$multiply: ['$price',{ $divide: [{ $ifNull: ['$offer', 0] },100]}]}]},500]}]};break;}
+    }
         if (searchQuery) {
             filter.name = { $regex: searchQuery, $options: 'i' }; 
         }
@@ -313,27 +337,50 @@ const loadmenu = async (req, res) => {
         const totalProducts = await Productmodel.countDocuments(filter);
         const totalPages = Math.ceil(totalProducts / limit);
 
-        let query = Productmodel.find(filter).select('name price image category isListed');
-        switch (sortBy) {
-            case 'price-low-high':
-                query = query.sort({ price: 1 });
-                break;
-            case 'price-high-low':
-                query = query.sort({ price: -1 });
-                break;
-            case 'name-a-z':
-                query = query.sort({ name: 1 });
-                break;
-            case 'name-z-a':
-                query = query.sort({ name: -1 });
-                break;
-            default:
-                query = query.sort({ _id: -1 });
-        }
+        let query = Productmodel.find(filter)
+            .select('name price image category isListed offer')
+            switch (sortBy) {
+                case 'price-low-high':
+                    query = query.sort({ price: 1 });
+                    break;
+                case 'price-high-low':
+                    query = query.sort({ price: -1 });
+                    break;
+                case 'name-a-z':
+                    query = query.sort({ name: 1 });
+                    break;
+                case 'name-z-a':
+                    query = query.sort({ name: -1 });
+                    break;
+                default:
+                    query = query.sort({ createdAt: -1 });
+            }
+        
+        const categories = await Category.find().lean();
+        const categoryOffersMap = new Map(
+            categories.map(cat => [cat.name.toLowerCase(), cat.offer || 0])
+        );
 
         const products = await query.skip(skip).limit(limit).lean();
+        
+        const productsWithDiscount = products.map(product => {
+            const productOffer = product.offer || 0;
+            const categoryOffer = categoryOffersMap.get(product.category.toLowerCase()) || 0;
+            const maxOffer = Math.max(productOffer, categoryOffer);
+            const discountedPrice = maxOffer ? Math.round(product.price - (product.price * maxOffer / 100)) : product.price;
+            
+            return {
+                ...product,
+                maxOffer: maxOffer,
+                offer: maxOffer,
+                discountedPrice: discountedPrice,
+                offerType: maxOffer === categoryOffer && categoryOffer > 0 ? 'category' : 'product',
+                originalPrice: product.price
+            };
+        });
+
         let noProductsMessage = '';
-        if (products.length === 0) {
+        if (productsWithDiscount.length === 0) {
             noProductsMessage = 'No products found for your search criteria.';
         }
 
@@ -345,7 +392,7 @@ const loadmenu = async (req, res) => {
         }).toString();
 
         return res.render("user/menu", {
-            products,
+            products: productsWithDiscount,
             user,
             currentPage: page,
             totalPages,
@@ -389,34 +436,57 @@ const Productdetails = async (req, res) => {
     try { 
         const userid = req.session.user 
         const user = await userschema.findById(userid)
-        const products = await Productmodel.findById(req.params.id);
+        const products = await Productmodel.findById(req.params.id).lean();
         
         if (!products) {
             return res.redirect('/user/menu');
         }
+
+        const category = await Category.findOne({name: { $regex: new RegExp(products.category, 'i') } }).lean();
+        const productOffer = products.offer || 0;
+        const categoryOffer = category?.offer || 0;
+        const maxOffer = Math.max(productOffer, categoryOffer);
+        const discountedPrice = maxOffer ? Math.round(products.price - (products.price * maxOffer / 100)) : products.price;
+        
+        const productWithOffer = {
+            ...products,
+            maxOffer,
+            offerType: maxOffer === categoryOffer && categoryOffer > 0 ? 'category' : 'product',
+            discountedPrice,
+            originalPrice: products.price
+        };
 
         let isInWishlist = false;
         if (userid) {
             const wishlist = await wishlistmodel.findOne({userId: userid,'products.productId': req.params.id });
             isInWishlist = !!wishlist;
         }
+        
         let isInCart = false;
         if (userid) {
             const cart = await cartmodel.findOne({userId: userid,'products.productId': req.params.id});
             isInCart = !!cart;
         }
-
         const relatedProducts = await Productmodel.find({
-            category: products.category,_id: { $ne: req.params.id } }).limit(4);
+            category: products.category,_id: { $ne: req.params.id }}).limit(4).lean();
         
-        const relatedProductsWithWishlist = await Promise.all(
+        const relatedProductsWithDetails = await Promise.all(
             relatedProducts.map(async (product) => {
+                const productOffer = product.offer || 0;
+                const maxOffer = Math.max(productOffer, categoryOffer);
+                const discountedPrice = maxOffer ? Math.round(product.price - (product.price * maxOffer / 100)) : product.price;
+                
                 const isInWishlist = await wishlistmodel.findOne({
                     userId: userid,
                     'products.productId': product._id
                 });
+
                 return {
-                    ...product.toObject(),
+                    ...product,
+                    maxOffer,
+                    offerType: maxOffer === categoryOffer && categoryOffer > 0 ? 'category' : 'product',
+                    discountedPrice,
+                    originalPrice: product.price,
                     isInWishlist: !!isInWishlist,
                     isInCart: !!isInCart
                 };
@@ -424,8 +494,8 @@ const Productdetails = async (req, res) => {
         );
 
         res.render('user/productdetails', { 
-            products,
-            relatedProducts: relatedProductsWithWishlist,
+            products: productWithOffer,
+            relatedProducts: relatedProductsWithDetails,
             user,
             isInWishlist,
             isInCart
@@ -443,20 +513,52 @@ const loadcart = async (req, res) => {
         if (!userId) {
             return res.render("user/cart", { cart: [], totalPrice: 0 });
         }
-        const user = await userschema.findById(userId) 
-        const cart = await cartmodel.findOne({ userId }).populate("products.productId");
+
+        const user = await userschema.findById(userId);
+        const cart = await cartmodel.findOne({ userId })
+         .populate({path: "products.productId",select: "name image price category offer stock"});
+
         if (!cart || cart.products.length === 0) {
-            return res.render("user/cart", { cart: [], totalPrice: 0 ,user});
+            return res.render("user/cart", { cart: [], totalPrice: 0, user });
         }
-        const cartItems = cart.products.map((item) => ({
-            id: item.productId._id,
-            name: item.productId.name,
-            image: item.productId.image,
-            price: item.productId.price,
-            quantity: item.quantity,
-        }));
-        const totalPrice = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
-        res.render("user/cart", { cart: cartItems, totalPrice,user ,userId});
+        const categories = await Category.find().lean();
+        const categoryOffersMap = new Map(
+            categories.map(cat => [cat.name.toLowerCase(), cat.offer || 0])
+        );
+
+        const cartItems = cart.products.map((item) => {
+            const product = item.productId;
+            const productOffer = product.offer || 0;
+            const categoryOffer = categoryOffersMap.get(product.category.toLowerCase()) || 0;
+            const maxOffer = Math.max(productOffer, categoryOffer);
+            const discountedPrice = maxOffer ? 
+                Math.round(product.price - (product.price * maxOffer / 100)) : 
+                product.price;
+
+            return {
+                id: product._id,
+                name: product.name,
+                image: product.image,
+                price: product.price,
+                quantity: item.quantity,
+                maxOffer,
+                offerType: maxOffer === categoryOffer && categoryOffer > 0 ? 'category' : 'product',
+                discountedPrice,
+                originalPrice: product.price,
+                stock: product.stock
+            };
+        });
+
+        const totalPrice = cartItems.reduce((total, item) => 
+            total + (item.discountedPrice * item.quantity), 0
+        );
+
+        res.render("user/cart", { 
+            cart: cartItems, 
+            totalPrice,
+            user,
+            userId
+        });
     } catch (error) {
         console.error(error);
         res.status(500).send("Internal Server Error");
@@ -641,28 +743,67 @@ const loadcheckout = async (req,res)=>{
         if (!user) {
             return res.status(404).send("User not found");
         }
+
         const addresses = await addressmodel.find({ userId: user._id });
         if (!addresses.length) {
             return res.render('user/checkout', { defaultAddress: null });
         }
+
         const defaultAddress = addresses.find(address => address.isDefault) || addresses[0];
-        const cart = await cartmodel.findOne({ userId }).populate("products.productId");
+        const cart = await cartmodel.findOne({ userId })
+            .populate({path: "products.productId",select: "name image price category offer stock"});
+
         if (!cart || cart.products.length === 0) {
-            return res.render("user/checkout", { user, defaultAddress,addresses, cart: [], totalPrice: 0 });
+            return res.render("user/checkout", { 
+                user, 
+                defaultAddress,
+                addresses, 
+                cart: [], 
+                totalPrice: 0 
+            });
         }
-        const cartItems = cart.products.map((item) => ({
-            id: item.productId._id,
-            name: item.productId.name,
-            image: item.productId.image,
-            price: item.productId.price,
-            quantity: item.quantity,
-        }));
+        const categories = await Category.find().lean();
+        const categoryOffersMap = new Map(
+            categories.map(cat => [cat.name.toLowerCase(), cat.offer || 0])
+        );
 
-        
-        const totalPrice = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
+        const cartItems = cart.products.map((item) => {
+            const product = item.productId;
+            const productOffer = product.offer || 0;
+            const categoryOffer = categoryOffersMap.get(product.category.toLowerCase()) || 0;
+            const maxOffer = Math.max(productOffer, categoryOffer);
+            const discountedPrice = maxOffer ? 
+                Math.round(product.price - (product.price * maxOffer / 100)) : 
+                product.price;
 
-        res.render('user/checkout',{user,defaultAddress,addresses, cart: cartItems, totalPrice})
-    }catch(error){
+            return {
+                id: product._id,
+                name: product.name,
+                image: product.image,
+                price: product.price,
+                quantity: item.quantity,
+                maxOffer,
+                discountedPrice,
+                originalPrice: product.price,
+                itemTotal: discountedPrice * item.quantity
+            };
+        });
+        const coupons = await couponmodel.find({
+            isDeleted:false ,
+            expiryDate: { $gt: new Date() },
+            minPurchase: { $lte: cartItems.reduce((total, item) => total + item.itemTotal, 0) }
+        })
+
+
+        res.render('user/checkout', {
+            user,
+            defaultAddress,
+            addresses,
+            cart: cartItems,
+            coupons,
+            totalPrice: cartItems.reduce((total, item) => total + item.itemTotal, 0)
+        });
+    } catch(error) {
         console.log(error)
         res.status(500).send("Error loading checkout page");
     }
@@ -764,8 +905,8 @@ const loadordersuccess = async(req,res)=>{
 
 const addorderdetails = async(req, res) => {
     try {
-        const { customerId, products, totalAmount, paymentMethod, addressId } = req.body;
-
+        const { customerId, products, totalAmount, paymentMethod, addressId ,couponOffer } = req.body;
+        
         if (!customerId || !products || !totalAmount || !paymentMethod) {
             return res.status(400).json({ success: false, message: "All fields are required!"});
         }
@@ -786,10 +927,15 @@ const addorderdetails = async(req, res) => {
                 });
             }
         }
+
+        const total = parseFloat(totalAmount) 
+        const coupon = parseFloat(couponOffer) || 0
+        const finalAmount = total - coupon;
+        
         const newOrder = new Order({
             customerId,
             products,
-            totalAmount,
+            totalAmount:finalAmount,
             paymentMethod,
             shippingAddress: {
                 fullname: address.fullname,
@@ -828,21 +974,26 @@ const loaduserprofile = async(req,res)=>{
         const activeTab = req.query.tab || 'profile';
         const productsPerPage = 3; 
         const addresses = await addressmodel.find({ userId: user._id }).sort({ createdAt: -1 }) || [];
-        
-        const allOrders = await Order.find({customerId: new mongoose.Types.ObjectId(user._id) })
-        .sort({ orderDate: -1 })
-        .populate('products.productId')
-        .populate('shippingAddress')
-        .exec();
 
-        const totalProducts = allOrders.reduce((sum, order) => sum + order.products.length, 0);
+        const allOrders = await Order.find({customerId: new mongoose.Types.ObjectId(user._id) })
+            .sort({ orderDate: -1 }).populate('products.productId').populate('shippingAddress').lean();
+
+        const processedOrders = allOrders.map(order => ({
+            ...order,
+            products: order.products.map(product => ({
+                ...product,
+                total: product.price * product.quantity
+            }))
+        }));
+
+        const totalProducts = processedOrders.reduce((sum, order) => sum + order.products.length, 0);
         const totalPages = Math.ceil(totalProducts / productsPerPage);
 
         let productsSoFar = 0;
         let ordersToShow = [];
         
-        for (let order of allOrders) {
-            let orderCopy = { ...order.toObject() };
+        for (let order of processedOrders) {
+            let orderCopy = { ...order };
             
             if (productsSoFar + order.products.length <= (page - 1) * productsPerPage) {
                 productsSoFar += order.products.length;
@@ -854,10 +1005,12 @@ const loaduserprofile = async(req,res)=>{
                 productsPerPage - (ordersToShow.length > 0 ? ordersToShow.reduce((sum, o) => sum + o.products.length, 0) : 0),
                 order.products.length - skipInThisOrder
             );
+            
             if (takeFromThisOrder > 0) {
                 orderCopy.products = order.products.slice(skipInThisOrder, skipInThisOrder + takeFromThisOrder);
                 ordersToShow.push(orderCopy);
             }
+            
             productsSoFar += order.products.length;
             if (ordersToShow.reduce((sum, o) => sum + o.products.length, 0) >= productsPerPage) {
                 break;
@@ -865,14 +1018,14 @@ const loaduserprofile = async(req,res)=>{
         }
 
         res.render('user/userprofile', {
-            user: user,
-            addresses: addresses,
+            user,
+            addresses,
             orders: ordersToShow,
             currentPage: page,
-            totalPages: totalPages,
+            totalPages,
             hasNextPage: page < totalPages,
             hasPrevPage: page > 1,
-            activeTab: activeTab
+            activeTab
         });
 
     } catch(error) {
@@ -1019,15 +1172,13 @@ const loadorderdetils = async(req,res) => {
         }
     
         const order = await Order.findById(orderId)
-            .populate('products.productId').populate('customerId').populate('shippingAddress');
+        .populate('products.productId').populate('customerId').populate('shippingAddress').lean();
     
         if (!order) {
             return res.status(404).send("Order not found");
         }
     
-        const productDetails = order.products.find(item => 
-            item._id.toString() === productId
-        );
+        const productDetails = order.products.find(item => item._id.toString() === productId);
     
         if (!productDetails) {
             return res.status(404).send("Product not found in this order");
@@ -1044,7 +1195,6 @@ const loadorderdetils = async(req,res) => {
         console.log(error);
         res.status(500).send("Internal Server Error");
     }
-    
 }
 
 const cancelorder = async (req, res) => {
@@ -1205,19 +1355,41 @@ const handleGoogleCallback = async (req, res) => {
 };
 
 const loadwishlist = async(req,res)=>{
-    try{
+    try {
         const userid = req.session.user;
         const user = await userschema.findById(userid);
         const wishlist = await wishlistmodel.findOne({ userId: userid })
-            .populate({
-                path: 'products.productId',select: 'name price image stock category'});
+            .populate({path: 'products.productId',select: 'name price image stock category offer'}).lean();
+        const categories = await Category.find().lean();
+        const categoryOffersMap = new Map(
+            categories.map(cat => [cat.name.toLowerCase(), cat.offer || 0])
+        );
+        const calculateOffers = (product) => {
+            const productOffer = product.offer || 0;
+            const categoryOffer = categoryOffersMap.get(product.category.toLowerCase()) || 0;
+            const maxOffer = Math.max(productOffer, categoryOffer);
+            const discountedPrice = maxOffer ? Math.round(product.price - (product.price * maxOffer / 100)) : product.price;
 
-        const wishlistItems = wishlist ? wishlist.products : [];
-        const categories = wishlistItems.map(item => item.productId.category);
-        const relatedProducts = await Productmodel.find({
-            category: { $in: categories },
-            _id: { $nin: wishlistItems.map(item => item.productId._id) },isListed: true,stock: { $gt: 0 }})
-        .select('name price image stock category') .limit(4);
+            return {
+                ...product,
+                maxOffer,
+                offerType: maxOffer === categoryOffer && categoryOffer > 0 ? 'category' : 'product',
+                discountedPrice,
+                originalPrice: product.price
+            };
+        };
+        const wishlistItems = wishlist ? wishlist.products.map(item => ({
+            ...item,
+            productId: calculateOffers(item.productId)
+        })) : [];
+
+        const productCategories = wishlistItems.map(item => item.productId.category);
+        const relatedProductsRaw = await Productmodel.find({
+            category: { $in: productCategories },
+            _id: { $nin: wishlistItems.map(item => item.productId._id) },isListed: true,stock: { $gt: 0 }
+        }).select('name price image stock category offer').limit(4).lean();
+
+        const relatedProducts = relatedProductsRaw.map(product => calculateOffers(product));
 
         res.render('user/wishlist', {
             user,

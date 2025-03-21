@@ -154,30 +154,34 @@
 
         <% if (productDetails) { %>
           <div class="product_details">
-            <div class="product_image">
-              <img src="/uploads/<%= productDetails.productId.image[0] %>" alt="Product Image">
-            </div>
-            <div class="product_info">
-              <h4>
-                <%= productDetails.productId.name %>
-              </h4>
-              <p><strong>Price:</strong> ₹<%= productDetails.productId.price ? productDetails.productId.price.toFixed(2)
-                  : '0.00' %>
-              </p>
-              <p><strong>Quantity:</strong>
-                <%= productDetails.quantity %>
-              </p>
-              <% const productTotal=productDetails.price * productDetails.quantity; const shippingCharge=5; const
-                taxRate=0.1; const productTax=productTotal * taxRate; const totalWithShippingAndTax=productTotal +
-                shippingCharge + productTax; %>
-                <p><strong>Total:</strong> ₹<%= totalWithShippingAndTax.toFixed(2) %>
-                </p>
-            </div>
+              <div class="product_image">
+                  <img src="/uploads/<%= productDetails.productId.image[0] %>" alt="Product Image">
+              </div>
+              <div class="product_info">
+                  <h4><%= productDetails.productId.name %></h4>
+                  <p><strong>Price:</strong> ₹<%= productDetails.price.toFixed(2) %></p>
+                  <p><strong>Quantity:</strong> <%= productDetails.quantity %></p>
+      
+                  <% 
+                      const productTotal = productDetails.price * productDetails.quantity;
+                      const shippingCharge = 5;
+                      const taxRate = 0.1;
+                      const productTax = productTotal * taxRate;
+                      const totalWithShippingAndTax = productTotal + shippingCharge + productTax;
+                      
+                  %>
+      
+                  <div class="total_breakdown">
+                      <p><strong>Subtotal:</strong> ₹<%= productTotal.toFixed(2) %></p>
+                      <p><strong>Shipping:</strong> ₹<%= shippingCharge.toFixed(2) %></p>
+                      <p><strong>Tax (10%):</strong> ₹<%= productTax.toFixed(2) %></p>
+                      <p class="final_total"><strong>Total:</strong> ₹<%= order.totalAmount %></p>
+                  </div>
+              </div>
           </div>
-          <% } else { %>
-            <p>Product details not found.</p>
-            <% } %>
-
+      <% } else { %>
+          <p>Product details not found.</p>
+      <% } %>
               <div class="details_section">
                 <div class="details_block">
                   <h4>Shipping Address</h4>
@@ -391,7 +395,6 @@
   <script src="/js/custom.js"></script>
 
   <script>
-
     document.addEventListener('DOMContentLoaded', function () {
       const trackButtons = document.querySelectorAll('.track-btn');
       const modal = document.getElementById('trackingModal');

@@ -459,3 +459,31 @@
     transform: scale(1.1); 
     transition: all 0.3s ease; 
 }
+.price_details {
+  margin: 10px 0;
+}
+
+.price_details p {
+  margin: 5px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.original-price {
+  color: #666;
+  font-size: 13px;
+}
+
+.discounted-price {
+  color: #ff4c4c;
+  font-weight: 600;
+}
+
+.offer-text {
+  color: #28a745;
+  font-size: 11px;
+  background: #e8f5e9;
+  padding: 1px 4px;
+  border-radius: 3px;
+}

@@ -12,6 +12,18 @@ const productSchema = new mongoose.Schema({
         ref: 'Category',  
         required: true
     },
+    offer: {
+        type: Number,
+        default: 0,  
+        min: 0,
+        max: 70
+    },
+    discountedPrice: {
+        type: Number,
+        default: function() {
+            return this.price;
+        }
+    },
     createdAt: { type: Date, default: Date.now },
     isListed: {
         type: Boolean,

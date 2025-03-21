@@ -24,6 +24,12 @@ router.post('/categories/listing',adminauth.checksession, admincontreller.Catego
 router.get('/order',adminauth.checksession,admincontreller.loadorders)
 router.put('/api/orders/:orderId/product-status',adminauth.checksession,admincontreller.updateorderstatus)
 router.get('/vieworderdetils',adminauth.checksession,admincontreller.loadviewoderdeatils)
+router.get('/coupon',adminauth.checksession,admincontreller.loadcoupon)
+router.get('/addcoupon',adminauth.checksession,admincontreller.loadaddcoupon)
+router.post('/coupons',adminauth.checksession,admincontreller.addcoupon)
+router.get('/updatecoupon/:id',adminauth.checksession,admincontreller.loadupdatecoupon)
+router.put('/coupons/:id',adminauth.checksession,admincontreller.updatecoupon);
+router.patch('/toggle-coupon/:id',adminauth.checksession,admincontreller.couponstatus)
 router.get('/logout',adminauth.checksession,admincontreller.logout)
 
 

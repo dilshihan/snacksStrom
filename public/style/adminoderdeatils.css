@@ -354,3 +354,43 @@ body {
 .logout-link {
     color: #ef4444;
 }
+.price-info, .total-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.original-price, .original-total {
+    color: #666;
+    font-size: 13px;
+    text-decoration: line-through;
+}
+
+.discounted-price, .discounted-total {
+    color: #ff4c4c;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.offer-badge {
+    display: inline-block;
+    color: #28a745;
+    font-size: 11px;
+    background: #e8f5e9;
+    padding: 1px 4px;
+    border-radius: 3px;
+    white-space: nowrap;
+}
+
+.offer-badge small {
+    color: #666;
+    font-size: 10px;
+}
+
+.total-info {
+    text-align: right;
+}
+
+.price {
+    white-space: nowrap;
+}

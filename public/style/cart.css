@@ -323,3 +323,38 @@ margin-top: 120px;
     transform: scale(1.1); 
     transition: all 0.3s ease; 
 }
+.price-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 3px 0;
+}
+
+.original-price {
+  color: #666;
+  font-size: 13px;
+  text-decoration: line-through;
+}
+
+.discounted-price {
+  color: #ff4c4c;
+  font-weight: bold;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+}
+
+.offer-text {
+  color: #28a745;
+  font-size: 11px;
+  margin-left: 4px;
+  background: #e8f5e9;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+.price {
+  font-size: 15px;
+  font-weight: bold;
+  color: #333;
+}

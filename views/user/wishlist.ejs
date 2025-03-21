@@ -136,94 +136,124 @@
     <!-- wishlist section -->
     <section class="wishlist_section layout_padding">
       <div class="container">
-        <div class="wishlist_header">
-          <h2>My Wishlist</h2>
-        </div>
-        
-        <div class="row">
-            <div class="col-12">
-                <div class="wishlist_container">
-                    <% if (wishlistItems && wishlistItems.length > 0) { %>
-                        <% wishlistItems.forEach(function(item) { %>
-                            <div class="wishlist_item" data-product-id="<%= item.productId._id %>">
-                                <div class="item_image">
-                                    <img src="/uploads/<%= item.productId.image[0] %>" alt="<%= item.productId.name %>" />
-                                </div>
-                                <div class="item_info">
-                                    <h4><%= item.productId.name %></h4>
-                                    <p class="price">₹<%= item.productId.price.toFixed(2) %></p>
-                                    <% if (item.productId.stock > 0) { %>
-                                        <p class="item_availability">In Stock</p>
-                                    <% } else { %>
-                                        <p class="item_availability out-of-stock">Out of Stock</p>
-                                    <% } %>
-                                </div>
-                                <div class="action_buttons">
-                                    <% if (item.productId.stock > 0) { %>
-                                        <button class="action_btn add_to_cart_btn" 
-                                        onclick="addToCartAndRemoveFromWishlist('<%= item.productId._id %>', 1, '<%= item.productId.name %>', '<%= userId %>')">
-                                        <i class="fa fa-shopping-cart mr-2"></i> Add to Cart
-                                    </button>
-                                    <% } else { %>
-                                        <button class="action_btn add_to_cart_btn" 
-                                                disabled 
-                                                style="background-color: #ccc;">
-                                            <i class="fa fa-shopping-cart mr-2"></i> Add to Cart
-                                        </button>
-                                    <% } %>
-                                    <button class="remove_btn" 
-                                            onclick="removeFromWishlist('<%= item.productId._id %>')">
-                                        <i class="fa fa-trash"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        <% }); %>
-                    <% } else { %>
-                        <div class="empty_wishlist">
-                            <i class="fa fa-heart-o"></i>
-                            <h3>Your wishlist is empty</h3>
-                            <p>Add items to your wishlist to save them for later!</p>
-                            <button class="shop_now_btn" onclick="location.href='/user/menu'">Shop Now</button>
-                        </div>
-                    <% } %>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Recently viewed section -->
-        <div class="recently_viewed">
-            <h3>You May Also Like</h3>
-            <div class="product_slider">
-                <% if (relatedProducts && relatedProducts.length > 0) { %>
-                    <% relatedProducts.forEach(function(product) { %>
-                        <div class="product_card">
-                            <a href="/user/productdetails/<%= product._id %>" class="product_img_link">
-                                <div class="product_img">
-                                    <img src="/uploads/<%= product.image[0] %>" alt="<%= product.name %>" />
-                                </div>
-                            </a>
-                            <div class="product_info">
-                                <a href="/user/productdetails/<%= product._id %>" class="product_title_link">
-                                    <h4 class="product_title"><%= product.name %></h4>
-                                </a>
-                                <div class="product_price">₹<%= product.price.toFixed(2) %></div>
-                                <div class="product_actions">
-                                    <button class="quick_add_btn" 
-                                        onclick="addToCart('<%= product._id %>', 1, '<%= product.name %>', '<%= userId %>')">
-                                        Add to Cart
-                                    </button>
-                                    <button class="wish_btn" onclick="addToWishlist('<%= product._id %>', event)">
-                                        <i class="fa fa-heart-o"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    <% }); %>
-                <% } %>
-            </div>
-        </div>
-      
-    </section>
+          <div class="wishlist_header">
+              <h2>My Wishlist</h2>
+          </div>
+          
+          <div class="row">
+              <div class="col-12">
+                  <div class="wishlist_container">
+                      <% if (wishlistItems && wishlistItems.length > 0) { %>
+                          <% wishlistItems.forEach(function(item) { %>
+                              <div class="wishlist_item" data-product-id="<%= item.productId._id %>">
+                                  <div class="item_image position-relative">
+                                      <img src="/uploads/<%= item.productId.image[0] %>" alt="<%= item.productId.name %>" />
+                                      <% if (item.productId.maxOffer && item.productId.maxOffer > 0) { %>
+                                          <div class="offer-badge">
+                                              <% if (item.productId.maxOffer >= 50) { %>
+                                                  <span class="big-offer">MEGA OFFER</span>
+                                              <% } %>
+                                              <% if (item.productId.offerType === 'category') { %>
+                                                  <span class="offer-type">Category Offer</span>
+                                              <% } %>
+                                              <%= item.productId.maxOffer %>% OFF
+                                          </div>
+                                      <% } %>
+                                  </div>
+                                  <div class="item_info">
+                                      <h4><%= item.productId.name %></h4>
+                                      <% if (item.productId.maxOffer && item.productId.maxOffer > 0) { %>
+                                          <div class="price-info">
+                                              <p class="original-price">MRP: <del>₹<%= item.productId.originalPrice.toFixed(2) %></del></p>
+                                              <p class="discounted-price">MRP ₹<%= item.productId.discountedPrice.toFixed(2) %></p>
+                                          </div>
+                                      <% } else { %>
+                                          <p class="price">MRP ₹<%= item.productId.price.toFixed(2) %></p>
+                                      <% } %>
+                                      <% if (item.productId.stock > 0) { %>
+                                          <p class="item_availability">In Stock</p>
+                                      <% } else { %>
+                                          <p class="item_availability out-of-stock">Out of Stock</p>
+                                      <% } %>
+                                  </div>
+                                  <div class="action_buttons">
+                                      <% if (item.productId.stock > 0) { %>
+                                          <button class="action_btn add_to_cart_btn" 
+                                              onclick="addToCartAndRemoveFromWishlist('<%= item.productId._id %>', 1, '<%= item.productId.name %>', '<%= userId %>')">
+                                              <i class="fa fa-shopping-cart mr-2"></i> Add to Cart
+                                          </button>
+                                      <% } else { %>
+                                          <button class="action_btn add_to_cart_btn" disabled style="background-color: #ccc;">
+                                              <i class="fa fa-shopping-cart mr-2"></i> Add to Cart
+                                          </button>
+                                      <% } %>
+                                      <button class="remove_btn" onclick="removeFromWishlist('<%= item.productId._id %>')">
+                                          <i class="fa fa-trash"></i>
+                                      </button>
+                                  </div>
+                              </div>
+                          <% }); %>
+                      <% } else { %>
+                          <div class="empty_wishlist">
+                              <i class="fa fa-heart-o"></i>
+                              <h3>Your wishlist is empty</h3>
+                              <p>Add items to your wishlist to save them for later!</p>
+                              <button class="shop_now_btn" onclick="location.href='/user/menu'">Shop Now</button>
+                          </div>
+                      <% } %>
+                  </div>
+              </div>
+          </div>
+          
+          <!-- Recently viewed section -->
+          <div class="recently_viewed">
+              <h3>You May Also Like</h3>
+              <div class="product_slider">
+                  <% if (relatedProducts && relatedProducts.length > 0) { %>
+                      <% relatedProducts.forEach(function(product) { %>
+                          <div class="product_card">
+                              <a href="/user/productdetails/<%= product._id %>" class="product_img_link">
+                                  <div class="product_img position-relative">
+                                      <img src="/uploads/<%= product.image[0] %>" alt="<%= product.name %>" />
+                                      <% if (product.maxOffer && product.maxOffer > 0) { %>
+                                          <div class="offer-badge-small">
+                                              <% if (product.maxOffer >= 50) { %>
+                                                  <span class="big-offer-small">MEGA</span>
+                                              <% } %>
+                                              <%= product.maxOffer %>% OFF
+                                          </div>
+                                      <% } %>
+                                  </div>
+                              </a>
+                              <div class="product_info">
+                                  <a href="/user/productdetails/<%= product._id %>" class="product_title_link">
+                                      <h4 class="product_title"><%= product.name %></h4>
+                                  </a>
+                                  <% if (product.maxOffer && product.maxOffer > 0) { %>
+                                      <div class="price-info">
+                                          <span class="original-price"><del>MRP ₹<%= product.originalPrice.toFixed(2) %></del></span>
+                                          <div class="discounted-price">MRP ₹<%= product.discountedPrice.toFixed(2) %></div>
+                                      </div>
+                                  <% } else { %>
+                                      <div class="product_price">MRP ₹<%= product.price.toFixed(2) %></div>
+                                  <% } %>
+                                  <div class="product_actions">
+                                      <button class="quick_add_btn" 
+                                          onclick="addToCartAndRemoveFromWishlist('<%= product._id %>', 1, '<%= product.name %>', '<%= userId %>')">
+                                          Add to Cart
+                                      </button>
+                                      <button class="wish_btn" onclick="addToWishlist('<%= product._id %>', event)">
+                                          <i class="fa fa-heart-o"></i>
+                                      </button>
+                                  </div>
+                              </div>
+                          </div>
+                      <% }); %>
+                  <% } %>
+              </div>
+          </div>
+      </div>
+  </section>
     
     <!-- footer section -->
     <footer class="footer_section">
@@ -369,6 +399,9 @@
                 showConfirmButton: false,
                 timer: 1500
             });
+            setTimeout(()=>{
+                      window.location.reload()
+                    },1000)
         } else {
             Swal.fire({
                 icon: 'error',
@@ -409,6 +442,9 @@ function removeFromWishlist(productId) {
                         productElement.remove();
                     }
                     showToast('Success', 'Product removed from wishlist');
+                    setTimeout(()=>{
+                      window.location.reload()
+                    },1000)
                 } else {
                     showToast('Error', data.message || 'Failed to remove product');
                 }
@@ -478,6 +514,9 @@ async function addToCartAndRemoveFromWishlist(productId, quantity = 1, productNa
                 showConfirmButton: false,
                 timer: 1500
             });
+            setTimeout(()=>{
+                      window.location.reload()
+                    },1000)
         } else {
             Swal.fire({
                 title: "Error!",

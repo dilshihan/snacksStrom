@@ -63,6 +63,14 @@
                 <div class="error-message" id="priceError"></div>
             </div>
 
+            <div class="form-group">
+                <label for="productOffer">Offer (%)</label>
+                <input  type="number"id="productOffer"name="offer"min="0"max="70" step="1" 
+                    value="<%= product.offer || 0 %>">
+                <div class="error-message" id="offerError"></div>
+                <div id="discountedPriceDisplay"></div>
+            </div>
+
             <!-- Repeat for each image (1-3) -->
             <% for(let i=1; i <=3; i++) { %>
                 <div class="form-group">

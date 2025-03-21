@@ -148,32 +148,53 @@
   <div class="container">
     <div class="row">
       <div class="col-md-6">
-        <div class="img-magnifier-container">
+        <div class="img-magnifier-container position-relative">
           <img id="mainImage" src="/uploads/<%= products.image[0] %>" alt="<%= products.name %>" width="100%">
+          <% if (products.maxOffer && products.maxOffer > 0) { %>
+            <div class="offer-badge">
+              <% if (products.maxOffer >= 50) { %>
+                <span class="big-offer">MEGA OFFER</span>
+              <% } %>
+              <% if (products.offerType === 'category') { %>
+                <span class="offer-type">Category Offer</span>
+              <% } %>
+              <%= products.maxOffer %>% OFF
+            </div>
+          <% } %>
         </div>
         <!-- Thumbnail Images -->
         <div class="thumbnail-container">
           <% products.image.forEach(function(img, index) { %>
             <img src="/uploads/<%= img %>" alt="<%= products.name %>" class="thumbnail"
               onclick="changeMainImage(this.src)">
-            <% }); %>
+          <% }); %>
         </div>
-
       </div>
       <div class="col-md-6">
         <div class="detail-box">
           <div class="heading_container">
-            <h2>
-              <%= products.name %>
-            </h2>
-            <span class="category-badge">
-              <%= products.category %>
-            </span>
+            <h2><%= products.name %></h2>
+            <span class="category-badge"><%= products.category %></span>
           </div>
           <div class="product-info mt-4">
-            <h4 class="price-area mb-4">
-              ₹<%= products.price %>
-            </h4>
+            <div class="price-area mb-4">
+              <% if (products.maxOffer && products.maxOffer > 0) { %>
+                <div class="original-price">
+                  <span class="label">MRP:</span>
+                  <span class="value"><del>₹<%= products.originalPrice %></del></span>
+                </div>
+                <div class="discounted-price">
+                  <span class="label">Offer Price:</span>
+                  <span class="value">₹<%= products.discountedPrice %></span>
+                </div>
+                <div class="savings">
+                  <span class="save-label">You Save:</span>
+                  <span class="save-amount">₹<%= products.originalPrice - products.discountedPrice %> (<%= products.maxOffer %>%)</span>
+                </div>
+              <% } else { %>
+                <h4>₹<%= products.price %></h4>
+              <% } %>
+            </div>
             <div class="product-meta mb-4">
               <div class="stock-info">
                 <span class="label">Stock Status:</span>
@@ -241,45 +262,66 @@
     </div>
 
     <div class="row related-products">
-      <% if (typeof relatedProducts !=='undefined' && relatedProducts.length> 0) { %>
-        <% relatedProducts.forEach(function(product) { %>
-          <div class="col-sm-6 col-lg-3">
-            <a href="/user/productdetails/<%= product._id %>" class="product-link">
-              <div class="product-box">
-                <div class="img-box">
-                  <img src="/uploads/<%= product.image[0] %>" alt="<%= product.name %>" class="img-fluid">
-                </div>
-                <div class="detail-box">
-                  <h5>
-                    <%= product.name %>
-                  </h5>
-                  <div class="price-box">
-                    <h6 class="price">₹<%= product.price %>
-                    </h6>
-                    <% if (product.stock> 0) { %>
-                      <span class="stock-status">In Stock</span>
-                      <% } else { %>
-                        <span class="stock-status out">Out of Stock</span>
-                        <% } %>
-                        <div class="wishlist" style="position: absolute; right: 0px; top: 10px;">
-                          <% if (product.isInWishlist) { %>
-                            <button class="btn btn-danger btn-sm" disabled>
-                                <i class="fa fa-heart"></i> In Wishlist
-                            </button>
-                        <% } else { %>
-                          <button onclick="addToWishlist('<%= products._id %>', event)" class="btn btn-outline-danger ml-3">
-                            <i class="fa fa-heart"></i> Add to Wishlist
-                        </button>
-                        <% } %>
+      <% if (typeof relatedProducts !== 'undefined' && relatedProducts.length > 0) { %>
+          <% relatedProducts.forEach(function(product) { %>
+              <div class="col-sm-6 col-lg-3">
+                  <a href="/user/productdetails/<%= product._id %>" class="product-link">
+                      <div class="product-box">
+                          <div class="img-box position-relative">
+                              <img src="/uploads/<%= product.image[0] %>" alt="<%= product.name %>" class="img-fluid">
+                              <% if (product.maxOffer && product.maxOffer > 0) { %>
+                                  <div class="offer-badge-small">
+                                      <% if (product.maxOffer >= 50) { %>
+                                          <span class="big-offer-small">MEGA</span>
+                                      <% } %>
+                                      <% if (product.offerType === 'category') { %>
+                                          <span class="offer-type-small">Category</span>
+                                      <% } %>
+                                      <%= product.maxOffer %>% OFF
+                                  </div>
+                              <% } %>
+                          </div>
+                          <div class="detail-box">
+                              <h5><%= product.name %></h5>
+                              <div class="price-box">
+                                  <% if (product.maxOffer && product.maxOffer > 0) { %>
+                                      <div class="price-container">
+                                          <span class="original-price-small">
+                                              <del>MRP ₹<%= product.originalPrice %></del>
+                                          </span>
+                                          <h6 class="discounted-price-small">
+                                            MRP ₹<%= product.discountedPrice %>
+                                          </h6>
+                                      </div>
+                                  <% } else { %>
+                                      <h6 class="price">MRP ₹<%= product.price %></h6>
+                                  <% } %>
+                                  
+                                  <% if (product.stock > 0) { %>
+                                      <span class="stock-status">In Stock</span>
+                                  <% } else { %>
+                                      <span class="stock-status out">Out of Stock</span>
+                                  <% } %>
+                                  
+                                  <div class="wishlist">
+                                      <% if (product.isInWishlist) { %>
+                                          <button class="btn btn-danger btn-sm" disabled>
+                                              <i class="fa fa-heart"></i> In Wishlist
+                                          </button>
+                                      <% } else { %>
+                                          <button onclick="addToWishlist('<%= product._id %>', event)" class="btn btn-outline-danger btn-sm">
+                                              <i class="fa fa-heart"></i> Add to Wishlist
+                                          </button>
+                                      <% } %>
+                                  </div>
+                              </div>
+                          </div>
                       </div>
-                  </div>
-                </div>
+                  </a>
               </div>
-            </a>
-          </div>
           <% }); %>
-            <% } %>
-    </div>
+      <% } %>
+  </div>
   </div>
 </section>
 <!-- end food section -->

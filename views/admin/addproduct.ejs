@@ -55,6 +55,21 @@
                 <input type="number" id="productPrice" name="price" required min="0" max="100000" step="0.01">
                 <div class="error-message" id="priceError"></div>
             </div>
+            
+            <div class="form-group">
+                <label for="productOffer">Offer (%)</label>
+                <input 
+                    type="number" 
+                    id="productOffer" 
+                    name="offer"
+                    min="0" 
+                    max="70" 
+                    step="1" 
+                    value="0"
+                >
+                <div class="error-message" id="offerError"></div>
+                <div id="discountedPriceDisplay"></div>
+            </div>
 
             <div class="form-group">
                 <label>Product Image 1</label>
@@ -435,6 +450,7 @@
                         formData.append('category', document.getElementById('productCategory').value);
                         formData.append('stock', document.getElementById('productStock').value);
                         formData.append('price', document.getElementById('productPrice').value);
+                        formData.append('offer',document.getElementById('productOffer').value)
                         // Append cropped images
                         for (let i = 1; i <= 3; i++) {
                             const croppedImage = document.getElementById(`croppedImage${i}`).value;
@@ -482,6 +498,36 @@
                 }
             });
         })
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+    const priceInput = document.getElementById('productPrice');
+    const offerInput = document.getElementById('productOffer');
+    const discountedPriceDisplay = document.getElementById('discountedPriceDisplay');
+
+    function updateDiscountedPrice() {
+        const price = parseFloat(priceInput.value) || 0;
+        const offer = parseFloat(offerInput.value) || 0;
+        
+        if (price > 0) {
+            const discountedPrice = price - (price * offer / 100);
+            discountedPriceDisplay.textContent = `Discounted Price: ₹${discountedPrice.toFixed(2)}`;
+        } else {
+            discountedPriceDisplay.textContent = '';
+        }
+    }
+
+    priceInput.addEventListener('input', updateDiscountedPrice);
+    offerInput.addEventListener('input', updateDiscountedPrice);
+
+    // Add validation for offer field
+    offerInput.addEventListener('change', function() {
+        const offer = parseFloat(this.value);
+        if (offer < 0) this.value = 0;
+        if (offer > 100) this.value = 100;
+        updateDiscountedPrice();
+    });
+});
     </script>
 </body>
 </html>

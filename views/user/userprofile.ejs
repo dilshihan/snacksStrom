@@ -342,76 +342,81 @@
 
             <!-- Orders Tab -->
             <div id="orders" class="tab_content">
-              <% if (orders && orders.length> 0) { %>
-              <% orders.forEach(order=> { %>
-              <% order.products.forEach(product=> { %>
-              <div class="order_card">
-                <div class="order_details">
-                  <div>
-                    <h5>
-                      <%= product.productName %>
-                    </h5>
-                    <p>Placed on <%= order.orderDate.toDateString() %>
-                    </p>
+              <% if (orders && orders.length > 0) { %>
+                  <% orders.forEach(order => { %>
+                      <% order.products.forEach(product => { %>
+                          <div class="order_card">
+                              <div class="order_details">
+                                  <div>
+                                      <h5><%= product.productName %></h5>
+                                      <p>Placed on <%= order.orderDate.toDateString() %></p>
+                                  </div>
+                                  <div>
+                                      <span class="order_status <%= 
+                                          product.status === 'Delivered' ? 'status_delivered' : 
+                                          product.status === 'Processing' ? 'status_processing' : 
+                                          product.status === 'Cancelled' ? 'status_cancelled' :
+                                          'status_pending' 
+                                      %>">
+                                          <%= product.status %>
+                                      </span>
+                                  </div>
+                              </div>
+          
+                              <div class="price_details">
+                                  <p><strong>Price:</strong> ₹<%= product.price.toFixed(2) %></p>
+                                  <p><strong>Quantity:</strong> <%= product.quantity %></p>
+                                  
+                                  <% 
+                                      const productTotal = product.price * product.quantity;
+                                      const shippingCharge = 5;
+                                      const taxRate = 0.1;
+                                      const productTax = productTotal * taxRate;
+                                      const totalWithShippingAndTax = productTotal + shippingCharge + productTax
+                                  %>
+                                  <p><strong>Total:</strong> ₹<%= order.totalAmount %></p>
+                              </div>
+          
+                              <div class="order_actions">
+                                  <button class="view_details_btn" 
+                                          data-order-id="<%= order._id %>" 
+                                          data-product-id="<%= product._id %>">
+                                      <i class="fa fa-eye"></i> View Details
+                                  </button>
+          
+                                  <% if (product.status !== "Cancelled" && product.status !== "Delivered") { %>
+                                      <button class="cancel_order_btn" 
+                                              data-order-id="<%= order._id %>" 
+                                              data-product-id="<%= product._id %>">
+                                          <i class="fa fa-ban"></i> Cancel Order
+                                      </button>
+                                  <% } %>
+                              </div>
+                          </div>
+                      <% }); %>
+                  <% }); %>
+          
+                  <!-- Pagination Controls -->
+                  <div class="pagination">
+                      <% if (currentPage > 1) { %>
+                          <a href="?tab=orders&page=<%= currentPage - 1 %>" class="page-link">&laquo; Previous</a>
+                      <% } %>
+          
+                      <% for(let i = 1; i <= totalPages; i++) { %>
+                          <a href="?tab=orders&page=<%= i %>" 
+                             class="page-link <%= currentPage === i ? 'active' : '' %>">
+                              <%= i %>
+                          </a>
+                      <% } %>
+          
+                      <% if (currentPage < totalPages) { %>
+                          <a href="?tab=orders&page=<%= currentPage + 1 %>" class="page-link">Next &raquo;</a>
+                      <% } %>
                   </div>
-                  <div>
-                    <span class="order_status <%= 
-                                                        product.status === 'Delivered' ? 'status_delivered' : 
-                                                        product.status === 'Processing' ? 'status_processing' : 
-                                                        product.status === 'Cancelled' ? 'status_cancelled' :
-                                                        'status_pending' 
-                                                    %>">
-                      <%= product.status %>
-                    </span>
-                  </div>
-                </div>
-                <p><strong>Price:</strong> ₹<%= product.price.toFixed(2) %>
-                </p>
-                <p><strong>Quantity:</strong>
-                  <%= product.quantity %>
-                </p>
-                <% const productTotal=product.price * product.quantity; const
-                                                shippingCharge=5; const taxRate=0.1; const productTax=productTotal *
-                                                taxRate; const totalWithShippingAndTax=productTotal + shippingCharge +
-                                                productTax; %>
-                <p><strong>Total:</strong> ₹<%= totalWithShippingAndTax.toFixed(2) %>
-                </p>
-                <div class="order_actions">
-                  <button class="view_details_btn" data-order-id="<%= order._id %>" data-product-id="<%= product._id %>">
-                    <i class="fa fa-eye"></i> View Details
-                  </button>
-
-                  <% if (product.status !=="Cancelled" && product.status
-                                                        !=="Delivered" ) { %>
-                  <button class="cancel_order_btn" data-order-id="<%= order._id %>" data-product-id="<%= product._id %>">
-                    <i class="fa fa-ban"></i> Cancel Order
-                  </button>
-                  <% } %>
-                </div>
-              </div>
-              <% }); %>
-              <% }); %>
-
-              <!-- Pagination Controls -->
-              <div class="pagination">
-    <% if (currentPage > 1) { %>
-    <a href="?tab=orders&page=<%= currentPage - 1 %>" class="page-link">&laquo; Previous</a>
-    <% } %>
-
-    <% for(let i=1; i <= totalPages; i++) { %>
-    <a href="?tab=orders&page=<%= i %>" class="page-link <%= currentPage === i ? 'active' : '' %>">
-        <%= i %>
-    </a>
-    <% } %>
-
-    <% if (currentPage < totalPages) { %>
-    <a href="?tab=orders&page=<%= currentPage + 1 %>" class="page-link">Next &raquo;</a>
-    <% } %>
-</div>
               <% } else { %>
-              <p>No orders found.</p>
+                  <p>No orders found.</p>
               <% } %>
-            </div>
+          </div>
 
 
 

@@ -27,6 +27,15 @@
                     <input type="text" id="categoryName" name="name" required placeholder="Enter category name">
                 </div>
                 <div class="form-group">
+                    <label for="categoryOffer" class="form-label">Offer (%)</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-percent icon"></i>
+                        <input type="number" id="categoryOffer"name="offer"min="0"max="70"step="1"value="0"
+                               class="form-input"
+                               placeholder="Enter offer percentage">
+                    </div>
+                </div>
+                <div class="form-group">
                     <label for="categoryDescription">Description</label>
                     <i class="fas fa-align-left"></i>
                     <textarea id="categoryDescription" name="description" rows="4" required

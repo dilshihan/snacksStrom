@@ -157,3 +157,36 @@ button:hover {
     width: 100%;
     max-width: 600px;
 }
+.form-group .input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.form-group .input-wrapper .icon {
+    position: absolute;
+    left: 10px;
+    color: #6b7280;
+}
+
+.form-group .input-wrapper input {
+    padding-left: 35px;  /* Make space for the icon */
+    width: 100%;
+    height: 40px;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: border-color 0.2s;
+}
+
+.form-group .input-wrapper input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.form-group .input-wrapper input::-webkit-inner-spin-button,
+.form-group .input-wrapper input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}

@@ -14,6 +14,12 @@ const categorySchema = new mongoose.Schema({
     isListed: {
         type: Boolean,
         default: true,  
+    },
+    offer: {
+        type: Number,
+        min: 0,
+        max: 70,
+        default: 0
     }
 }, { timestamps: true });
 

@@ -389,64 +389,86 @@
 
           <div class="col-lg-4">
             <div class="order_summary">
-              <h3 class="summary_heading">Order Summary</h3>
-              <div class="summary_items">
-                <% let subtotal = 0; %> <% cart.forEach(item => { %> <% let
-                itemTotal = item.price * item.quantity; %> <% subtotal +=
-                itemTotal; %>
-                <div class="summary_item">
-                  <div class="item_name">
-                    <span  class="item_quantity"><%= item.quantity %></span>
-                    <input type="hidden" id="quantity"  value="<%= item.quantity %>" > 
-                    <span ><%= item.name %></span>
-                    <input type="hidden" value="<%= item.name %>" id="productName">
-                    <input type="hidden"  id="productId" value="<%=item.id %>">
-                    <input type="hidden"  id="userId" value="<%=user._id%>">
-         
-                  </div>
-                  <div class="item_price">₹<%= itemTotal.toFixed(2) %></div>
-                  <input type="hidden"  id="productPrice" value="<%= itemTotal.toFixed(2) %>" >
+                <h3 class="summary_heading">Order Summary</h3>
+                <div class="summary_items">
+                    <% let subtotal = 0; %>
+                    <% cart.forEach(item => { %>
+                        <div class="summary_item">
+                            <div class="item_name">
+                                <span class="item_quantity"><%= item.quantity %></span>
+                                <input type="hidden" id="quantity" value="<%= item.quantity %>">
+                                <span><%= item.name %></span>
+                                <input type="hidden" value="<%= item.name %>" id="productName">
+                                <input type="hidden" id="productId" value="<%= item.id %>">
+                                <input type="hidden" id="userId" value="<%= user._id %>">
+                            </div>
+                            <div class="item_price">
+                                <% if (item.maxOffer && item.maxOffer > 0) { %>
+                                    <div class="price-info">
+                                        <del class="original-price">₹<%= (item.originalPrice * item.quantity).toFixed(2) %></del>
+                                        <span class="discounted-price">₹<%= item.itemTotal.toFixed(2) %></span>
+                                        <span class="offer-text"><%= item.maxOffer %>% off</span>
+                                    </div>
+                                <% } else { %>
+                                    ₹<%= item.itemTotal.toFixed(2) %>
+                                <% } %>
+                                <input type="hidden" id="productPrice" value="<%= item.itemTotal.toFixed(2) %>">
+                            </div>
+                        </div>
+                        <% subtotal += item.itemTotal; %>
+                    <% }); %>
                 </div>
-                <% }); %>
-              </div>
-
-              <% let shipping = subtotal > 0 ? 5.00 : 0; %> <% let tax =
-              subtotal * 0.1; %> <% let discount = 0; %> <% let total =
-              subtotal + shipping + tax - discount; %>
-
-              <div class="price_details">
-                <div class="price_row">
-                  <span>Subtotal</span>
-                  <span>₹<%= subtotal.toFixed(2) %></span>
+        
+                <% let shipping = subtotal > 0 ? 5.00 : 0; %>
+                <% let tax = subtotal * 0.1; %>
+                <% let discount = 0; %>
+                <% let total = subtotal + shipping + tax - discount; %>
+        
+                <div class="price_details">
+                    <div class="price_row">
+                        <span>Subtotal</span>
+                        <span>₹<%= subtotal.toFixed(2) %></span>
+                    </div>
+        
+                    <div class="price_row">
+                        <span>Shipping</span>
+                        <span>₹<%= shipping.toFixed(2) %></span>
+                    </div>
+        
+                    <div class="price_row">
+                        <span>Tax</span>
+                        <span>₹<%= tax.toFixed(2) %></span>
+                    </div>
+        
+                    <div class="price_row">
+                        <span>Discount</span>
+                        <span id="discount-amount">-₹<%= discount.toFixed(2) %></span>
+                    </div>
+        
+                    <div class="price_total">
+                        <span >Total</span>
+                        <span id="total-price-display">₹<%= total.toFixed(2) %></span>
+                        <input type="hidden" id="TotalAmount" value="<%= total.toFixed(2) %>">
+                    </div>
                 </div>
-
-                <div class="price_row">
-                  <span>Shipping</span>
-                  <span>₹<%= shipping.toFixed(2) %></span>
-                </div>
-
-                <div class="price_row">
-                  <span>Tax</span>
-                  <span>₹<%= tax.toFixed(2) %></span>
-                </div>
-
-                <div class="price_row">
-                  <span>Discount</span>
-                  <span>-₹<%= discount.toFixed(2) %></span>
-                </div>
-
-                <div class="price_total">
-                  <span>Total</span>
-                  <span>₹<%= total.toFixed(2) %></span>
-                  <input type="hidden" id="TotalAmount" value="<%= total.toFixed(2) %>">
-                </div>
-              </div>
-
-              <button id="place-order-btn" class="place_order_btn">
-                Place Order
-              </button>
+        
+                <button id="place-order-btn" class="place_order_btn">
+                    Place Order
+                </button>
             </div>
+            <div class="offers-container">
+              <% coupons.forEach((coupon, index) => { %>
+                  <div class="offer-box">
+                      <input type="checkbox" name="offer" class="offer-checkbox" id="couponOffer" 
+                      value="<%= coupon.discountAmount %>"onclick="applyCoupon(this)" onclick="toggleSelection(this)">
+                      <div class="offer-content">
+                          <div class="code">couponCode:-<%= coupon.code %></div>
+                          <div class="discount">discountAmount:-<%= coupon.discountAmount %></div>
+                      </div>
+                  </div>
+              <% }); %>
           </div>
+        </div>
         </div>
       </div>
     </section>
@@ -640,6 +662,7 @@ if (!selectedAddress) {
 
 const addressId = selectedAddress.querySelector(".addressId").value;
 const totalAmount = document.getElementById("TotalAmount").value;
+const couponOffer= document.getElementById("couponOffer").value
 const userId = document.getElementById("userId").value;
 const paymentMethod = selectedPaymentMethod.id;
 if (!addressId) {
@@ -656,7 +679,8 @@ const orderData = {
     products,
     totalAmount,
     paymentMethod,
-    addressId  
+    addressId ,
+    couponOffer 
 };
 
 fetch("/user/order-details", {
@@ -968,6 +992,67 @@ function useSelectedAddress() {
           closeAddressModal();
         }
       });
+    </script>
+    <script>
+function toggleSelection(checkbox) {
+    document.querySelectorAll('.offer-checkbox').forEach(cb => {
+        if (cb !== checkbox) {
+            cb.checked = false;
+        }
+    });
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    const totalAmountElem = document.getElementById("TotalAmount");
+    const discountElem = document.getElementById("discount-amount");
+    const totalPriceElem = document.getElementById("total-price-display");
+    const checkboxes = document.querySelectorAll(".offer-checkbox");
+
+    // Retrieve the stored coupon from localStorage
+    let selectedCouponValue = localStorage.getItem("selectedCoupon");
+
+    if (selectedCouponValue) {
+        checkboxes.forEach(checkbox => {
+            if (checkbox.value === selectedCouponValue) {
+                checkbox.checked = true;
+                applyCoupon(checkbox);
+            }
+        });
+    }
+
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener("change", function () {
+            applyCoupon(this);
+        });
+    });
+
+    function applyCoupon(selectedCoupon) {
+        // Uncheck other checkboxes
+        checkboxes.forEach(checkbox => {
+            if (checkbox !== selectedCoupon) {
+                checkbox.checked = false;
+            }
+        });
+
+        let totalAmount = parseFloat(totalAmountElem.value);
+        let discount = 0;
+
+        if (selectedCoupon.checked) {
+            discount = parseFloat(selectedCoupon.value);
+            localStorage.setItem("selectedCoupon", selectedCoupon.value); // Store selected coupon
+        } else {
+            localStorage.removeItem("selectedCoupon"); // Remove if no coupon is selected
+        }
+
+        let newTotal = totalAmount - discount;
+        if (newTotal < 0) newTotal = 0;
+
+        discountElem.innerText = `-₹${discount.toFixed(2)}`;
+        totalPriceElem.innerText = `₹${newTotal.toFixed(2)}`;
+    }
+});
+
+
     </script>
   </body>
 </html>

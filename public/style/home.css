@@ -149,3 +149,51 @@
     transform: scale(1.1); 
     transition: all 0.3s ease; 
 }
+.img-box {
+  position: relative;
+}
+
+.offer-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: #ff4c4c;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 3px;
+  font-size: 14px;
+  font-weight: bold;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.big-offer {
+  font-size: 12px;
+  background-color: #ff0000;
+  padding: 2px 5px;
+  border-radius: 2px;
+  margin-bottom: 2px;
+}
+
+.offer-type {
+  font-size: 11px;
+  margin-bottom: 2px;
+}
+
+.price-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.old-price {
+  font-size: 12px;
+  color: #999;
+  text-decoration: line-through;
+}
+
+.price {
+  color: #ff4c4c;
+  font-weight: bold;
+}

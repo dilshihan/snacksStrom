@@ -111,7 +111,6 @@
                   <g></g>
                   <g></g>
                   <g></g>
-                  <g></g>
                 </svg>
               </a>  
               <a href="/user/wishlist" class="btn my-2 my-sm-0 nav_wishlist-btn" style="color: white;">
@@ -183,11 +182,30 @@
                                 <img src="/uploads/<%= product.image[0] %>" 
                                      alt="<%= product.name %>">
                             </a>
+                            <% if (product.maxOffer && product.maxOffer > 0) { %>
+                                <div class="offer-badge">
+                                    <% if (product.maxOffer >= 50) { %>
+                                        <span class="big-offer">MEGA OFFER</span>
+                                    <% } %>
+                                    <% if (product.offerType === 'category') { %>
+                                        <span class="offer-type">Category Offer</span>
+                                    <% } %>
+                                    <%= product.maxOffer %>% OFF
+                                </div>
+                            <% } %>
                         </div>
                         <div class="product-info">
                             <h3 class="product-name"><%= product.name %></h3>
                             <div class="product-footer">
-                                <span class="price">₹<%= product.price %></span>
+                                <div class="price-container">
+                                    <% if (product.maxOffer && product.maxOffer > 0) { %>
+                                        <span class="old-price">MRP: <del>₹<%= product.originalPrice %></del></span>
+                                        <span class="price">Offer Price: ₹<%= product.discountedPrice %></span>
+                                        <span class="savings">Save ₹<%= product.originalPrice - product.discountedPrice %></span>
+                                    <% } else { %>
+                                        <span class="price">MRP ₹<%= product.originalPrice %></span>
+                                    <% } %>
+                                </div>
                                 <% if (user) { %>
                                     <button onclick="addToCart('<%= product._id %>', 1, '<%= product.name %>', '<%= user._id %>')"
                                             class="add-to-cart">
@@ -348,6 +366,22 @@
     $(document).ready(function () {
     const urlParams = new URLSearchParams(window.location.search);
     const currentCategory = urlParams.get('category') || 'all';
+    $('#filterForm').on('change', 'select', function(e) {
+        e.preventDefault();
+        const currentUrl = new URL(window.location.href);
+        const formData = new FormData(document.getElementById('filterForm'));
+        const existingCategory = currentUrl.searchParams.get('category');
+        if (existingCategory) {
+            formData.append('category', existingCategory);
+        }
+        const newUrl = new URL(window.location.pathname, window.location.origin);
+        for (let [key, value] of formData.entries()) {
+            newUrl.searchParams.set(key, value);
+        }
+        newUrl.searchParams.set('page', '1');
+        
+        window.location.href = newUrl.toString();
+    });
     $(".filters_menu li").each(function() {
         const filterValue = $(this).attr("data-filter") === '*' 
             ? 'all' 
@@ -359,6 +393,7 @@
             $(this).removeClass('active');
         }
     });
+
     var $grid = $(".product-grid").isotope({
         itemSelector: ".product-card",
         layoutMode: "fitRows",
@@ -366,6 +401,7 @@
             gutter: 20,
         },
     });
+
     $(".filters_menu li").on("click", function () {
         $(".filters_menu li").removeClass("active");
         $(this).addClass("active");
@@ -373,12 +409,20 @@
         var filterValue = $(this).attr("data-filter");
         const category = filterValue === '*' ? 'all' : filterValue;
         const currentUrl = new URL(window.location.href);
-        if (category === 'all') {
-            currentUrl.searchParams.delete('category');
-        } else {
+        const sortBy = currentUrl.searchParams.get('sortBy');
+        const priceRange = currentUrl.searchParams.get('priceRange');
+    
+        currentUrl.search = '';
+        if (category !== 'all') {
             currentUrl.searchParams.set('category', category);
         }
-        currentUrl.searchParams.set('page', '1');
+        if (sortBy) {
+            currentUrl.searchParams.set('sortBy', sortBy);
+        }
+        if (priceRange) {
+            currentUrl.searchParams.set('priceRange', priceRange);
+        }
+        currentUrl.searchParams.set('page', '1'); 
         window.location.href = currentUrl.toString();
     });
 });
@@ -462,8 +506,53 @@ document.addEventListener('DOMContentLoaded', function() {
     const performSearch = () => {
         const searchQuery = searchInput.value.trim();
         const url = new URL(window.location.href);
-        url.searchParams.set('search', searchQuery);
-        window.location.href = url.toString();
+        
+        if (searchQuery) {
+            url.searchParams.set('search', searchQuery);
+        } else {
+            url.searchParams.delete('search');
+        }
+        fetch(`${url.pathname}${url.search}`)
+            .then(response => response.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newProductGrid = doc.querySelector('.product-grid');
+                const currentProductGrid = document.querySelector('.product-grid');
+                if (newProductGrid && currentProductGrid) {
+                    currentProductGrid.innerHTML = newProductGrid.innerHTML;
+                    $(".product-grid").isotope('destroy');
+                    $(".product-grid").isotope({
+                        itemSelector: ".product-card",
+                        layoutMode: "fitRows",
+                        fitRows: {
+                            gutter: 20,
+                        },
+                    });
+                }
+                const newPagination = doc.querySelector('.pagination-container');
+                const currentPagination = document.querySelector('.pagination-container');
+                if (newPagination && currentPagination) {
+                    currentPagination.innerHTML = newPagination.innerHTML;
+                }
+                const newSearchMessage = doc.querySelector('#searchMessage');
+                let currentSearchMessage = document.querySelector('#searchMessage');
+                if (newSearchMessage) {
+                    if (!currentSearchMessage) {
+                        currentSearchMessage = document.createElement('div');
+                        currentSearchMessage.id = 'searchMessage';
+                        currentSearchMessage.className = 'filters_menu';
+                        document.querySelector('.filters_price').appendChild(currentSearchMessage);
+                    }
+                    currentSearchMessage.innerHTML = newSearchMessage.innerHTML;
+                } else if (currentSearchMessage) {
+                    currentSearchMessage.remove();
+                }
+                window.history.pushState({}, '', url.toString());
+            })
+            .catch(error => {
+                console.error('Search error:', error);
+            });
     };
 
     const toggleClearButton = () => {
@@ -477,15 +566,16 @@ document.addEventListener('DOMContentLoaded', function() {
     const clearSearch = () => {
         searchInput.value = '';
         clearButton.style.display = 'none';
-        performSearch(); 
+        performSearch();
     };
     searchInput.addEventListener('input', debounce(() => {
         toggleClearButton();
         performSearch();
-    }, 700));
+    }, 300));
 
     searchButton.addEventListener('click', performSearch);
     clearButton.addEventListener('click', clearSearch);
+
     document.addEventListener('DOMContentLoaded', () => {
         const urlParams = new URLSearchParams(window.location.search);
         const searchQuery = urlParams.get('search') || '';
