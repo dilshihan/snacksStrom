@@ -11,6 +11,7 @@ const wishlistmodel = require('../model/wishlistmodel')
 const couponmodel = require('../model/couponmodel')
 const { use } = require('passport')
 const mongoose = require('mongoose');
+const Razorpay = require('razorpay');
 
 
 
@@ -524,7 +525,7 @@ const loadcart = async (req, res) => {
         const categories = await Category.find().lean();
         const categoryOffersMap = new Map(
             categories.map(cat => [cat.name.toLowerCase(), cat.offer || 0])
-        );
+        );        
 
         const cartItems = cart.products.map((item) => {
             const product = item.productId;
@@ -736,6 +737,11 @@ const removefromcart = async (req, res) => {
     }
 };  
 
+const razorpay = new Razorpay({
+    key_id: process.env.RAZORPAYX_KEY_ID,
+    key_secret: process.env.RAZORPAYX_KEY_SECRET 
+});
+
 const loadcheckout = async (req,res)=>{
     try{
         const userId = req.session?.user
@@ -788,12 +794,24 @@ const loadcheckout = async (req,res)=>{
                 itemTotal: discountedPrice * item.quantity
             };
         });
+        const totalAmount = cartItems.reduce((total, item) => total + item.itemTotal, 0); 
         const coupons = await couponmodel.find({
-            isDeleted:false ,
-            expiryDate: { $gt: new Date() },
-            minPurchase: { $lte: cartItems.reduce((total, item) => total + item.itemTotal, 0) }
-        })
+            isDeleted: false,
+            expiryDate: { $gt: new Date() }, 
+            minPurchase: { $lte: totalAmount },
+            $or: [
+                { usedBy: { $exists: false } }, 
+                { usedBy: { $size: 0 } },
+                { usedBy: { $not: { $elemMatch: { userId } } } } 
+            ]
+        });
 
+        const paymentOrder = await razorpay.orders.create({
+            amount: totalAmount * 100,  
+            currency: "INR",
+            receipt: `order_${new Date().getTime()}`,
+            payment_capture: 1 
+        });
 
         res.render('user/checkout', {
             user,
@@ -801,6 +819,8 @@ const loadcheckout = async (req,res)=>{
             addresses,
             cart: cartItems,
             coupons,
+            razorpayOrderId: paymentOrder.id, 
+            razorpayKey: process.env.RAZORPAYX_KEY_ID,
             totalPrice: cartItems.reduce((total, item) => total + item.itemTotal, 0)
         });
     } catch(error) {
@@ -927,7 +947,24 @@ const addorderdetails = async(req, res) => {
                 });
             }
         }
-
+        if (couponOffer) {
+            const coupon = await couponmodel.findOne({ discountAmount: couponOffer });
+            if (coupon) {
+                await couponmodel.findByIdAndUpdate(
+                    coupon._id,
+                    {
+                        $push: {
+                            usedBy: {
+                                userId: customerId,
+                                usedAt: new Date()
+                            }
+                        },
+                        $inc: { usageLimit: -1 } 
+                    },
+                    { new: true }
+                );
+            }
+        }
         const total = parseFloat(totalAmount) 
         const coupon = parseFloat(couponOffer) || 0
         const finalAmount = total - coupon;
@@ -937,6 +974,8 @@ const addorderdetails = async(req, res) => {
             products,
             totalAmount:finalAmount,
             paymentMethod,
+            couponApplied: couponOffer ? true : false,
+            couponAmount: coupon,
             shippingAddress: {
                 fullname: address.fullname,
                 phoneNumber: address.phoneNumber,

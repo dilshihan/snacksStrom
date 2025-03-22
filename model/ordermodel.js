@@ -43,7 +43,7 @@ const orderSchema = new mongoose.Schema({
     },
     paymentMethod: {
         type: String,
-        enum: ['cod', 'credit', 'UPI', 'Net Banking'],
+        enum: ['cod','wallet' , 'razorpay'],
         required: true
     },
     shippingAddress: {

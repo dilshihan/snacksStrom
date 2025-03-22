@@ -125,9 +125,13 @@
                 </svg>
               </a>
               <form class="form-inline">
-                <a href="/user/wishlist" class="btn my-2 my-sm-0 nav_wishlist-btn" style="color: white;">
+                <a
+                  href="/user/wishlist"
+                  class="btn my-2 my-sm-0 nav_wishlist-btn"
+                  style="color: white"
+                >
                   <i class="fa fa-heart" aria-hidden="true"></i>
-              </a>
+                </a>
               </form>
               <a href="/user/userprofile" class="user_link">
                 <% if (user && user.image) { %>
@@ -303,26 +307,54 @@
               <div class="payment_options">
                 <div
                   class="payment_option active"
-                  onclick="selectPayment('credit')"
+                  onclick="selectPayment('wallet')"
                 >
                   <input
                     type="radio"
                     name="payment-method"
-                    id="credit"
+                    id="wallet"
                     class="payment_radio"
                     checked
                   />
-                  <label for="credit">Credit / Debit Card</label>
+                  <label for="wallet">Wallet</label>
                 </div>
 
-                <div class="payment_option" onclick="selectPayment('paypal')">
+                <div class="payment_option" onclick="selectPayment('razorpay')">
                   <input
                     type="radio"
                     name="payment-method"
-                    id="paypal"
+                    id="razorpay"
                     class="payment_radio"
                   />
-                  <label for="paypal">PayPal</label>
+                  <label for="razorpay">Razorpay</label>
+
+                  <div style="display: none">
+                    <input
+                      type="hidden"
+                      id="razorpayOrderId"
+                      value="<%= razorpayOrderId %>"
+                    />
+                    <input
+                      type="hidden"
+                      id="razorpayKey"
+                      value="<%= razorpayKey %>"
+                    />
+                    <input
+                      type="hidden"
+                      id="userName"
+                      value="<%= user.name %>"
+                    />
+                    <input
+                      type="hidden"
+                      id="userEmail"
+                      value="<%= user.email %>"
+                    />
+                    <input
+                      type="hidden"
+                      id="userPhone"
+                      value="<%= user.phone %>"
+                    />
+                  </div>
                 </div>
 
                 <div class="payment_option" onclick="selectPayment('cod')">
@@ -335,52 +367,12 @@
                   <label for="cod">Cash on Delivery</label>
                 </div>
               </div>
-
-              <div id="credit-details" class="payment_details active">
-                <div class="form_group">
-                  <label class="form_label">Card Number*</label>
-                  <input
-                    type="text"
-                    class="form_input"
-                    placeholder="1234 5678 9012 3456"
-                    required
-                  />
-                </div>
-
-                <div class="form_group">
-                  <label class="form_label">Cardholder Name*</label>
-                  <input type="text" class="form_input" required />
-                </div>
-
-                <div class="card_row">
-                  <div class="form_group w-50">
-                    <label class="form_label">Expiration Date*</label>
-                    <input
-                      type="text"
-                      class="form_input"
-                      placeholder="MM/YY"
-                      required
-                    />
-                  </div>
-
-                  <div class="form_group w-50">
-                    <label class="form_label">CVV*</label>
-                    <input
-                      type="text"
-                      class="form_input"
-                      placeholder="123"
-                      required
-                    />
-                  </div>
-                </div>
+              <div id="wallet-details" class="payment_details">
+                <p>Pay using your wallet balance.</p>
               </div>
-
-              <div id="paypal-details" class="payment_details">
-                <p>
-                  You will be redirected to PayPal to complete your payment.
-                </p>
+              <div id="razorpay-details" class="payment_details">
+                <p>Pay securely using Razorpay.</p>
               </div>
-
               <div id="cod-details" class="payment_details">
                 <p>You will pay for your order at the time of delivery.</p>
               </div>
@@ -389,86 +381,115 @@
 
           <div class="col-lg-4">
             <div class="order_summary">
-                <h3 class="summary_heading">Order Summary</h3>
-                <div class="summary_items">
-                    <% let subtotal = 0; %>
-                    <% cart.forEach(item => { %>
-                        <div class="summary_item">
-                            <div class="item_name">
-                                <span class="item_quantity"><%= item.quantity %></span>
-                                <input type="hidden" id="quantity" value="<%= item.quantity %>">
-                                <span><%= item.name %></span>
-                                <input type="hidden" value="<%= item.name %>" id="productName">
-                                <input type="hidden" id="productId" value="<%= item.id %>">
-                                <input type="hidden" id="userId" value="<%= user._id %>">
-                            </div>
-                            <div class="item_price">
-                                <% if (item.maxOffer && item.maxOffer > 0) { %>
-                                    <div class="price-info">
-                                        <del class="original-price">₹<%= (item.originalPrice * item.quantity).toFixed(2) %></del>
-                                        <span class="discounted-price">₹<%= item.itemTotal.toFixed(2) %></span>
-                                        <span class="offer-text"><%= item.maxOffer %>% off</span>
-                                    </div>
-                                <% } else { %>
-                                    ₹<%= item.itemTotal.toFixed(2) %>
-                                <% } %>
-                                <input type="hidden" id="productPrice" value="<%= item.itemTotal.toFixed(2) %>">
-                            </div>
-                        </div>
-                        <% subtotal += item.itemTotal; %>
-                    <% }); %>
+              <h3 class="summary_heading">Order Summary</h3>
+              <div class="summary_items">
+                <% let subtotal = 0; %> <% cart.forEach(item => { %>
+                <div class="summary_item">
+                  <div class="item_name">
+                    <span class="item_quantity"><%= item.quantity %></span>
+                    <input
+                      type="hidden"
+                      id="quantity"
+                      value="<%= item.quantity %>"
+                    />
+                    <span><%= item.name %></span>
+                    <input
+                      type="hidden"
+                      value="<%= item.name %>"
+                      id="productName"
+                    />
+                    <input
+                      type="hidden"
+                      id="productId"
+                      value="<%= item.id %>"
+                    />
+                    <input type="hidden" id="userId" value="<%= user._id %>" />
+                  </div>
+                  <div class="item_price">
+                    <% if (item.maxOffer && item.maxOffer > 0) { %>
+                    <div class="price-info">
+                      <del class="original-price"
+                        >₹<%= (item.originalPrice * item.quantity).toFixed(2)
+                        %></del
+                      >
+                      <span class="discounted-price"
+                        >₹<%= item.itemTotal.toFixed(2) %></span
+                      >
+                      <span class="offer-text"><%= item.maxOffer %>% off</span>
+                    </div>
+                    <% } else { %> ₹<%= item.itemTotal.toFixed(2) %> <% } %>
+                    <input
+                      type="hidden"
+                      id="productPrice"
+                      value="<%= item.itemTotal.toFixed(2) %>"
+                    />
+                  </div>
                 </div>
-        
-                <% let shipping = subtotal > 0 ? 5.00 : 0; %>
-                <% let tax = subtotal * 0.1; %>
-                <% let discount = 0; %>
-                <% let total = subtotal + shipping + tax - discount; %>
-        
-                <div class="price_details">
-                    <div class="price_row">
-                        <span>Subtotal</span>
-                        <span>₹<%= subtotal.toFixed(2) %></span>
-                    </div>
-        
-                    <div class="price_row">
-                        <span>Shipping</span>
-                        <span>₹<%= shipping.toFixed(2) %></span>
-                    </div>
-        
-                    <div class="price_row">
-                        <span>Tax</span>
-                        <span>₹<%= tax.toFixed(2) %></span>
-                    </div>
-        
-                    <div class="price_row">
-                        <span>Discount</span>
-                        <span id="discount-amount">-₹<%= discount.toFixed(2) %></span>
-                    </div>
-        
-                    <div class="price_total">
-                        <span >Total</span>
-                        <span id="total-price-display">₹<%= total.toFixed(2) %></span>
-                        <input type="hidden" id="TotalAmount" value="<%= total.toFixed(2) %>">
-                    </div>
+                <% subtotal += item.itemTotal; %> <% }); %>
+              </div>
+
+              <% let shipping = subtotal > 0 ? 5.00 : 0; %> <% let tax =
+              subtotal * 0.1; %> <% let discount = 0; %> <% let total = subtotal
+              + shipping + tax - discount; %>
+
+              <div class="price_details">
+                <div class="price_row">
+                  <span>Subtotal</span>
+                  <span>₹<%= subtotal.toFixed(2) %></span>
                 </div>
-        
-                <button id="place-order-btn" class="place_order_btn">
-                    Place Order
-                </button>
+
+                <div class="price_row">
+                  <span>Shipping</span>
+                  <span>₹<%= shipping.toFixed(2) %></span>
+                </div>
+
+                <div class="price_row">
+                  <span>Tax</span>
+                  <span>₹<%= tax.toFixed(2) %></span>
+                </div>
+
+                <div class="price_row">
+                  <span>Discount</span>
+                  <span id="discount-amount">-₹<%= discount.toFixed(2) %></span>
+                </div>
+
+                <div class="price_total">
+                  <span>Total</span>
+                  <span id="total-price-display">₹<%= total.toFixed(2) %></span>
+                  <input
+                    type="hidden"
+                    id="TotalAmount"
+                    value="<%= total.toFixed(2) %>"
+                  />
+                </div>
+              </div>
+
+              <button id="place-order-btn" class="place_order_btn">
+                Place Order
+              </button>
             </div>
             <div class="offers-container">
               <% coupons.forEach((coupon, index) => { %>
-                  <div class="offer-box">
-                      <input type="checkbox" name="offer" class="offer-checkbox" id="couponOffer" 
-                      value="<%= coupon.discountAmount %>"onclick="applyCoupon(this)" onclick="toggleSelection(this)">
-                      <div class="offer-content">
-                          <div class="code">couponCode:-<%= coupon.code %></div>
-                          <div class="discount">discountAmount:-<%= coupon.discountAmount %></div>
-                      </div>
+              <div class="offer-box">
+                <input
+                  type="checkbox"
+                  name="offer"
+                  class="offer-checkbox"
+                  id="couponOffer"
+                  value="<%= coupon.discountAmount %>"
+                  onclick="applyCoupon(this)"
+                  onclick="toggleSelection(this)"
+                />
+                <div class="offer-content">
+                  <div class="code">couponCode:-<%= coupon.code %></div>
+                  <div class="discount">
+                    discountAmount:-<%= coupon.discountAmount %>
                   </div>
+                </div>
+              </div>
               <% }); %>
+            </div>
           </div>
-        </div>
         </div>
       </div>
     </section>
@@ -476,34 +497,45 @@
     <!-- Address Modal -->
     <div id="addressModal" class="address_modal">
       <div class="address_modal_content">
-          <div class="address_modal_header">
-              <h4 class="address_modal_title">Select a Delivery Address</h4>
-              <button class="address_modal_close" onclick="closeAddressModal()">&times;</button>
+        <div class="address_modal_header">
+          <h4 class="address_modal_title">Select a Delivery Address</h4>
+          <button class="address_modal_close" onclick="closeAddressModal()">
+            &times;
+          </button>
+        </div>
+
+        <div id="savedAddresses">
+          <% addresses.forEach((address, index) => { %>
+          <div
+            class="saved_address <%= address.isDefault ? 'selected' : '' %>"
+            onclick="selectAddress(this, <%= index %>)"
+          >
+            <div class="saved_address_title"><%= address.title %></div>
+            <div class="saved_address_details">
+              <p><strong><%= address.fullname %></strong></p>
+              <input
+                type="hidden"
+                class="addressId"
+                value="<%= address._id %>"
+              />
+              <p><%= address.streetAddress %>, <%= address.city %></p>
+              <p><%= address.state %>, <%= address.zipCode %></p>
+              <p>Phone: <%= address.phoneNumber %></p>
+            </div>
           </div>
-  
-          <div id="savedAddresses">
-              <% addresses.forEach((address, index) => { %>
-                  <div class="saved_address <%= address.isDefault ? 'selected' : '' %>"
-                       onclick="selectAddress(this, <%= index %>)">
-                      <div class="saved_address_title"><%= address.title %></div>
-                      <div class="saved_address_details">
-                          <p><strong><%= address.fullname %></strong></p>
-                          <input type="hidden" class="addressId" value="<%= address._id %>">
-                          <p><%= address.streetAddress %>, <%= address.city %></p>
-                          <p><%= address.state %>, <%= address.zipCode %></p>
-                          <p>Phone: <%= address.phoneNumber %></p>
-                      </div>
-                  </div>
-              <% }); %>
-          </div>
-  
-          <div class="address_actions">
-              <button class="use_selected_address_btn" onclick="useSelectedAddress()">
-                  Use This Address
-              </button>
-          </div>
+          <% }); %>
+        </div>
+
+        <div class="address_actions">
+          <button
+            class="use_selected_address_btn"
+            onclick="useSelectedAddress()"
+          >
+            Use This Address
+          </button>
+        </div>
       </div>
-  </div>
+    </div>
 
     <!-- footer section -->
     <footer class="footer_section">
@@ -585,7 +617,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
     <!-- custom js -->
     <script src="/js/custom.js"></script>
-
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script>
       // Header scroll effect
       let lastScrollTop = 0;
@@ -609,122 +641,212 @@
         },
         false
       );
-     document.addEventListener("DOMContentLoaded", function () {
-    function selectPayment(method) {
-        document.querySelectorAll(".payment_option").forEach(option => {
-            option.classList.remove("active");
-        });
-        document.querySelector(`[onclick="selectPayment('${method}')"]`).classList.add("active");
 
+      function selectPayment(method) {
+        document.querySelectorAll(".payment_option").forEach((option) => {
+          option.classList.remove("active");
+        });
+        document
+          .querySelector(`[onclick="selectPayment('${method}')"]`)
+          .classList.add("active");
         document.getElementById(method).checked = true;
-        document.querySelectorAll(".payment_details").forEach(details => {
-            details.classList.remove("active");
+        document.querySelectorAll(".payment_details").forEach((details) => {
+          details.classList.remove("active");
         });
         document.getElementById(`${method}-details`).classList.add("active");
-    }
-    window.selectPayment = selectPayment; 
-    document.getElementById("place-order-btn").addEventListener("click", function () {
-        const selectedPaymentMethod = document.querySelector('input[name="payment-method"]:checked');
-        if (!selectedPaymentMethod) {
+
+        if (method === "razorpay") {
+          const amount = document.getElementById("TotalAmount").value;
+          openRazorpayModal(amount);
+        }
+      }
+
+      function openRazorpayModal(amount) {
+        const orderId = document.getElementById("razorpayOrderId").value;
+        const razorpayKey = document.getElementById("razorpayKey").value;
+
+        var options = {
+          key: razorpayKey, 
+          amount: amount * 100,
+          currency: "INR",
+          name: "Your Store Name",
+          description: "Order Payment",
+          order_id: orderId,
+          handler: function (response) {
+            console.log("Payment Success:", response);
+            processOrder(response);
+          },
+          prefill: {
+            name: document.getElementById("userName").value || "",
+            email: document.getElementById("userEmail").value || "",
+            contact: document.getElementById("userPhone").value || "",
+          },
+          theme: {
+            color: "#ffbe33",
+          },
+          modal: {
+            ondismiss: function () {
+              selectPayment("cod");
+            },
+          },
+        };
+
+        try {
+          var rzp = new Razorpay(options);
+          rzp.on("payment.failed", function (response) {
+            console.log("Payment Failed:", response.error);
             Swal.fire({
-                icon: "error",
-                title: "Please select a payment method!",
+              icon: "error",
+              title: "Payment Failed",
+              text:
+                response.error.description ||
+                "There was an error processing your payment.",
+              confirmButtonColor: "#ffbe33",
+            });
+            selectPayment("cod");
+          });
+
+          rzp.open();
+        } catch (error) {
+          console.error("Razorpay Error:", error);
+          Swal.fire({
+            icon: "error",
+            title: "Payment Error",
+            text: "Unable to initialize payment. Please try again.",
+            confirmButtonColor: "#ffbe33",
+          });
+          selectPayment("cod");
+        }
+      }
+
+      function processOrder(paymentResponse = null) {
+        const selectedPaymentMethod = document.querySelector(
+          'input[name="payment-method"]:checked'
+        );
+        if (!selectedPaymentMethod) {
+          Swal.fire({
+            icon: "error",
+            title: "Please select a payment method!",
+            confirmButtonColor: "#ffbe33",
+          });
+          return;
+        }
+
+        const products = [];
+        document.querySelectorAll(".summary_item").forEach((item) => {
+          const productId = item.querySelector("#productId").value;
+          const productName = item.querySelector("#productName").value;
+          const productQuantity = item.querySelector("#quantity").value;
+          const productPrice = item.querySelector("#productPrice").value;
+
+          products.push({
+            productId,
+            productName,
+            quantity: productQuantity,
+            price: productPrice,
+          });
+        });
+
+        const selectedAddress = document.querySelector(
+          ".saved_address.selected"
+        );
+        if (!selectedAddress) {
+          Swal.fire({
+            icon: "warning",
+            title: "Select Address",
+            text: "Please select a delivery address",
+            confirmButtonColor: "#ffbe33",
+          });
+          return;
+        }
+
+        const addressId = selectedAddress.querySelector(".addressId").value;
+        const totalAmount = document.getElementById("TotalAmount").value;
+        const couponOfferElement = document.getElementById("couponOffer");
+        const couponOffer = couponOfferElement ? couponOfferElement.value : "";
+        const userId = document.getElementById("userId").value;
+        const paymentMethod = selectedPaymentMethod.id;
+
+        const orderData = {
+          customerId: userId,
+          products,
+          totalAmount,
+          paymentMethod,
+          addressId,
+          couponOffer,
+        };
+
+        if (paymentResponse) {
+          orderData.razorpay_payment_id = paymentResponse.razorpay_payment_id;
+          orderData.razorpay_order_id = paymentResponse.razorpay_order_id;
+          orderData.razorpay_signature = paymentResponse.razorpay_signature;
+        }
+
+        fetch("/user/order-details", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(orderData),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            console.log("Response:", data);
+
+            if (data.success) {
+              Swal.fire({
+                icon: "success",
+                title: "Order Placed Successfully!",
+                text: "Thank you for your order!",
                 confirmButtonColor: "#ffbe33",
+              }).then(() => {
+                window.location.href = "/user/Ordersuccess";
+              });
+            } else {
+              Swal.fire({
+                icon: "error",
+                title: "Order Failed!",
+                text: data.message || "Please try again.",
+                confirmButtonColor: "#ffbe33",
+              });
+            }
+          })
+          .catch((error) => {
+            console.error("Order Error:", error);
+            Swal.fire({
+              icon: "error",
+              title: "Order Failed!",
+              text: "An error occurred while placing your order.",
+              confirmButtonColor: "#ffbe33",
+            });
+          });
+      }
+
+      window.selectPayment = selectPayment;
+
+      // Main event listener for place order button
+      document
+        .getElementById("place-order-btn")
+        .addEventListener("click", function () {
+          const selectedPaymentMethod = document.querySelector(
+            'input[name="payment-method"]:checked'
+          );
+          if (!selectedPaymentMethod) {
+            Swal.fire({
+              icon: "error",
+              title: "Please select a payment method!",
+              confirmButtonColor: "#ffbe33",
             });
             return;
-        } 
-        const products = [];
+          }
 
-        document.querySelectorAll(".summary_item").forEach(item => {
-    const productId = item.querySelector("#productId").value;
-    const productName = item.querySelector("#productName").value;
-    const productQuantity = item.querySelector("#quantity").value;
-    const productPrice = item.querySelector("#productPrice").value;
-
-    products.push({
-        productId,
-        productName,
-        quantity: productQuantity,
-        price: productPrice
-    });
-});
-
-const selectedAddress = document.querySelector('.saved_address.selected');
-if (!selectedAddress) {
-    Swal.fire({
-        icon: "warning",
-        title: "Select Address",
-        text: "Please select a delivery address",
-        confirmButtonColor: "#ffbe33",
-    });
-    return;
-}
-
-const addressId = selectedAddress.querySelector(".addressId").value;
-const totalAmount = document.getElementById("TotalAmount").value;
-const couponOffer= document.getElementById("couponOffer").value
-const userId = document.getElementById("userId").value;
-const paymentMethod = selectedPaymentMethod.id;
-if (!addressId) {
-    Swal.fire({
-        icon: "warning",
-        title: "Address Required",
-        text: "Please select a delivery address",
-        confirmButtonColor: "#ffbe33",
-    });
-    return;
-}
-const orderData = {
-    customerId: userId,
-    products,
-    totalAmount,
-    paymentMethod,
-    addressId ,
-    couponOffer 
-};
-
-fetch("/user/order-details", {
-    method: "POST",
-    headers: {
-        "Content-Type": "application/json"
-    },
-    body: JSON.stringify(orderData)
-})
-.then(response => response.json())
-.then(data => {
-    console.log('Response:', data);
-    
-    if (data.success) {
-        Swal.fire({
-            icon: "success",
-            title: "Order Placed Successfully!",
-            text: "Thank you for your order!",
-            confirmButtonColor: "#ffbe33",
-        }).then(() => {
-            window.location.href = "/user/Ordersuccess";
+          if (selectedPaymentMethod.id === "razorpay") {
+            const amount = document.getElementById("TotalAmount").value;
+            openRazorpayModal(amount);
+          } else {
+            processOrder();
+          }
         });
-    } else {
-        Swal.fire({
-            icon: "error",
-            title: "Order Failed!",
-            text: data.message || "Please try again.",
-            confirmButtonColor: "#ffbe33",
-        });
-    }
-})
-.catch(error => {
-    console.error("Order Error:", error);
-    Swal.fire({
-        icon: "error",
-        title: "Order Failed!",
-        text: "An error occurred while placing your order.",
-        confirmButtonColor: "#ffbe33",
-    });
-});
-    });
-});
-
-
     </script>
     <script>
       // Add this JavaScript to handle the button click
@@ -890,94 +1012,103 @@ fetch("/user/order-details", {
       // Selected address index tracker
       let selectedAddressId = null;
 
-function selectAddress(element, index) {
-    // Remove selection from all addresses
-    document.querySelectorAll('.saved_address').forEach(addr => {
-        addr.classList.remove('selected');
-    });
-    
-    // Add selection to clicked address
-    element.classList.add('selected');
-    
-    // Update the selectedAddressId with the new selection
-    selectedAddressId = element.querySelector('.addressId').value;
-    console.log('Selected Address ID:', selectedAddressId); // Debug log
-}
+      function selectAddress(element, index) {
+        // Remove selection from all addresses
+        document.querySelectorAll(".saved_address").forEach((addr) => {
+          addr.classList.remove("selected");
+        });
 
-function useSelectedAddress() {
-    if (!selectedAddressId) {
-        Swal.fire({
+        // Add selection to clicked address
+        element.classList.add("selected");
+
+        // Update the selectedAddressId with the new selection
+        selectedAddressId = element.querySelector(".addressId").value;
+        console.log("Selected Address ID:", selectedAddressId); // Debug log
+      }
+
+      function useSelectedAddress() {
+        if (!selectedAddressId) {
+          Swal.fire({
             icon: "warning",
             title: "No address selected!",
             text: "Please select an address before proceeding.",
-        });
-        return;
-    }
+          });
+          return;
+        }
 
-    const selectedAddress = document.querySelector(".saved_address.selected");
-    if (!selectedAddress) {
-        Swal.fire({
+        const selectedAddress = document.querySelector(
+          ".saved_address.selected"
+        );
+        if (!selectedAddress) {
+          Swal.fire({
             icon: "warning",
             title: "Error",
             text: "Please select an address first.",
-        });
-        return;
-    }
+          });
+          return;
+        }
 
-    const addressDetails = selectedAddress.querySelector(".saved_address_details").innerHTML;
+        const addressDetails = selectedAddress.querySelector(
+          ".saved_address_details"
+        ).innerHTML;
 
-    fetch("/user/set-default-address", {
-        method: "POST",
-        headers: {
+        fetch("/user/set-default-address", {
+          method: "POST",
+          headers: {
             "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ 
-            selectedAddressId: selectedAddressId // Make sure we're sending the correct ID
-        }),
-    })
-    .then((response) => response.json())
-    .then((data) => {
-        if (data.success) {
-            // Update address display if it exists
-            const addressDisplay = document.querySelector(".selected-address-display");
-            if (addressDisplay) {
-                addressDisplay.innerHTML = addressDetails.replace(/<br>/g, ", ");
-            }
+          },
+          body: JSON.stringify({
+            selectedAddressId: selectedAddressId, // Make sure we're sending the correct ID
+          }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              // Update address display if it exists
+              const addressDisplay = document.querySelector(
+                ".selected-address-display"
+              );
+              if (addressDisplay) {
+                addressDisplay.innerHTML = addressDetails.replace(
+                  /<br>/g,
+                  ", "
+                );
+              }
 
-            Swal.fire({
+              Swal.fire({
                 icon: "success",
                 title: "Success!",
                 text: "Default address updated successfully!",
                 confirmButtonText: "OK",
-            }).then(() => {
+              }).then(() => {
                 location.reload();
-            });
-        } else {
-            Swal.fire({
+              });
+            } else {
+              Swal.fire({
                 icon: "error",
                 title: "Error!",
                 text: data.message || "Error updating address",
+              });
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            Swal.fire({
+              icon: "error",
+              title: "Oops...",
+              text: "Something went wrong while updating the address!",
             });
-        }
-    })
-    .catch((error) => {
-        console.error("Error:", error);
-        Swal.fire({
-            icon: "error",
-            title: "Oops...",
-            text: "Something went wrong while updating the address!",
-        });
-    });
-} 
+          });
+      }
       // Modal control functions
       function openAddressModal() {
         document.getElementById("addressModal").style.display = "block";
       }
-    
+
       function closeAddressModal() {
         document.getElementById("addressModal").style.display = "none";
       }
-    
+
       // Close modal when clicking outside
       window.onclick = function (event) {
         const modal = document.getElementById("addressModal");
@@ -985,7 +1116,7 @@ function useSelectedAddress() {
           closeAddressModal();
         }
       };
-    
+
       // Close modal with ESC key
       document.addEventListener("keydown", function (event) {
         if (event.key === "Escape") {
@@ -994,65 +1125,63 @@ function useSelectedAddress() {
       });
     </script>
     <script>
-function toggleSelection(checkbox) {
-    document.querySelectorAll('.offer-checkbox').forEach(cb => {
-        if (cb !== checkbox) {
+      function toggleSelection(checkbox) {
+        document.querySelectorAll(".offer-checkbox").forEach((cb) => {
+          if (cb !== checkbox) {
             cb.checked = false;
-        }
-    });
-}
+          }
+        });
+      }
 
-document.addEventListener("DOMContentLoaded", function () {
-    const totalAmountElem = document.getElementById("TotalAmount");
-    const discountElem = document.getElementById("discount-amount");
-    const totalPriceElem = document.getElementById("total-price-display");
-    const checkboxes = document.querySelectorAll(".offer-checkbox");
+      document.addEventListener("DOMContentLoaded", function () {
+        const totalAmountElem = document.getElementById("TotalAmount");
+        const discountElem = document.getElementById("discount-amount");
+        const totalPriceElem = document.getElementById("total-price-display");
+        const checkboxes = document.querySelectorAll(".offer-checkbox");
 
-    // Retrieve the stored coupon from localStorage
-    let selectedCouponValue = localStorage.getItem("selectedCoupon");
+        // Retrieve the stored coupon from localStorage
+        let selectedCouponValue = localStorage.getItem("selectedCoupon");
 
-    if (selectedCouponValue) {
-        checkboxes.forEach(checkbox => {
+        if (selectedCouponValue) {
+          checkboxes.forEach((checkbox) => {
             if (checkbox.value === selectedCouponValue) {
-                checkbox.checked = true;
-                applyCoupon(checkbox);
+              checkbox.checked = true;
+              applyCoupon(checkbox);
             }
-        });
-    }
+          });
+        }
 
-    checkboxes.forEach(checkbox => {
-        checkbox.addEventListener("change", function () {
+        checkboxes.forEach((checkbox) => {
+          checkbox.addEventListener("change", function () {
             applyCoupon(this);
+          });
         });
-    });
 
-    function applyCoupon(selectedCoupon) {
-        // Uncheck other checkboxes
-        checkboxes.forEach(checkbox => {
+        function applyCoupon(selectedCoupon) {
+          // Uncheck other checkboxes
+          checkboxes.forEach((checkbox) => {
             if (checkbox !== selectedCoupon) {
-                checkbox.checked = false;
+              checkbox.checked = false;
             }
-        });
+          });
 
-        let totalAmount = parseFloat(totalAmountElem.value);
-        let discount = 0;
+          let totalAmount = parseFloat(totalAmountElem.value);
+          let discount = 0;
 
-        if (selectedCoupon.checked) {
+          if (selectedCoupon.checked) {
             discount = parseFloat(selectedCoupon.value);
             localStorage.setItem("selectedCoupon", selectedCoupon.value); // Store selected coupon
-        } else {
+          } else {
             localStorage.removeItem("selectedCoupon"); // Remove if no coupon is selected
+          }
+
+          let newTotal = totalAmount - discount;
+          if (newTotal < 0) newTotal = 0;
+
+          discountElem.innerText = `-₹${discount.toFixed(2)}`;
+          totalPriceElem.innerText = `₹${newTotal.toFixed(2)}`;
         }
-
-        let newTotal = totalAmount - discount;
-        if (newTotal < 0) newTotal = 0;
-
-        discountElem.innerText = `-₹${discount.toFixed(2)}`;
-        totalPriceElem.innerText = `₹${newTotal.toFixed(2)}`;
-    }
-});
-
-
+      });
     </script>
   </body>
 </html>

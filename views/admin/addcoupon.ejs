@@ -100,26 +100,27 @@
         
             // Validate dates
             const start = new Date(startDate);
-            const expiry = new Date(expiryDate);
-            const today = new Date();
-        
-            if (start < today) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Invalid Start Date',
-                    text: 'Start date cannot be in the past'
-                });
-                return;
-            }
-        
-            if (expiry <= start) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Invalid Date Range',
-                    text: 'Expiry date must be after start date'
-                });
-                return;
-            }
+          const expiry = new Date(expiryDate);
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+
+          if (start < today) {
+            Swal.fire({
+              icon: "error",
+              title: "Invalid Start Date",
+              text: "Start date cannot be in the past",
+            });
+            return;
+          }
+
+          if (expiry <= start) {
+            Swal.fire({
+              icon: "error",
+              title: "Invalid Date Range",
+              text: "Expiry date must be after start date",
+            });
+            return;
+          }
         
             if (usageLimit < 1) {
                 Swal.fire({
