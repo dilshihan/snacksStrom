@@ -9,9 +9,11 @@ const addressmodel = require('../model/addressmodel')
 const Order = require("../model/ordermodel")
 const wishlistmodel = require('../model/wishlistmodel')
 const couponmodel = require('../model/couponmodel')
+const walletmodel = require('../model/walletmodel')
 const { use } = require('passport')
 const mongoose = require('mongoose');
 const Razorpay = require('razorpay');
+const usermodel = require('../model/usermodel')
 
 
 
@@ -968,12 +970,30 @@ const addorderdetails = async(req, res) => {
         const total = parseFloat(totalAmount) 
         const coupon = parseFloat(couponOffer) || 0
         const finalAmount = total - coupon;
+
+        if (paymentMethod === 'wallet') {
+            const userWallet = await walletmodel.findOne({ userId: customerId });
+            
+            if (!userWallet || userWallet.balance < finalAmount) {
+                return res.status(400).json({success: false,message: "Insufficient wallet balance"});
+            }
+
+            await walletmodel.findOneAndUpdate(
+                { userId: customerId },
+                {
+                    $inc: { balance: -finalAmount },
+                    $push: {
+                        transactions: {amount: finalAmount,type: 'debit',timestamp: new Date()}}});
+         }
         
         const newOrder = new Order({
             customerId,
             products,
             totalAmount:finalAmount,
             paymentMethod,
+            ...(paymentMethod === 'wallet' && {
+                updatedWalletBalance: (await walletmodel.findOne({ userId: customerId })).balance
+            }),
             couponApplied: couponOffer ? true : false,
             couponAmount: coupon,
             shippingAddress: {
@@ -1497,6 +1517,74 @@ const removefromwishlist = async (req, res) => {
     }
 };
 
+const loadwallet = async (req, res) => {
+    try {
+        const userId = req.session?.user;
+        const user = await usermodel.findById(userId);
+        let wallet = await walletmodel.findOne({ userId });
+
+        const page = parseInt(req.query.page) || 1;
+        const limit = 10;
+        const skip = (page - 1) * limit;
+
+        if (!wallet) {
+            wallet = new walletmodel({ userId, balance: 0, transactions: [] });
+            await wallet.save();
+        }
+        const totalTransactions = wallet.transactions.length;
+        const totalPages = Math.ceil(totalTransactions / limit);
+        const paginatedTransactions = wallet.transactions.slice(skip, skip + limit);
+
+        res.render('user/wallet', {
+            user,
+            wallet: {
+                ...wallet.toObject(),
+                transactions: paginatedTransactions
+            },
+            pagination: {
+                currentPage: page,
+                totalPages,
+                hasNext: page < totalPages,
+                hasPrev: page > 1
+            },
+            formatDate: (date) => {
+                return new Date(date).toLocaleString('en-IN', {
+                    year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                });
+            }
+        });
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).send('Something went wrong');
+    }
+}
+
+const addMoney = async (req, res) => {
+    try {
+        const userId = req.session.user; 
+        const { amount } = req.body;
+        if (!amount || amount <= 0) {
+            return res.status(400).json({success: false,message: 'Invalid amount'});
+        }
+
+        let wallet = await walletmodel.findOne({ userId });
+        if (!wallet) {
+            wallet = new walletmodel({ userId });
+        }
+
+        wallet.transactions.push({amount: parseFloat(amount),type: 'credit',timestamp: new Date()});
+
+        wallet.balance += parseFloat(amount);
+        await wallet.save();
+        res.json({success: true,message: 'Money added successfully',wallet: {balance: wallet.balance,transactions: wallet.transactions}});
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({success: false,message: 'Failed to add money to wallet'});
+    }
+};
+
 const logout = (req,res)=>{
     req.session.user=null;
     res.redirect('/user/register')
@@ -1514,4 +1602,5 @@ module.exports={registerUser,loadregister,loginUser,
                addaddress,editaddress,deleteaddress,
                loadorderdetils,cancelorder,updatepassword,
                loadwishlist,addtowishlist,removefromwishlist,
+               loadwallet,addMoney,
                handleGoogleLogin,handleGoogleCallback}
