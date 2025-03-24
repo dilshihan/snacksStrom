@@ -30,6 +30,8 @@ router.post('/coupons',adminauth.checksession,admincontreller.addcoupon)
 router.get('/updatecoupon/:id',adminauth.checksession,admincontreller.loadupdatecoupon)
 router.put('/coupons/:id',adminauth.checksession,admincontreller.updatecoupon);
 router.patch('/toggle-coupon/:id',adminauth.checksession,admincontreller.couponstatus)
+router.get('/salesreport',adminauth.checksession,admincontreller.loadsalesreport)
+router.get('/salesreport/export', adminauth.checksession,admincontreller.exportSalesPDF);
 router.get('/logout',adminauth.checksession,admincontreller.logout)
 
 

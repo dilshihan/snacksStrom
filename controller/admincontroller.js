@@ -8,6 +8,7 @@ const Order = require("../model/ordermodel")
 const couponmodel = require('../model/couponmodel')
 const fs = require('fs');
 const path = require('path');
+const PDFDocument = require('pdfkit');
 
 
 
@@ -628,6 +629,310 @@ const couponstatus = async (req, res) => {
     }
 };
 
+const loadsalesreport = async (req, res) => {
+    try {
+        const dateRange = req.query.dateRange || 'day';
+        const endDate = new Date();
+        const startDate = new Date();
+
+        if (dateRange === 'custom' && req.query.startDate && req.query.endDate) {
+            startDate.setTime(new Date(req.query.startDate));
+            endDate.setTime(new Date(req.query.endDate));
+        } else {
+            switch(dateRange) {
+                case 'week':
+                    startDate.setDate(startDate.getDate() - 7);
+                    break;
+                case 'month':
+                    startDate.setMonth(startDate.getMonth() - 1);
+                    break;
+                case 'year':
+                    startDate.setFullYear(startDate.getFullYear() - 1);
+                    break;
+                default: 
+                    startDate.setHours(0, 0, 0, 0);
+            }
+        }
+
+        const dateMatchStage = {
+            orderDate: { $gte: startDate, $lte: endDate }
+        };
+
+        const totalSales = await Order.aggregate([
+            { $match: dateMatchStage },
+            { $unwind: '$products' },
+            { $match: { 'products.status': 'Delivered' } },
+            { $group: { _id: null, total: { $sum: { $multiply: ['$products.price', '$products.quantity'] } }}}
+        ]);
+
+        
+        const unitsSold = await Order.aggregate([
+            { $match: dateMatchStage },
+            { $unwind: '$products' },
+            { $match: { 'products.status': 'Pending' } }, 
+            { $group: {_id: null, total: { $sum: '$products.quantity' }}}
+        ]);
+
+        const deliveredProducts = await Order.aggregate([
+            { $match: dateMatchStage },
+            { $unwind: '$products' },
+            { $match: { 'products.status': 'Delivered' } },
+            { $group: {
+                _id: null,
+                total: { $sum: '$products.quantity' }
+            }}
+        ]);
+
+        const topProducts = await Order.aggregate([
+            { $match: dateMatchStage },
+            { $unwind: '$products' },
+            { $match: { 'products.status': 'Delivered' } },
+            { $group: {
+                _id: '$products.productId',
+                productName: { $first: '$products.productName' },
+                units: { $sum: '$products.quantity' },
+                revenue: { $sum: { $multiply: ['$products.price', '$products.quantity'] } }
+            }},
+            { $sort: { units: -1 } },
+            { $limit: 3 },
+            { $lookup: {from: 'products', localField: '_id', foreignField: '_id', as: 'productDetails'}},
+            { $unwind: '$productDetails' }
+        ]);
+
+        const recentOrders = await Order.find(dateMatchStage)
+            .populate('customerId', 'name email')
+            .sort({ orderDate: -1 })
+            .limit(3);
+
+        const avgOrders = await Order.aggregate([
+            { $match: dateMatchStage },
+            {
+                $group: {
+                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$orderDate" } },
+                    dailyOrders: { $sum: 1 }
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    avgOrders: { $avg: "$dailyOrders" }
+                }
+            }
+        ]);
+
+        const viewData = {
+            stats: {
+                totalSales: totalSales[0]?.total || 0,
+                unitsSold: unitsSold[0]?.total || 0,
+                deliveredProducts: deliveredProducts[0]?.total || 0,
+                avgOrders: avgOrders[0]?.avgOrders || 0,
+                profitMargin: 32.4
+            },
+            topProducts: topProducts.map(product => ({
+                name: product.productName,
+                sku: product.productDetails.sku || 'N/A',
+                units: product.units,
+                revenue: product.revenue
+            })),
+            recentSales: recentOrders.map(order => ({
+                orderId: order._id,
+                customer: {
+                    name: order.customerId.name,
+                    email: order.customerId.email
+                },
+                date: order.orderDate,
+                amount: order.totalAmount,
+                status: order.products[0].status
+            })),
+            selectedRange: dateRange,
+            dateFilter: {
+                startDate: startDate.toISOString().split('T')[0],
+                endDate: endDate.toISOString().split('T')[0]
+            }
+        };
+
+        res.render('admin/salesreport', viewData);
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).send('Something went wrong');
+    }
+};
+
+const exportSalesPDF = async (req, res) => {
+    try {
+        const dateRange = req.query.dateRange || 'day';
+        const endDate = new Date();
+        const startDate = new Date();
+
+        if (dateRange === 'custom' && req.query.startDate && req.query.endDate) {
+            startDate.setTime(new Date(req.query.startDate));
+            endDate.setTime(new Date(req.query.endDate));
+        } else {
+            switch(dateRange) {
+                case 'week':
+                    startDate.setDate(startDate.getDate() - 7);
+                    break;
+                case 'month':
+                    startDate.setMonth(startDate.getMonth() - 1);
+                    break;
+                case 'year':
+                    startDate.setFullYear(startDate.getFullYear() - 1);
+                    break;
+                default:
+                    startDate.setHours(0, 0, 0, 0);
+            }
+        }
+
+        const dateMatchStage = {
+            orderDate: { $gte: startDate, $lte: endDate }
+        };
+
+        const totalSales = await Order.aggregate([
+            { $match: dateMatchStage },
+            { $unwind: '$products' },
+            { $match: { 'products.status': 'Delivered' } },
+            { $group: { _id: null, total: { $sum: { $multiply: ['$products.price', '$products.quantity'] } }}}
+        ]);
+
+        const deliveredProducts = await Order.aggregate([
+            { $match: dateMatchStage },
+            { $unwind: '$products' },
+            { $match: { 'products.status': 'Delivered' } },
+            { $group: {_id: null, total: { $sum: '$products.quantity' }}}
+        ]);
+
+        const topProducts = await Order.aggregate([
+            { $match: dateMatchStage },
+            { $unwind: '$products' },
+            { $match: { 'products.status': 'Delivered' } },
+            { $group: {
+                _id: '$products.productId',
+                productName: { $first: '$products.productName' },
+                units: { $sum: '$products.quantity' },
+                revenue: { $sum: { $multiply: ['$products.price', '$products.quantity'] } }
+            }},
+            { $sort: { units: -1 } },
+            { $limit: 3 },
+            { $lookup: {from: 'products', localField: '_id', foreignField: '_id', as: 'productDetails'}},
+            { $unwind: '$productDetails' }
+        ]);
+
+        const avgOrders = await Order.aggregate([
+            { $match: dateMatchStage },
+            {
+                $group: {
+                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$orderDate" } },
+                    dailyOrders: { $sum: 1 }
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    avgOrders: { $avg: "$dailyOrders" }
+                }
+            }
+        ]);
+
+        const doc = new PDFDocument();
+        
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', 'attachment; filename=sales-report.pdf');
+        
+        doc.pipe(res);
+        doc.fontSize(20).text('Sales Report', { align: 'center' });
+        doc.moveDown();
+        doc.fontSize(12).text(`Period: ${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`);
+        doc.moveDown();
+
+        doc.fontSize(16).text('Summary Statistics', { underline: true });
+        doc.moveDown();
+
+        const statsTable = {
+            headers: ['Metric', 'Value'],
+            rows: [
+                ['Total Sales', `$${(totalSales[0]?.total || 0).toLocaleString()}`],
+                ['Delivered Products', (deliveredProducts[0]?.total || 0).toLocaleString()],
+                ['Average Orders', Math.round(avgOrders[0]?.avgOrders || 0).toString()]
+            ]
+        };
+
+        drawTable(doc, statsTable);
+        doc.moveDown(2);
+
+        if (topProducts && topProducts.length > 0) {
+            doc.fontSize(16).text('Top Products', { underline: true });
+            doc.moveDown();
+
+            const productsTable = {
+                headers: ['Product Name', 'SKU', 'Units Sold', 'Revenue'],
+                rows: topProducts.map(product => [
+                    product.productName,
+                    product.productDetails.sku || 'N/A',
+                    product.units.toString(),
+                    `$${product.revenue.toLocaleString()}`
+                ])
+            };
+
+            drawTable(doc, productsTable);
+        }
+
+        doc.end();
+
+    } catch (error) {
+        console.error('PDF Generation Error:', error);
+        if (!res.headersSent) {
+            res.status(500).send('Error generating PDF');
+        }
+    }
+};
+
+function drawTable(doc, table) {
+    const startX = 50;
+    let startY = doc.y + 10;
+    const rowHeight = 30;
+    const colWidth = (doc.page.width - 100) / table.headers.length;
+    doc.fontSize(12);
+    table.headers.forEach((header, i) => {
+        doc.fillColor('#f3f4f6')
+           .rect(startX + (i * colWidth), startY, colWidth, rowHeight)
+           .fill();
+        doc.fillColor('#000000')
+           .rect(startX + (i * colWidth), startY, colWidth, rowHeight)
+           .stroke()
+           .text(header,
+                startX + (i * colWidth) + 5,
+                startY + 10,
+                { width: colWidth - 10 });
+    });
+
+    startY += rowHeight;
+    table.rows.forEach((row, rowIndex) => {
+        if (rowIndex % 2 === 1) {
+            doc.fillColor('#f9fafb');
+            row.forEach((_, i) => {
+                doc.rect(startX + (i * colWidth), startY, colWidth, rowHeight).fill();
+            });
+        }
+        doc.fillColor('#000000');
+        row.forEach((cell, i) => {
+            doc.rect(startX + (i * colWidth), startY, colWidth, rowHeight)
+               .stroke()
+               .text(cell,
+                    startX + (i * colWidth) + 5,
+                    startY + 10,
+                    { width: colWidth - 10 });
+        });
+        startY += rowHeight;
+        if (startY > doc.page.height - 50) {
+            doc.addPage();
+            startY = 50;
+        }
+    });
+
+    doc.y = startY + 10;
+}
+
 const logout=async(req,res)=>{
     try {
         req.session.admin = null; 
@@ -649,4 +954,4 @@ Categorylisting,Productlisting,loadupdateProduct,
 updateProduct,loadorders,updateorderstatus,
 loadviewoderdeatils,loadcoupon,loadaddcoupon,
 addcoupon,loadupdatecoupon,updatecoupon,
-couponstatus,logout}
+couponstatus,loadsalesreport,exportSalesPDF,logout}

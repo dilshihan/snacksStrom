@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SNACK STORM - Sales Report</title>
+    <link rel="stylesheet" href="/style/salesreport.css">
+    <link rel="shortcut icon" href="/images/favicon.png" type="">
+</head>
+
+<body>
+    <main class="ml-64 p-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">Sales Report</h1>
+            <p class="text-gray-500">Track your sales performance and trends</p>
+        </div>
+
+        <!-- Date Range Filter -->
+        <div class="bg-white rounded-lg shadow p-4 mb-8">
+            <div class="flex flex-wrap items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <form id="dateRangeForm" action="/admin/salesreport" method="GET">
+                        <div>
+                            <label for="dateRange" class="block text-sm font-medium text-gray-700">Date Range</label>
+                            <select id="dateRange" 
+                                    name="dateRange" 
+                                    onchange="handleDateRangeChange()"
+                                    class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 rounded-md">
+                                <option value="day" <%= selectedRange === 'day' ? 'selected' : '' %>>Day</option>
+                                <option value="week" <%= selectedRange === 'week' ? 'selected' : '' %>>Week</option>
+                                <option value="month" <%= selectedRange === 'month' ? 'selected' : '' %>>Month</option>
+                                <option value="year" <%= selectedRange === 'year' ? 'selected' : '' %>>Year</option>
+                                <option value="custom" <%= selectedRange === 'custom' ? 'selected' : '' %>>Custom range</option>
+                            </select>
+                        </div>
+                
+                        <!-- Custom Date Range Fields -->
+                        <div id="customDateFields" class="mt-3" style="display: none;">
+                            <div class="flex space-x-4">
+                                <div>
+                                    <label for="startDate" class="block text-sm font-medium text-gray-700">Start Date</label>
+                                    <input type="date" 
+                                           id="startDate" 
+                                           name="startDate" 
+                                           value="<%= dateFilter.startDate %>"
+                                           class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 rounded-md">
+                                </div>
+                                <div>
+                                    <label for="endDate" class="block text-sm font-medium text-gray-700">End Date</label>
+                                    <input type="date" 
+                                           id="endDate" 
+                                           name="endDate" 
+                                           value="<%= dateFilter.endDate %>"
+                                           class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 rounded-md">
+                                </div>
+                                <div class="self-end">
+                                    <button type="submit" 
+                                            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                                        Apply
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div>
+                    <!-- Add this form next to your date range form -->
+<form action="/admin/salesreport/export" method="GET" class="inline">
+    <!-- Pass the current date range parameters -->
+    <input type="hidden" name="dateRange" value="<%= selectedRange %>">
+    <% if (selectedRange === 'custom') { %>
+        <input type="hidden" name="startDate" value="<%= dateFilter.startDate %>">
+        <input type="hidden" name="endDate" value="<%= dateFilter.endDate %>">
+    <% } %>
+    <button type="submit" 
+            class="ml-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-md">
+        Export PDF
+    </button>
+</form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- Total Sales -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">Total Sales</p>
+                        <h3 class="text-2xl font-bold">₹<%= stats.totalSales.toLocaleString() %></h3>
+                    </div>
+                    <div class="bg-blue-100 p-3 rounded-full">
+                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Units Sold -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">Total Orders</p>
+                        <h3 class="text-2xl font-bold"><%= stats.unitsSold.toLocaleString() %></h3>
+                    </div>
+                    <div class="bg-green-100 p-3 rounded-full">
+                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Average Order  -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">Avg. Orders</p>
+                        <h3 class="text-2xl font-bold"><%= stats.avgOrders ? Math.round(stats.avgOrders) : '0' %></h3>
+                    </div>
+                    <div class="bg-purple-100 p-3 rounded-full">
+                        <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!--Total Products Sold-->
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">Total Products Sold</p>
+                        <h3 class="text-2xl font-bold"><%= stats.deliveredProducts.toLocaleString() %></h3>
+                    </div>
+                    <div class="bg-yellow-100 p-3 rounded-full">
+                        <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Products -->
+        <div class="mb-8">
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-semibold mb-4">Top Selling Products</h3>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead>
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Product
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Units
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Revenue
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <% topProducts.forEach(product => { %>
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="h-10 w-10 bg-gray-200 rounded-md flex-shrink-0"></div>
+                                        <div class="ml-4">
+                                            <div class="text-sm font-medium text-gray-900"><%= product.name %></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <%= product.units.toLocaleString() %>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    $<%= product.revenue.toLocaleString() %>
+                                </td>
+                            </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Sales -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold">Recent Sales</h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead>
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Order ID
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Customer
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Date
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Amount
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Status
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <% recentSales.forEach(sale => { %>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <%= sale.orderId %>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900"><%= sale.customer.name %></div>
+                                <div class="text-sm text-gray-500"><%= sale.customer.email %></div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <%= new Date(sale.date).toLocaleDateString() %>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                $<%= sale.amount.toLocaleString() %>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                    <%= sale.status === 'Completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' %>">
+                                    <%= sale.status %>
+                                </span>
+                            </td>
+                        </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <a href="#" class="sidebar-logo">Admin Panel</a>
+        </div>
+        <nav>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="/admin/dashboard" class="nav-link">
+                        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                        </svg>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/salesreport" class="nav-link active">
+                        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                        Sales Report
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/users" class="nav-link">
+                        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        Users
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/products" class="nav-link">
+                        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                        </svg>
+                        Products
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/order" class="nav-link">
+                        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                        </svg>
+                        Orders
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/category" class="nav-link">
+                        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                        </svg>
+                        Categories
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/coupon" class="nav-link">
+                        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+                        </svg>
+                        Coupons
+                    </a>
+                </li>
+            </ul>
+
+            <!-- Bottom Menu -->
+            <ul class="bottom-menu">
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        Settings
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin/logout" class="nav-link logout-link">
+                        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                        Logout
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+</body>
+
+<!-- Add this script at the bottom of your view -->
+<script>
+    function handleDateRangeChange() {
+        const select = document.getElementById('dateRange');
+        const customFields = document.getElementById('customDateFields');
+        
+        if (select.value === 'custom') {
+            customFields.style.display = 'block';
+        } else {
+            customFields.style.display = 'none';
+            document.getElementById('dateRangeForm').submit();
+        }
+    }
+    
+    // Set initial values for custom date fields
+    window.onload = function() {
+        if (document.getElementById('dateRange').value === 'custom') {
+            document.getElementById('customDateFields').style.display = 'block';
+            // Set the date values if they exist
+            const startDate = '<%= dateFilter.startDate %>';
+            const endDate = '<%= dateFilter.endDate %>';
+            if (startDate) document.getElementById('startDate').value = startDate;
+            if (endDate) document.getElementById('endDate').value = endDate;
+        }
+    }
+    
+    // Optional: Add date validation
+    document.getElementById('dateRangeForm').onsubmit = function(e) {
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+        
+        if (document.getElementById('dateRange').value === 'custom') {
+            if (!startDate || !endDate) {
+                e.preventDefault();
+                alert('Please select both start and end dates');
+                return false;
+            }
+            
+            if (new Date(startDate) > new Date(endDate)) {
+                e.preventDefault();
+                alert('Start date cannot be after end date');
+                return false;
+            }
+        }
+        return true;
+    };
+    </script>
+</html>
