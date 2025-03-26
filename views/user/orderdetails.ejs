@@ -114,7 +114,7 @@
               <form class="form-inline">
                 <a href="/user/wishlist" class="btn my-2 my-sm-0 nav_wishlist-btn" style="color: white;">
                   <i class="fa fa-heart" aria-hidden="true"></i>
-              </a>
+                </a>
               </form>
               <a href="/user/userprofile" class="user_link">
                 <% if (user && user.image) { %>
@@ -149,39 +149,46 @@
             <%= productDetails.status %>
           </span>
           <!-- Track Order Button -->
-          <button class="track-btn" id="trackOrderBtn">Track Order</button>
+          <% const isAllCancelledOrDelivered = order.products.some(product => product.status === 'Cancelled' || product.status === 'Delivered') %>
+          <% if (isAllCancelledOrDelivered) { %>
+            <button class="track-btn" id="trackOrderBtn" style="display: none;">Track Order</button>
+          <% }else { %>
+            <button class="track-btn" id="trackOrderBtn">Track Order</button>
+          <% } %>
+          
         </div>
 
         <% if (productDetails) { %>
           <div class="product_details">
-              <div class="product_image">
-                  <img src="/uploads/<%= productDetails.productId.image[0] %>" alt="Product Image">
-              </div>
-              <div class="product_info">
-                  <h4><%= productDetails.productId.name %></h4>
-                  <p><strong>Price:</strong> ₹<%= productDetails.price.toFixed(2) %></p>
-                  <p><strong>Quantity:</strong> <%= productDetails.quantity %></p>
-      
-                  <% 
-                      const productTotal = productDetails.price * productDetails.quantity;
-                      const shippingCharge = 5;
-                      const taxRate = 0.1;
-                      const productTax = productTotal * taxRate;
-                      const totalWithShippingAndTax = productTotal + shippingCharge + productTax;
-                      
-                  %>
-      
-                  <div class="total_breakdown">
-                      <p><strong>Subtotal:</strong> ₹<%= productTotal.toFixed(2) %></p>
-                      <p><strong>Shipping:</strong> ₹<%= shippingCharge.toFixed(2) %></p>
-                      <p><strong>Tax (10%):</strong> ₹<%= productTax.toFixed(2) %></p>
-                      <p class="final_total"><strong>Total:</strong> ₹<%= order.totalAmount %></p>
-                  </div>
-              </div>
+            <div class="product_image">
+              <img src="/uploads/<%= productDetails.productId.image[0] %>" alt="Product Image">
+            </div>
+            <div class="product_info">
+              <h4>
+                <%= productDetails.productId.name %>
+              </h4>
+              <p><strong>Price:</strong> ₹<%= productDetails.price.toFixed(2) %>
+              </p>
+              <p><strong>Quantity:</strong>
+                <%= productDetails.quantity %>
+              </p>
+
+
+              <% const productTotal=productDetails.price;
+               const taxRate=0.1; const productTax=productTotal * taxRate;
+               const totalWithShippingAndTax=productTotal+productTax
+              
+                %>
+               
+               <p><strong>tax:</strong> ₹<%= productTax.toFixed(2) %>
+                  <p class="final_total"><strong>Total for this product:</strong> ₹<%=
+                      totalWithShippingAndTax.toFixed(2) %>
+                  </p>
+            </div>
           </div>
-      <% } else { %>
-          <p>Product details not found.</p>
-      <% } %>
+          <% } else { %>
+            <p>Product details not found.</p>
+            <% } %>
               <div class="details_section">
                 <div class="details_block">
                   <h4>Shipping Address</h4>
@@ -214,8 +221,25 @@
                   <p><strong>Method:</strong>
                     <%= order.paymentMethod %>
                   </p>
-                  <strong>Order Total:</strong> ₹<%= order.totalAmount.toFixed(2) %>
-                    </p>
+                  <%  
+                  const subtotal=order.products .filter(p=> p.status !== 'Cancelled')
+                  .reduce((total, p) => total + (p.price), 0);
+                  const productTotal=productDetails.price;
+                  const taxRate=0.1; const productTax=productTotal * taxRate;
+                  const totalproductTotal = productTotal+productTax
+                  const shippingCharge=5; 
+                  const totalWithShippingAndTax=totalproductTotal +shippingCharge ; 
+                  let orderTotalAmount=order.totalAmount;
+                  let updatedOrderTotal = 0;
+                  order.products.forEach(product => {
+                  if (product.status === 'Cancelled') {
+                  updatedOrderTotal += product.price;}});
+                  orderTotalAmount-=updatedOrderTotal
+                  const discount = subtotal+shippingCharge+productTax-orderTotalAmount;
+                    %>
+                    <p> <strong>shipping charge</strong> ₹<%= shippingCharge.toFixed(2) %></p> 
+                    <p> <strong>discount</strong> ₹<%= discount.toFixed(2) %></p> 
+                 <p><strong>Order Total:</strong> ₹<%= orderTotalAmount.toFixed(2) %></p>
                 </div>
               </div>
 

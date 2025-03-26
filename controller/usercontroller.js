@@ -770,6 +770,9 @@ const loadcheckout = async (req,res)=>{
                 totalPrice: 0 
             });
         }
+        const wallet = await walletmodel.findOne({ userId });
+        const walletBalance = wallet ? wallet.balance : 0;
+
         const categories = await Category.find().lean();
         const categoryOffersMap = new Map(
             categories.map(cat => [cat.name.toLowerCase(), cat.offer || 0])
@@ -823,7 +826,8 @@ const loadcheckout = async (req,res)=>{
             coupons,
             razorpayOrderId: paymentOrder.id, 
             razorpayKey: process.env.RAZORPAYX_KEY_ID,
-            totalPrice: cartItems.reduce((total, item) => total + item.itemTotal, 0)
+            totalPrice: cartItems.reduce((total, item) => total + item.itemTotal, 0),
+            walletBalance
         });
     } catch(error) {
         console.log(error)
@@ -1260,16 +1264,30 @@ const cancelorder = async (req, res) => {
     try {
         const orderId = req.params.orderId;
         const productId = req.params.productId;
-        const order = await Order.findOne({ _id: orderId,'products._id': productId});
+        const order = await Order.findOne({ _id: orderId, 'products._id': productId });
     
         if (!order) {
-            return res.status(404).json({success: false,message: "Order or product not found"});
+            return res.status(404).json({ success: false, message: "Order or product not found" });
         }
         const cancelledProduct = order.products.find(p => p._id.toString() === productId);
         
         if (!cancelledProduct) {
-            return res.status(404).json({success: false,message: "Product not found in order"});
+            return res.status(404).json({ success: false, message: "Product not found in order" });
         }
+        
+        if (order.paymentMethod === 'razorpay' || order.paymentMethod === 'wallet') {
+            const wallet = await walletmodel.findOne({ userId: order.customerId });
+            if (wallet) {
+                const refundAmount = cancelledProduct.price * cancelledProduct.quantity;
+                wallet.balance += refundAmount;
+                wallet.transactions.push({
+                    amount: refundAmount,
+                    type: 'credit'
+                });
+                await wallet.save();
+            }
+        }
+        
         await Productmodel.findByIdAndUpdate(
             cancelledProduct.productId,
             { $inc: { stock: cancelledProduct.quantity } }
@@ -1291,10 +1309,11 @@ const cancelorder = async (req, res) => {
             }
         );
         res.json({
-            success: true,message: "Product canceled successfully",updatedOrder});
+            success: true, message: "Product canceled successfully", updatedOrder
+        });
     } catch (error) {
         console.error(error);
-        res.status(500).json({success: false,message: "Error canceling product"});
+        res.status(500).json({ success: false, message: "Error canceling product" });
     }
 };
 

@@ -24,40 +24,36 @@
                     <form id="dateRangeForm" action="/admin/salesreport" method="GET">
                         <div>
                             <label for="dateRange" class="block text-sm font-medium text-gray-700">Date Range</label>
-                            <select id="dateRange" 
-                                    name="dateRange" 
-                                    onchange="handleDateRangeChange()"
-                                    class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 rounded-md">
-                                <option value="day" <%= selectedRange === 'day' ? 'selected' : '' %>>Day</option>
-                                <option value="week" <%= selectedRange === 'week' ? 'selected' : '' %>>Week</option>
-                                <option value="month" <%= selectedRange === 'month' ? 'selected' : '' %>>Month</option>
-                                <option value="year" <%= selectedRange === 'year' ? 'selected' : '' %>>Year</option>
-                                <option value="custom" <%= selectedRange === 'custom' ? 'selected' : '' %>>Custom range</option>
+                            <select id="dateRange" name="dateRange" onchange="handleDateRangeChange()"
+                                class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 rounded-md">
+                                <option value="day" <%=selectedRange==='day' ? 'selected' : '' %>>Day</option>
+                                <option value="week" <%=selectedRange==='week' ? 'selected' : '' %>>Week</option>
+                                <option value="month" <%=selectedRange==='month' ? 'selected' : '' %>>Month</option>
+                                <option value="year" <%=selectedRange==='year' ? 'selected' : '' %>>Year</option>
+                                <option value="custom" <%=selectedRange==='custom' ? 'selected' : '' %>>Custom range
+                                </option>
                             </select>
                         </div>
-                
+
                         <!-- Custom Date Range Fields -->
                         <div id="customDateFields" class="mt-3" style="display: none;">
                             <div class="flex space-x-4">
                                 <div>
-                                    <label for="startDate" class="block text-sm font-medium text-gray-700">Start Date</label>
-                                    <input type="date" 
-                                           id="startDate" 
-                                           name="startDate" 
-                                           value="<%= dateFilter.startDate %>"
-                                           class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 rounded-md">
+                                    <label for="startDate" class="block text-sm font-medium text-gray-700">Start
+                                        Date</label>
+                                    <input type="date" id="startDate" name="startDate"
+                                        value="<%= dateFilter.startDate %>"
+                                        class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 rounded-md">
                                 </div>
                                 <div>
-                                    <label for="endDate" class="block text-sm font-medium text-gray-700">End Date</label>
-                                    <input type="date" 
-                                           id="endDate" 
-                                           name="endDate" 
-                                           value="<%= dateFilter.endDate %>"
-                                           class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 rounded-md">
+                                    <label for="endDate" class="block text-sm font-medium text-gray-700">End
+                                        Date</label>
+                                    <input type="date" id="endDate" name="endDate" value="<%= dateFilter.endDate %>"
+                                        class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 rounded-md">
                                 </div>
                                 <div class="self-end">
-                                    <button type="submit" 
-                                            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                                    <button type="submit"
+                                        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                                         Apply
                                     </button>
                                 </div>
@@ -65,20 +61,28 @@
                         </div>
                     </form>
                 </div>
-                <div>
-                    <!-- Add this form next to your date range form -->
-<form action="/admin/salesreport/export" method="GET" class="inline">
-    <!-- Pass the current date range parameters -->
-    <input type="hidden" name="dateRange" value="<%= selectedRange %>">
-    <% if (selectedRange === 'custom') { %>
-        <input type="hidden" name="startDate" value="<%= dateFilter.startDate %>">
-        <input type="hidden" name="endDate" value="<%= dateFilter.endDate %>">
-    <% } %>
-    <button type="submit" 
-            class="ml-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-md">
-        Export PDF
-    </button>
-</form>
+                <div class="inline flex gap-2">
+                    <form action="/admin/salesreport/export/pdf" method="GET" class="inline">
+                        <input type="hidden" name="dateRange" value="<%= selectedRange %>">
+                        <% if (selectedRange === 'custom') { %>
+                            <input type="hidden" name="startDate" value="<%= dateFilter.startDate %>">
+                            <input type="hidden" name="endDate" value="<%= dateFilter.endDate %>">
+                        <% } %>
+                        <button type="submit" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-md">
+                            Export PDF
+                        </button>
+                    </form>
+                
+                    <form action="/admin/salesreport/export/excel" method="GET" class="inline">
+                        <input type="hidden" name="dateRange" value="<%= selectedRange %>">
+                        <% if (selectedRange === 'custom') { %>
+                            <input type="hidden" name="startDate" value="<%= dateFilter.startDate %>">
+                            <input type="hidden" name="endDate" value="<%= dateFilter.endDate %>">
+                        <% } %>
+                        <button type="submit" class="bg-green-200 hover:bg-green-300 text-gray-700 font-medium py-2 px-4 rounded-md">
+                            Export Excel
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -90,7 +94,8 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-gray-500 text-sm">Total Sales</p>
-                        <h3 class="text-2xl font-bold">₹<%= stats.totalSales.toLocaleString() %></h3>
+                        <h3 class="text-2xl font-bold">₹<%= stats.totalSales.toLocaleString() %>
+                        </h3>
                     </div>
                     <div class="bg-blue-100 p-3 rounded-full">
                         <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -106,7 +111,9 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-gray-500 text-sm">Total Orders</p>
-                        <h3 class="text-2xl font-bold"><%= stats.unitsSold.toLocaleString() %></h3>
+                        <h3 class="text-2xl font-bold">
+                            <%= stats.unitsSold.toLocaleString() %>
+                        </h3>
                     </div>
                     <div class="bg-green-100 p-3 rounded-full">
                         <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -122,7 +129,9 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-gray-500 text-sm">Avg. Orders</p>
-                        <h3 class="text-2xl font-bold"><%= stats.avgOrders ? Math.round(stats.avgOrders) : '0' %></h3>
+                        <h3 class="text-2xl font-bold">
+                            <%= stats.avgOrders ? Math.round(stats.avgOrders) : '0' %>
+                        </h3>
                     </div>
                     <div class="bg-purple-100 p-3 rounded-full">
                         <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -138,7 +147,9 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-gray-500 text-sm">Total Products Sold</p>
-                        <h3 class="text-2xl font-bold"><%= stats.deliveredProducts.toLocaleString() %></h3>
+                        <h3 class="text-2xl font-bold">
+                            <%= stats.deliveredProducts.toLocaleString() %>
+                        </h3>
                     </div>
                     <div class="bg-yellow-100 p-3 rounded-full">
                         <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -158,36 +169,41 @@
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead>
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Product
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Units
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Revenue
                                 </th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            <% topProducts.forEach(product => { %>
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center">
-                                        <div class="h-10 w-10 bg-gray-200 rounded-md flex-shrink-0"></div>
-                                        <div class="ml-4">
-                                            <div class="text-sm font-medium text-gray-900"><%= product.name %></div>
+                            <% topProducts.forEach(product=> { %>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="h-10 w-10 bg-gray-200 rounded-md flex-shrink-0"></div>
+                                            <div class="ml-4">
+                                                <div class="text-sm font-medium text-gray-900">
+                                                    <%= product.name %>
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    <%= product.units.toLocaleString() %>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    $<%= product.revenue.toLocaleString() %>
-                                </td>
-                            </tr>
-                            <% }); %>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <%= product.units.toLocaleString() %>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        $<%= product.revenue.toLocaleString() %>
+                                    </td>
+                                </tr>
+                                <% }); %>
                         </tbody>
                     </table>
                 </div>
@@ -221,29 +237,34 @@
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
-                        <% recentSales.forEach(sale => { %>
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                <%= sale.orderId %>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium text-gray-900"><%= sale.customer.name %></div>
-                                <div class="text-sm text-gray-500"><%= sale.customer.email %></div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                <%= new Date(sale.date).toLocaleDateString() %>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                $<%= sale.amount.toLocaleString() %>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
+                        <% recentSales.forEach(sale=> { %>
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <%= sale.orderId %>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-medium text-gray-900">
+                                        <%= sale.customer.name %>
+                                    </div>
+                                    <div class="text-sm text-gray-500">
+                                        <%= sale.customer.email %>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <%= new Date(sale.date).toLocaleDateString() %>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    $<%= sale.amount.toLocaleString() %>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span
+                                        class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
                                     <%= sale.status === 'Completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' %>">
-                                    <%= sale.status %>
-                                </span>
-                            </td>
-                        </tr>
-                        <% }); %>
+                                        <%= sale.status %>
+                                    </span>
+                                </td>
+                            </tr>
+                            <% }); %>
                     </tbody>
                 </table>
             </div>
@@ -354,7 +375,7 @@
     function handleDateRangeChange() {
         const select = document.getElementById('dateRange');
         const customFields = document.getElementById('customDateFields');
-        
+
         if (select.value === 'custom') {
             customFields.style.display = 'block';
         } else {
@@ -362,9 +383,9 @@
             document.getElementById('dateRangeForm').submit();
         }
     }
-    
+
     // Set initial values for custom date fields
-    window.onload = function() {
+    window.onload = function () {
         if (document.getElementById('dateRange').value === 'custom') {
             document.getElementById('customDateFields').style.display = 'block';
             // Set the date values if they exist
@@ -374,19 +395,19 @@
             if (endDate) document.getElementById('endDate').value = endDate;
         }
     }
-    
+
     // Optional: Add date validation
-    document.getElementById('dateRangeForm').onsubmit = function(e) {
+    document.getElementById('dateRangeForm').onsubmit = function (e) {
         const startDate = document.getElementById('startDate').value;
         const endDate = document.getElementById('endDate').value;
-        
+
         if (document.getElementById('dateRange').value === 'custom') {
             if (!startDate || !endDate) {
                 e.preventDefault();
                 alert('Please select both start and end dates');
                 return false;
             }
-            
+
             if (new Date(startDate) > new Date(endDate)) {
                 e.preventDefault();
                 alert('Start date cannot be after end date');
@@ -395,5 +416,6 @@
         }
         return true;
     };
-    </script>
+</script>
+
 </html>

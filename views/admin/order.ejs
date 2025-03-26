@@ -60,27 +60,41 @@
                                     .filter(p => p.status !== 'Cancelled')
                                     .reduce((total, p) => total + p.quantity, 0) %>
                             </td>
-                            <td>
-                                
-                             
-                                    <div class="final-total">₹<%= order.totalAmount%></div>
-                                
-                            </td>
+                                <td>
+                                    <% 
+                                                   
+                                    let orderTotalAmount=order.totalAmount;
+                                    let updatedOrderTotal = 0;
+                                    order.products.forEach(product => {
+                                    if (product.status === 'Cancelled') {
+                                    updatedOrderTotal += product.price;}});
+                                    orderTotalAmount-=updatedOrderTotal
+                      
+                                    %>
+                                    
+                                    <div class="final-total">₹<%= orderTotalAmount.toFixed(2) %></div>
+                                </td>
                             <td><%= order.paymentMethod %></td>
                             <td>
                                 <% 
                                 const areAllProductsCancelled = order.products.every(product => product.status === 'Cancelled');
                                 const areAllProductsDelivered = order.products.every(product => product.status === 'Delivered');
+                                const isAnyProductDelivered = order.products.some(product => product.status === 'Delivered');
                                 %>
                                 
                                 <% if (areAllProductsCancelled) { %>
                                     <span class="status-text" style="color: red; font-weight: bold;">Cancelled</span>
                                 <% } else if (areAllProductsDelivered) { %>
                                     <span class="status-text" style="color: green; font-weight: bold;">Delivered</span>
+                                <% } else if (isAnyProductDelivered) { %>
+                                    <span class="status-text" style="color: green; font-weight: bold;">Delivered</span>
                                 <% } else { %>
                                     <select class="status-dropdown" data-order-id="<%= order._id %>" onchange="updateProductStatus(this)">
-                                        <% ['Pending', 'Processing', 'Shipped', 'Delivered','Cancelled'].forEach(status => { %>
-                                            <option value="<%= status %>" <%= order.products.some(p => p.status === status) ? 'selected' : '' %>><%= status %></option>
+                                        <% 
+                                        const currentStatus = order.products.find(p => p.status !== 'Cancelled')?.status || 'Pending';
+                                        ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'].forEach(status => { 
+                                        %>
+                                            <option value="<%= status %>" <%= currentStatus === status ? 'selected' : '' %>><%= status %></option>
                                         <% }); %>
                                     </select>
                                 <% } %>
@@ -236,7 +250,12 @@
                         title: "Success!",
                         text: "Product statuses updated successfully!",
                         confirmButtonColor: "#3085d6",
-                    });
+                    })
+                    .then(() => {
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000); 
+        });
                 } else {
                     Swal.fire({
                         icon: "error",

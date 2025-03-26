@@ -9,6 +9,7 @@ const couponmodel = require('../model/couponmodel')
 const fs = require('fs');
 const path = require('path');
 const PDFDocument = require('pdfkit');
+const ExcelJS = require('exceljs');
 
 
 
@@ -638,6 +639,7 @@ const loadsalesreport = async (req, res) => {
         if (dateRange === 'custom' && req.query.startDate && req.query.endDate) {
             startDate.setTime(new Date(req.query.startDate));
             endDate.setTime(new Date(req.query.endDate));
+            endDate.setHours(23, 59, 59, 999);
         } else {
             switch(dateRange) {
                 case 'week':
@@ -865,10 +867,9 @@ const exportSalesPDF = async (req, res) => {
             doc.moveDown();
 
             const productsTable = {
-                headers: ['Product Name', 'SKU', 'Units Sold', 'Revenue'],
+                headers: ['Product Name',  'Units Sold', 'Revenue'],
                 rows: topProducts.map(product => [
                     product.productName,
-                    product.productDetails.sku || 'N/A',
                     product.units.toString(),
                     `$${product.revenue.toLocaleString()}`
                 ])
@@ -933,6 +934,127 @@ function drawTable(doc, table) {
     doc.y = startY + 10;
 }
 
+const exportSalesExcel = async (req, res) => {
+    try {
+        const dateRange = req.query.dateRange || 'day';
+        const endDate = new Date();
+        const startDate = new Date();
+
+        if (dateRange === 'custom' && req.query.startDate && req.query.endDate) {
+            startDate.setTime(new Date(req.query.startDate));
+            endDate.setTime(new Date(req.query.endDate));
+            
+        } else {
+            switch(dateRange) {
+                case 'week':
+                    startDate.setDate(startDate.getDate() - 7);
+                    break;
+                case 'month':
+                    startDate.setMonth(startDate.getMonth() - 1);
+                    break;
+                case 'year':
+                    startDate.setFullYear(startDate.getFullYear() - 1);
+                    break;
+                default:
+                    startDate.setHours(0, 0, 0, 0);
+            }
+        }
+
+        const dateMatchStage = {
+            orderDate: { $gte: startDate, $lte: endDate }
+        };
+
+        const [totalSales, deliveredProducts, topProducts, avgOrders] = await Promise.all([
+            Order.aggregate([
+                { $match: dateMatchStage },
+                { $unwind: '$products' },
+                { $match: { 'products.status': 'Delivered' } },
+                { $group: { _id: null, total: { $sum: { $multiply: ['$products.price', '$products.quantity'] } }}}
+            ]),
+            Order.aggregate([
+                { $match: dateMatchStage },
+                { $unwind: '$products' },
+                { $match: { 'products.status': 'Delivered' } },
+                { $group: {_id: null, total: { $sum: '$products.quantity' }}}
+            ]),
+            Order.aggregate([
+                { $match: dateMatchStage },
+                { $unwind: '$products' },
+                { $match: { 'products.status': 'Delivered' } },
+                { $group: {
+                    _id: '$products.productId',
+                    productName: { $first: '$products.productName' },
+                    units: { $sum: '$products.quantity' },
+                    revenue: { $sum: { $multiply: ['$products.price', '$products.quantity'] } }
+                }},
+                { $sort: { units: -1 } },
+                { $limit: 3 },
+                { $lookup: {from: 'products', localField: '_id', foreignField: '_id', as: 'productDetails'}},
+                { $unwind: '$productDetails' }
+            ]),
+            Order.aggregate([
+                { $match: dateMatchStage },
+                {
+                    $group: {
+                        _id: { $dateToString: { format: "%Y-%m-%d", date: "$orderDate" } },
+                        dailyOrders: { $sum: 1 }
+                    }
+                },
+                {
+                    $group: {
+                        _id: null,
+                        avgOrders: { $avg: "$dailyOrders" }
+                    }
+                }
+            ])
+        ]);
+
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Sales Report');
+        worksheet.mergeCells('A1:D1');
+        worksheet.getCell('A1').value = 'Sales Report';
+        worksheet.getCell('A1').font = { size: 16, bold: true };
+        worksheet.getCell('A1').alignment = { horizontal: 'center' };
+
+        worksheet.mergeCells('A2:D2');
+        worksheet.getCell('A2').value = `Period: ${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`;
+        worksheet.getCell('A2').alignment = { horizontal: 'center' };
+        worksheet.addRow([]);
+        worksheet.addRow(['Summary Statistics']);
+        worksheet.getRow(4).font = { bold: true };
+
+        worksheet.addRow(['Metric', 'Value']);
+        worksheet.addRow(['Total Sales', `$${(totalSales[0]?.total || 0).toLocaleString()}`]);
+        worksheet.addRow(['Delivered Products', (deliveredProducts[0]?.total || 0).toLocaleString()]);
+        worksheet.addRow(['Average Orders', Math.round(avgOrders[0]?.avgOrders || 0).toString()]);
+        worksheet.addRow([]);
+        worksheet.addRow(['Top Products']);
+        worksheet.getRow(9).font = { bold: true };
+
+        worksheet.addRow(['Product Name', 'Units Sold', 'Revenue']);
+        topProducts.forEach(product => {
+            worksheet.addRow([
+                product.productName,
+                product.units,
+                `$${product.revenue.toLocaleString()}`
+            ]);
+        });
+
+        worksheet.columns.forEach(column => {
+            column.width = 20;
+        });
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', 'attachment; filename=sales-report.xlsx');
+        await workbook.xlsx.write(res);
+
+    } catch (error) {
+        console.error(error);
+        if (!res.headersSent) {
+            res.status(500).send('Error generating Excel file');
+        }
+    }
+};
+
 const logout=async(req,res)=>{
     try {
         req.session.admin = null; 
@@ -954,4 +1076,5 @@ Categorylisting,Productlisting,loadupdateProduct,
 updateProduct,loadorders,updateorderstatus,
 loadviewoderdeatils,loadcoupon,loadaddcoupon,
 addcoupon,loadupdatecoupon,updatecoupon,
-couponstatus,loadsalesreport,exportSalesPDF,logout}
+couponstatus,loadsalesreport,exportSalesPDF,
+exportSalesExcel,logout}
