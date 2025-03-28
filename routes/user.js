@@ -44,6 +44,7 @@ router.post('/add-to-wishlist', userauth.checksession, userauth.checkBan, userco
 router.delete('/wishlist/remove/:productId',userauth.checksession,userauth.checkBan,usercontroller.removefromwishlist);
 router.get('/wallet',userauth.checksession,userauth.checkBan,usercontroller.loadwallet)
 router.post('/add-money',userauth.checksession,userauth.checkBan,usercontroller.addMoney)
+router.get('/invoice/:orderId',userauth.checksession,userauth.checkBan,usercontroller.downloadinvoice)
 router.post('/logout',userauth.checksession,usercontroller.logout)
 router.get('/auth/google/callback', usercontroller.handleGoogleCallback)
 router.post('/auth/google/callback', usercontroller.handleGoogleLogin)

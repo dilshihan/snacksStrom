@@ -14,6 +14,8 @@ const { use } = require('passport')
 const mongoose = require('mongoose');
 const Razorpay = require('razorpay');
 const usermodel = require('../model/usermodel')
+const PDFDocument = require('pdfkit');
+const path = require('path');
 
 
 
@@ -990,11 +992,12 @@ const addorderdetails = async(req, res) => {
                         transactions: {amount: finalAmount,type: 'debit',timestamp: new Date()}}});
          }
         
-        const newOrder = new Order({
+         const newOrder = new Order({
             customerId,
             products,
-            totalAmount:finalAmount,
+            totalAmount: finalAmount,
             paymentMethod,
+            paymentStatus: paymentMethod === 'cod' ? 'Pending' : 'Paid', // Set payment status based on method
             ...(paymentMethod === 'wallet' && {
                 updatedWalletBalance: (await walletmodel.findOne({ userId: customerId })).balance
             }),
@@ -1604,6 +1607,195 @@ const addMoney = async (req, res) => {
     }
 };
 
+const downloadinvoice = async(req,res)=>{
+    try {
+        const orderId = req.params.orderId;
+        
+        const order = await Order.findById(orderId).populate('products.productId').populate('shippingAddress');
+
+        if (!order) {
+            return res.status(404).send('Order not found');
+        }
+
+        const doc = new PDFDocument({
+            margin: 50
+        });
+        
+        res.setHeader('Content-disposition', `attachment; filename=invoice-${orderId}.pdf`);
+        res.setHeader('Content-type', 'application/pdf');
+        doc.pipe(res);
+
+        doc.fontSize(25).text(' SNACK STORM', { align: 'center' });
+        doc.moveDown();
+        doc.fontSize(14).text('Invoice', { align: 'center' });
+        doc.moveDown();
+
+        doc.fontSize(12);
+        doc.text(`Order ID: ${orderId}`);
+        doc.text(`Order Date: ${new Date(order.orderDate).toLocaleDateString()}`);
+        doc.moveDown();
+
+        doc.fontSize(14).text('Shipping Address', { underline: true });
+        doc.fontSize(12);
+        doc.text(`Name: ${order.shippingAddress.fullname}`);
+        doc.text(`Phone: ${order.shippingAddress.phoneNumber}`);
+        doc.text(`Address: ${order.shippingAddress.streetAddress}`);
+        doc.text(`${order.shippingAddress.city}, ${order.shippingAddress.state} - ${order.shippingAddress.zipCode}`);
+        doc.moveDown();
+
+        doc.fontSize(14).text('Product Details', { underline: true });
+        doc.moveDown();
+
+        const tableTop = doc.y;
+        const tableLeft = 50;
+        const colWidths = [200, 80, 80, 80, 80];
+        const rowHeight = 30;
+        const tableWidth = colWidths.reduce((sum, width) => sum + width, 0);
+        
+        doc.fontSize(12).font('Helvetica-Bold');
+        const headers = ['Product', 'Price', 'Quantity', 'Tax (10%)', 'Total'];
+        let currentX = tableLeft;
+        doc.rect(tableLeft, tableTop, tableWidth, rowHeight).stroke();
+        
+        headers.forEach((header, i) => {
+            if (i > 0) {
+                doc.moveTo(currentX, tableTop)
+                   .lineTo(currentX, tableTop + rowHeight)
+                   .stroke();
+            }
+            
+            doc.text(header, currentX + 5, tableTop + 10, {
+                width: colWidths[i] - 10,
+                align: 'left'
+            });
+            currentX += colWidths[i];
+        });
+        let currentY = tableTop + rowHeight;
+        doc.fontSize(12).font('Helvetica');
+
+        let subtotal = 0;
+        let totalTax = 0;
+
+        order.products.forEach((product, index) => {
+            if (product.status !== 'Cancelled') {
+                const productTotal = product.price;
+                const taxRate = 0.1; 
+                const productTax = productTotal * taxRate;
+                const total = productTotal + productTax;
+                doc.rect(tableLeft, currentY, tableWidth, rowHeight).stroke();
+                
+                currentX = tableLeft;
+                [
+                    product.productId.name,
+                    `${product.price.toFixed(2)}`,
+                    product.quantity.toString(),
+                    `${productTax.toFixed(2)}`,
+                    `${total.toFixed(2)}`
+                ].forEach((text, i) => {
+                    if (i > 0) {
+                        doc.moveTo(currentX, currentY)
+                           .lineTo(currentX, currentY + rowHeight)
+                           .stroke();
+                    }
+                    
+                    doc.text(text, currentX + 5, currentY + 10, {
+                        width: colWidths[i] - 10,
+                        align: 'left'
+                    });
+                    currentX += colWidths[i];
+                });
+
+                currentY += rowHeight;
+                subtotal += productTotal;
+                totalTax += productTax;
+            }
+        });
+        currentX = tableLeft;
+        headers.forEach((_, i) => {
+            if (i > 0) {
+                doc.moveTo(currentX, tableTop)
+                   .lineTo(currentX, currentY)
+                   .stroke();
+            }
+            currentX += colWidths[i];
+        });
+        doc.rect(tableLeft, tableTop, tableWidth, currentY - tableTop).stroke();
+        doc.y = currentY + 20;
+        const shippingCharge = 5;
+        const totalAmount = order.totalAmount;
+        let updatedOrderTotal = 0;
+        
+        order.products.forEach(product => {
+            if (product.status === 'Cancelled') {
+                updatedOrderTotal += product.price;
+            }
+        });
+        
+        const finalOrderTotal = totalAmount - updatedOrderTotal;
+        const discount = (subtotal + shippingCharge + totalTax) - finalOrderTotal;
+
+        doc.moveDown();
+        doc.fontSize(14).text('Order Summary',50,doc.y, { underline: true, align: 'left' });
+        doc.moveDown();
+        
+        const pageWidth = doc.page.width;
+        const summaryTableWidth = 250;
+        const summaryTableLeft = (pageWidth - summaryTableWidth) / 2; 
+        const summaryColWidths = [150, 80]; 
+        const summaryRowHeight = 25;
+        const summaryItems = [
+            { label: 'Subtotal:', value: `${subtotal.toFixed(2)}` },
+            { label: 'Tax Total:', value: `${totalTax.toFixed(2)}` },
+            { label: 'Shipping Charge:', value: `${shippingCharge.toFixed(2)}` },
+            { label: 'Discount Applied:', value: `${discount.toFixed(2)}` },
+            { label: 'Final Total:', value: `${finalOrderTotal.toFixed(2)}` }
+        ];
+        let summaryY = doc.y;
+    
+        summaryItems.forEach((item, index) => {
+            const isLastRow = index === summaryItems.length - 1;
+
+            doc.rect(summaryTableLeft, summaryY, summaryTableWidth, summaryRowHeight).stroke();
+
+            doc.moveTo(summaryTableLeft + summaryColWidths[0], summaryY)
+               .lineTo(summaryTableLeft + summaryColWidths[0], summaryY + summaryRowHeight)
+               .stroke();
+            if (isLastRow) {
+                doc.font('Helvetica-Bold');
+            } else {
+                doc.font('Helvetica');
+            }
+            
+            doc.fontSize(12)
+               .text(item.label, 
+                    summaryTableLeft + 5, 
+                    summaryY + 7,
+                    { width: summaryColWidths[0] - 10 });
+            
+            doc.text(item.value,
+                    summaryTableLeft + summaryColWidths[0] + 5,
+                    summaryY + 7,
+                    { width: summaryColWidths[1] - 10, align: 'right' });
+            
+            summaryY += summaryRowHeight;
+        });
+
+        doc.moveDown(4);  
+        const pageCenter = doc.page.width / 2;
+        doc.fontSize(10)
+           .text('Thank you for shopping with us!',0,doc.y,
+                { align: 'center', width: doc.page.width })
+           .moveDown(0.5) 
+           .text('This is a computer-generated invoice and does not require a signature.',0,doc.y,
+                { align: 'center', width: doc.page.width });
+        doc.end();
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error generating invoice');
+    }
+}
+
 const logout = (req,res)=>{
     req.session.user=null;
     res.redirect('/user/register')
@@ -1621,5 +1813,5 @@ module.exports={registerUser,loadregister,loginUser,
                addaddress,editaddress,deleteaddress,
                loadorderdetils,cancelorder,updatepassword,
                loadwishlist,addtowishlist,removefromwishlist,
-               loadwallet,addMoney,
+               loadwallet,addMoney,downloadinvoice,
                handleGoogleLogin,handleGoogleCallback}

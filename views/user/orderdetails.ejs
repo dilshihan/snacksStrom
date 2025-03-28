@@ -33,6 +33,7 @@
   <!-- responsive style -->
   <link href="/css/responsive.css" rel="stylesheet" />
   <link rel="stylesheet" href="/style/orderdetils.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 </head>
 
@@ -245,6 +246,12 @@
 
               <div style="text-align: center; margin-top: 20px;">
                 <a href="/user/menu" class="btn_back">Back to Orders</a>
+                <% if(productDetails.status==='Delivered'){ %>
+                  <a href="/user/invoice/<%= order._id %>" class="btn_back btn_invoice">
+                      <i class="fas fa-download"></i> Invoice
+                  </a>
+              <% } %>
+                 
               </div>
       </div>
     </div>

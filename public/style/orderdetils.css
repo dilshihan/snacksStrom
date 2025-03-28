@@ -320,3 +320,10 @@
   font-weight: 600;
   margin-top: 10px !important;
 }
+.btn_invoice {
+  margin-left: 10px;
+}
+.btn_invoice i, 
+.btn_invoice span {
+  margin-right: 5px;
+}
