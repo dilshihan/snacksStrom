@@ -1,4 +1,3 @@
-// Order Schema
 const mongoose = require('mongoose');
 
 const orderSchema = new mongoose.Schema({
@@ -48,7 +47,7 @@ const orderSchema = new mongoose.Schema({
     },
     paymentStatus: {
         type: String,
-        enum: ['Pending','Paid', 'Failed'],
+        enum: ['Pending','Paid'],
         default: 'Pending',
         required: true
     },

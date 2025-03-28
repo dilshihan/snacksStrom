@@ -34,6 +34,8 @@
   <link href="/css/responsive.css" rel="stylesheet" />
   <link rel="stylesheet" href="/style/orderdetils.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 </head>
 
@@ -250,8 +252,18 @@
                   <a href="/user/invoice/<%= order._id %>" class="btn_back btn_invoice">
                       <i class="fas fa-download"></i> Invoice
                   </a>
-              <% } %>
-                 
+                <% } %>
+                
+                <% if(order.paymentMethod === 'razorpay' && order.paymentStatus === 'Pending'){ %>
+                  <div class="payment_alert" style="margin-top: 15px; background-color: #fff3cd; border: 1px solid #ffeeba; color: #856404; padding: 10px; border-radius: 5px;">
+                    <i class="fas fa-exclamation-circle"></i> Your payment is incomplete. Please complete your payment to process your order.
+                  </div>
+                  <button id="payAgainBtn" class="btn_back" style="background-color: #28a745; margin-top: 10px;">
+                    <i class="fas fa-credit-card"></i> Pay Again
+                  </button>
+                  <input type="hidden" id="razorpayOrderId" value="<%= order._id %>">
+                  <input type="hidden" id="totalAmount" value="<%= order.totalAmount %>">
+                <% } %>
               </div>
       </div>
     </div>
@@ -425,50 +437,173 @@
   <!-- custom js -->
   <script src="/js/custom.js"></script>
 
+  <!-- Razorpay Payment Script -->
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
   <script>
     document.addEventListener('DOMContentLoaded', function () {
-      const trackButtons = document.querySelectorAll('.track-btn');
-      const modal = document.getElementById('trackingModal');
-      const closeBtn = modal.querySelector('.tracking-close');
+  const trackButtons = document.querySelectorAll('.track-btn');
+  const modal = document.getElementById('trackingModal');
+  const closeBtn = modal.querySelector('.tracking-close');
 
-      function positionConnectingLines() {
-        const steps = document.querySelectorAll('.step');
-        const connections = document.querySelectorAll('.step-connection');
-
-        connections.forEach((connection, index) => {
-          if (index < steps.length - 1) {
-            const currentStep = steps[index];
-            const nextStep = steps[index + 1];
-            const topPosition = currentStep.offsetTop + 30;
-
-            connection.style.top = topPosition + 'px';
-            connection.style.height = (nextStep.offsetTop - topPosition) + 'px';
-          }
-        });
-      }
-
-      trackButtons.forEach(button => {
-        button.addEventListener('click', function () {
-          modal.style.display = 'block';
-          setTimeout(positionConnectingLines, 100);
-        });
-      });
-
-      // Position lines on window resize
-      window.addEventListener('resize', positionConnectingLines);
-
-      // Close the modal when clicked on X
-      closeBtn.addEventListener('click', function () {
-        modal.style.display = 'none';
-      });
-
-      // Close the modal when clicked outside
-      window.addEventListener('click', function (event) {
-        if (event.target === modal) {
-          modal.style.display = 'none';
+  const payAgainBtn = document.getElementById('payAgainBtn');
+  if (payAgainBtn) {
+    payAgainBtn.addEventListener('click', function() {
+      const orderId = document.getElementById('razorpayOrderId').value;
+      const amount = parseFloat(document.getElementById('totalAmount').value);
+      
+      fetch('/user/create-razorpay-order', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          orderId: orderId,
+          amount: amount 
+        })
+      })
+      .then(response => {
+        if (!response.ok) {
+          return response.json().then(errData => {
+            throw new Error('Server error: ' + (errData.message || response.statusText));
+          });
         }
+        return response.json();
+      })
+      .then(data => {
+        if (data.success) {
+          openRazorpayModal(data.order);
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Error creating payment order: ' + (data.message || 'Please try again.')
+          });
+        }
+      })
+      .catch(error => {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'An error occurred. Please try again later.'
+        });
       });
     });
+    
+    function openRazorpayModal(order) {
+      var options = {
+        key: '<%= process.env.RAZORPAYX_KEY_ID %>',
+        amount: order.amount,
+        currency: "INR",
+        name: "Snack Storm",
+        description: "Payment for Order #" + order.receipt.slice(-6),
+        order_id: order.id,
+        handler: function (response) {
+          verifyAndUpdatePayment(response, order.receipt);
+        },
+        prefill: {
+          name: "<%= user.name %>",
+          email: "<%= user.email %>",
+          contact: "<%= user.phoneNumber || '' %>"
+        },
+        theme: {
+          color: "#ffbe33"
+        }
+      };
+      
+      var rzp = new Razorpay(options);
+      rzp.open();
+      
+      rzp.on('payment.failed', function (response) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Payment Failed',
+          text: 'Payment failed. Please try again.'
+        });
+      });
+    }
+    
+    function verifyAndUpdatePayment(paymentResponse, orderId) {
+      fetch('/user/verify-razorpay-payment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          orderId: orderId,
+          razorpay_payment_id: paymentResponse.razorpay_payment_id,
+          razorpay_order_id: paymentResponse.razorpay_order_id,
+          razorpay_signature: paymentResponse.razorpay_signature
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Success',
+            text: 'Payment successful!',
+            showConfirmButton: false,
+            timer: 1500
+          }).then(() => {
+            window.location.reload();
+          });
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Verification Failed',
+            text: 'Payment verification failed. Please contact support.'
+          });
+        }
+      })
+      .catch(error => {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'An error occurred during payment verification.'
+        });
+      });
+    }
+  }
+
+  function positionConnectingLines() {
+    const steps = document.querySelectorAll('.step');
+    const connections = document.querySelectorAll('.step-connection');
+
+    connections.forEach((connection, index) => {
+      if (index < steps.length - 1) {
+        const currentStep = steps[index];
+        const nextStep = steps[index + 1];
+        const topPosition = currentStep.offsetTop + 30;
+
+        connection.style.top = topPosition + 'px';
+        connection.style.height = (nextStep.offsetTop - topPosition) + 'px';
+      }
+    });
+  }
+
+  trackButtons.forEach(button => {
+    button.addEventListener('click', function () {
+      modal.style.display = 'block';
+      setTimeout(positionConnectingLines, 100);
+    });
+  });
+
+  // Position lines on window resize
+  window.addEventListener('resize', positionConnectingLines);
+
+  // Close the modal when clicked on X
+  closeBtn.addEventListener('click', function () {
+    modal.style.display = 'none';
+  });
+
+  // Close the modal when clicked outside
+  window.addEventListener('click', function (event) {
+    if (event.target === modal) {
+      modal.style.display = 'none';
+    }
+  });
+});
   </script>
 </body>
 

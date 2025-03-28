@@ -444,22 +444,31 @@
             <% if (user.authType==='normal' ) { %>
               <div id="password" class="tab_content">
                 <form id="password-form">
-                  <div class="form_group">
-                    <label class="form_label">Current Password</label>
-                    <input type="password" name="currentPassword" class="form_control" required />
-                  </div>
-                  <div class="form_group">
-                    <label class="form_label">New Password</label>
-                    <input type="password" name="newPassword" class="form_control" required />
-                  </div>
-                  <div class="form_group">
-                    <label class="form_label">Confirm New Password</label>
-                    <input type="password" name="confirmPassword" class="form_control" required />
-                  </div>
-                  <div class="btn_container">
-                    <button type="submit" class="btn_update">Update Password</button>
-                  </div>
-                </form>
+  <div class="form_group">
+    <label class="form_label">Current Password</label>
+    <div class="password-field">
+      <input type="password" name="currentPassword" class="form_control" required />
+      <i class="fa fa-eye-slash toggle-password"></i>
+    </div>
+  </div>
+  <div class="form_group">
+    <label class="form_label">New Password</label>
+    <div class="password-field">
+      <input type="password" name="newPassword" class="form_control" required />
+      <i class="fa fa-eye-slash toggle-password"></i>
+    </div>
+  </div>
+  <div class="form_group">
+    <label class="form_label">Confirm New Password</label>
+    <div class="password-field">
+      <input type="password" name="confirmPassword" class="form_control" required />
+      <i class="fa fa-eye-slash toggle-password"></i>
+    </div>
+  </div>
+  <div class="btn_container">
+    <button type="submit" class="btn_update">Update Password</button>
+  </div>
+</form>
               </div>
               <% } %>
           </div>
@@ -708,6 +717,21 @@
         });
       }
     });
+
+    document.querySelectorAll('.toggle-password').forEach(icon => {
+  icon.addEventListener('click', function() {
+    const input = this.previousElementSibling;
+    if (input.type === 'password') {
+      input.type = 'text';
+      this.classList.remove('fa-eye-slash');
+      this.classList.add('fa-eye');
+    } else {
+      input.type = 'password';
+      this.classList.remove('fa-eye');
+      this.classList.add('fa-eye-slash');
+    }
+  });
+});
 
     // Header scroll behavior
     let lastScrollTop = 0;

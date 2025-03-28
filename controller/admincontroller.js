@@ -1061,6 +1061,7 @@ const logout=async(req,res)=>{
         res.redirect('/admin/login');
     } catch (error) {
         console.error(error);
+        res.status(500).send("Internal Server Error");
     }
 }
 

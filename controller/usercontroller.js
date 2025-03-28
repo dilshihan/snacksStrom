@@ -16,12 +16,13 @@ const Razorpay = require('razorpay');
 const usermodel = require('../model/usermodel')
 const PDFDocument = require('pdfkit');
 const path = require('path');
+const crypto = require('crypto');
 
 
 
 
 
-const OTPs = new Map(); // Temporary store for OTPs 
+const OTPs = new Map();
 
 const transporter = nodemailer.createTransport({    
     service: 'gmail',
@@ -31,9 +32,7 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-// Function to generate OTP
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000);
-
 
 const registerUser = async (req, res) => {
     try {
@@ -128,6 +127,10 @@ const forgetsendotp = async (req,res)=>{
         const { email } = req.body;
         if (!email) {
             return res.status(400).json({ message: "Email is required" });
+        }
+        const user = await userschema.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ message: "User not found with this email" });
         }
         const otp = generateOTP();
         req.session.otp = otp;
@@ -933,7 +936,7 @@ const loadordersuccess = async(req,res)=>{
 
 const addorderdetails = async(req, res) => {
     try {
-        const { customerId, products, totalAmount, paymentMethod, addressId ,couponOffer } = req.body;
+        const { customerId, products, totalAmount, paymentMethod, addressId, couponOffer, paymentStatus, razorpay_payment_id } = req.body;
         
         if (!customerId || !products || !totalAmount || !paymentMethod) {
             return res.status(400).json({ success: false, message: "All fields are required!"});
@@ -997,7 +1000,7 @@ const addorderdetails = async(req, res) => {
             products,
             totalAmount: finalAmount,
             paymentMethod,
-            paymentStatus: paymentMethod === 'cod' ? 'Pending' : 'Paid', // Set payment status based on method
+            paymentStatus: razorpay_payment_id ? 'Paid' : (paymentStatus || (paymentMethod === 'cod' ? 'Pending' : (paymentMethod === 'wallet' ? 'Paid' : 'Pending'))),
             ...(paymentMethod === 'wallet' && {
                 updatedWalletBalance: (await walletmodel.findOne({ userId: customerId })).balance
             }),
@@ -1187,7 +1190,6 @@ const editaddress = async (req, res) => {
                 { isDefault: false }
             );
         }
-        // Update the address
         const updatedAddress = await addressmodel.findByIdAndUpdate(
             addressId,
             {
@@ -1796,22 +1798,106 @@ const downloadinvoice = async(req,res)=>{
     }
 }
 
+const createRazorpayOrder = async (req, res) => {
+    try {
+        const { orderId, amount } = req.body;
+        const userId = req.session.user;
+        
+        if (!userId) {
+            return res.status(401).json({ success: false, message: 'User not authenticated' });
+        }
+        
+        const order = await Order.findOne({ 
+            _id: orderId, 
+            customerId: userId,
+            paymentMethod: 'razorpay',
+            paymentStatus: 'Pending'
+        });
+        
+        if (!order) {
+            return res.status(404).json({ success: false, message: 'Order not found or not eligible for payment' });
+        }     
+        const amountInPaise = Math.round(order.totalAmount * 100);
+        const orderAmount = parseInt(amountInPaise, 10);
+        const receiptStr = order._id.toString();
+        
+        const paymentOrder = await razorpay.orders.create({
+            amount: orderAmount,
+            currency: "INR",
+            receipt: receiptStr,
+            payment_capture: 1
+        });
+        
+        
+        res.status(200).json({ success: true, order: paymentOrder });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: 'Error creating payment order' });
+    }
+};
+
+const verifyRazorpayPayment = async (req, res) => {
+    try {
+        const { orderId, razorpay_payment_id, razorpay_order_id, razorpay_signature } = req.body;
+        const userId = req.session.user;
+        
+        if (!userId) {
+            return res.status(401).json({ success: false, message: 'User not authenticated' });
+        }
+        const order = await Order.findOne({
+            _id: orderId,
+            customerId: userId
+        });
+        
+        if (!order) {
+            return res.status(404).json({ success: false, message: 'Order not found' });
+        }
+        
+        const generated_signature = crypto
+            .createHmac('sha256', process.env.RAZORPAYX_KEY_SECRET)
+            .update(razorpay_order_id + "|" + razorpay_payment_id)
+            .digest('hex');
+        
+        if (generated_signature === razorpay_signature) {
+            order.paymentStatus = 'Paid';
+            await order.save();
+            
+            res.status(200).json({ success: true, message: 'Payment successful' });
+        } else {
+            res.status(400).json({ success: false, message: 'Payment verification failed' });
+        }
+    } catch (error) {
+        console.error('Error verifying payment:', error);
+        res.status(500).json({ success: false, message: 'Error processing payment verification' });
+    }
+};
+
 const logout = (req,res)=>{
-    req.session.user=null;
-    res.redirect('/user/register')
+    try {
+        req.session.user=null;
+        res.redirect('/user/register');
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Internal Server Error");
+    }
 }
 
-module.exports={registerUser,loadregister,loginUser,
-               verifyOTP,resendOTP,loadforgotpassword,
-               forgetsendotp,loadforgotPasswordotp,forgotverifyotp,
-               newpassword,resetpassword, logout,Loadhome,
-               loadmenu,loadabout,loadcontactus,
-               Productdetails,loadcart,addtocart,updatecartquantity,
-               removefromcart,loadcheckout,checkoutaddaddress,
-               checkoutchangeaddress,loadordersuccess,addorderdetails,
-               loaduserprofile,updateprofile,updateprofileimage,
-               addaddress,editaddress,deleteaddress,
-               loadorderdetils,cancelorder,updatepassword,
-               loadwishlist,addtowishlist,removefromwishlist,
-               loadwallet,addMoney,downloadinvoice,
-               handleGoogleLogin,handleGoogleCallback}
+
+
+module.exports = {
+    registerUser,verifyOTP,resendOTP,
+    loginUser,loadregister,Loadhome,
+    loadmenu,loadabout,loadcontactus,
+    Productdetails,loadcart,addtocart,
+    updatecartquantity,removefromcart,loadcheckout,
+    checkoutaddaddress,checkoutchangeaddress,loadordersuccess,
+    addorderdetails,loaduserprofile,updateprofile,
+    updateprofileimage,addaddress,editaddress,
+    deleteaddress,loadorderdetils,cancelorder,
+    updatepassword,handleGoogleLogin,handleGoogleCallback,
+    loadwishlist,addtowishlist,removefromwishlist,
+    loadwallet,addMoney,downloadinvoice,
+    logout,loadforgotpassword,forgetsendotp,
+    loadforgotPasswordotp,forgotverifyotp,newpassword,
+    resetpassword,createRazorpayOrder,verifyRazorpayPayment
+};

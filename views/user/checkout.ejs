@@ -473,23 +473,25 @@
             </div>
             <div class="offers-container">
               <% coupons.forEach((coupon, index) => { %>
-              <div class="offer-box">
-                <input
-                  type="checkbox"
-                  name="offer"
-                  class="offer-checkbox"
-                  id="couponOffer"
-                  value="<%= coupon.discountAmount %>"
-                  onclick="applyCoupon(this)"
-                  onclick="toggleSelection(this)"
-                />
-                <div class="offer-content">
-                  <div class="code">couponCode:-<%= coupon.code %></div>
-                  <div class="discount">
-                    discountAmount:-<%= coupon.discountAmount %>
+                <% if (coupon.usageLimit > 0) { %>
+                  <div class="offer-box">
+                    <input
+                      type="checkbox"
+                      name="offer"
+                      class="offer-checkbox"
+                      id="couponOffer"
+                      value="<%= coupon.discountAmount %>"
+                      onclick="applyCoupon(this)"
+                      onclick="toggleSelection(this)"
+                    />
+                    <div class="offer-content">
+                      <div class="code">couponCode:-<%= coupon.code %></div>
+                      <div class="discount">
+                        discountAmount:-<%= coupon.discountAmount %>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
+                <% } %>
               <% }); %>
             </div>
           </div>
@@ -689,7 +691,21 @@
           },
           modal: {
             ondismiss: function () {
-              selectPayment("cod");
+              Swal.fire({
+                title: 'Do you want to continue with the order?',
+                text: "Your payment was not completed",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ffbe33',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Continue Order',
+                cancelButtonText: 'Cancel'
+              }).then((result) => {
+                if (result.isConfirmed) {
+                  // Process order with pending payment status
+                  processOrder({ paymentStatus: 'Pending' });
+                }
+              });
             },
           },
         };
@@ -705,8 +721,23 @@
                 response.error.description ||
                 "There was an error processing your payment.",
               confirmButtonColor: "#ffbe33",
+            }).then(() => {
+              // Show the continue/cancel dialog after payment failure
+              Swal.fire({
+                title: 'Do you want to continue with the order?',
+                text: "Your payment was not completed",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ffbe33',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Continue Order',
+                cancelButtonText: 'Cancel'
+              }).then((result) => {
+                if (result.isConfirmed) {
+                  processOrder({ paymentStatus: 'Pending' });
+                }
+              });
             });
-            selectPayment("cod");
           });
 
           rzp.open();
@@ -777,9 +808,12 @@
           paymentMethod,
           addressId,
           couponOffer,
+          paymentStatus: paymentResponse?.razorpay_payment_id ? 'Paid' : 
+                      (paymentResponse?.paymentStatus || 
+                      (paymentMethod === 'cod' ? 'Pending' : 'Pending')) 
         };
 
-        if (paymentResponse) {
+        if (paymentResponse && paymentResponse.razorpay_payment_id) {
           orderData.razorpay_payment_id = paymentResponse.razorpay_payment_id;
           orderData.razorpay_order_id = paymentResponse.razorpay_order_id;
           orderData.razorpay_signature = paymentResponse.razorpay_signature;

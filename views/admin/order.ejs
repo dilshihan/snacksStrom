@@ -74,15 +74,19 @@
                                     
                                     <div class="final-total">₹<%= orderTotalAmount.toFixed(2) %></div>
                                 </td>
-                            <td><%= order.paymentMethod %></td>
+                            <td> <%= order.paymentMethod %></td>
+                          
                             <td>
                                 <% 
                                 const areAllProductsCancelled = order.products.every(product => product.status === 'Cancelled');
                                 const areAllProductsDelivered = order.products.every(product => product.status === 'Delivered');
                                 const isAnyProductDelivered = order.products.some(product => product.status === 'Delivered');
+                                const isPending = order.paymentStatus === 'Pending'&&order.paymentMethod === 'razorpay';
                                 %>
                                 
-                                <% if (areAllProductsCancelled) { %>
+                                <% if (isPending) { %>
+                                    <span class="status-text" style="color: orange; font-weight: bold;">Payment Pending</span>
+                                <% } else if (areAllProductsCancelled) { %>
                                     <span class="status-text" style="color: red; font-weight: bold;">Cancelled</span>
                                 <% } else if (areAllProductsDelivered) { %>
                                     <span class="status-text" style="color: green; font-weight: bold;">Delivered</span>

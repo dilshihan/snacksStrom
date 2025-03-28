@@ -8,6 +8,7 @@
     <link rel="shortcut icon" href="/images/favicon.png" type="">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/style/adminlogin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 
 <body>
@@ -33,10 +34,14 @@
 
                     <div class="input-group">
                         <label for="password-field" class="input-label">Password</label>
-                        <input name="password" id="password-field" type="password" class="input-field"
-                            placeholder="Enter your password" required>
+                        <div class="password-container">
+                            <input name="password" id="password-field" type="password" class="input-field"
+                                placeholder="Enter your password" required>
+                            <button type="button" class="password-toggle" onclick="togglePassword()">
+                                <i class="fa-regular fa-eye" id="password-eye"></i>
+                            </button>
+                        </div>
                     </div>
-
                     <p id="errp" class="error-text"></p>
 
                     <button type="submit" id="bb" class="submit-btn">
@@ -60,6 +65,20 @@
                 window.location.href = '/admin/forgot/' + email;
             }
         }
+        function togglePassword() {
+    const passwordField = document.getElementById("password-field");
+    const passwordEye = document.getElementById("password-eye");
+
+    if (passwordField.type === "password") {
+        passwordField.type = "text";
+        passwordEye.classList.remove("fa-eye");
+        passwordEye.classList.add("fa-eye-slash");
+    } else {
+        passwordField.type = "password";
+        passwordEye.classList.remove("fa-eye-slash");
+        passwordEye.classList.add("fa-eye");
+    }
+}
     </script>
 </body>
 

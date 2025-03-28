@@ -246,3 +246,19 @@ background-repeat: no-repeat;
   .forgot-link:hover {
     color: white;
   }
+  .password-container {
+    position: relative;
+    width: 100%;
+  }
+  
+  .password-container input {
+    width: 100%;
+  }
+  
+  .password-container i {
+    position: absolute;
+    right: 10px;
+    top: 40%;
+    transform: translateY(-50%);
+    cursor: pointer;
+  }

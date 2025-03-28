@@ -487,3 +487,15 @@
   padding: 1px 4px;
   border-radius: 3px;
 }
+.password-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 10px;
+  cursor: pointer;
+}
+  

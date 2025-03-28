@@ -31,7 +31,7 @@ router.get('/updatecoupon/:id',adminauth.checksession,admincontreller.loadupdate
 router.put('/coupons/:id',adminauth.checksession,admincontreller.updatecoupon);
 router.patch('/toggle-coupon/:id',adminauth.checksession,admincontreller.couponstatus)
 router.get('/salesreport',adminauth.checksession,admincontreller.loadsalesreport)
-router.get('/salesreport/export', adminauth.checksession,admincontreller.exportSalesPDF);
+router.get('/salesreport/export/pdf', adminauth.checksession,admincontreller.exportSalesPDF);
 router.get('/salesreport/export/excel', adminauth.checksession,admincontreller.exportSalesExcel);
 router.get('/logout',adminauth.checksession,admincontreller.logout)
 
