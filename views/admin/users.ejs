@@ -24,11 +24,20 @@
 
             <!-- Search Bar -->
             <div class="search-bar">
-                <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                <input type="text" placeholder="Search users..." class="search-input">
+                <form id="searchForm" action="/admin/users" method="GET">
+                    <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <input 
+                        type="text" 
+                        name="search" 
+                        id="searchInput"
+                        placeholder="Search by email..." 
+                        class="search-input" 
+                        value="<%= searchQuery || '' %>"
+                    >
+                </form>
             </div>
         </div>
 
@@ -240,6 +249,48 @@
         });
 
     </script>
+   <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        function debounce(func, wait) {
+            let timeout;
+            
+            return function executedFunction(...args) {
+                const searchInput = document.getElementById('searchInput');
+                searchInput.style.opacity = '0.6';
+                clearTimeout(timeout);
+                
+                timeout = setTimeout(() => {
+                    searchInput.style.opacity = '1';
+                    func.apply(this, args);
+                }, wait);
+            };
+        }
+
+        const searchForm = document.getElementById('searchForm');
+        const searchInput = document.getElementById('searchInput');
+        searchInput.addEventListener('input', function() {
+            const cursorPosition = this.selectionStart;
+            localStorage.setItem('searchCursorPosition', cursorPosition);
+            localStorage.setItem('searchInputValue', this.value);
+        });
+
+        const debouncedSearch = debounce(() => {
+            searchForm.submit();
+        }, 500);
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.trim();
+            if (searchTerm !== '') {
+                debouncedSearch();
+            }
+        });
+        const savedPosition = localStorage.getItem('searchCursorPosition');
+        const savedValue = localStorage.getItem('searchInputValue');
+        if (savedPosition && savedValue && searchInput.value === savedValue) {
+            searchInput.setSelectionRange(savedPosition, savedPosition);
+            searchInput.focus();
+        }
+    });
+</script>
 </body>
 
 </html>

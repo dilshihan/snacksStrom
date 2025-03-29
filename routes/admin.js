@@ -7,6 +7,7 @@ const {upload} = require("../utils/multer")
 router.get('/login',adminauth.islogin,admincontreller.loadlogin)
 router.post('/login',admincontreller.login)
 router.get('/dashboard',adminauth.checksession,admincontreller.loaddashboard)
+router.get('/dashboard/chart-data',adminauth.checksession,admincontreller.getChartData)
 router.get('/users',adminauth.checksession,admincontreller.loaduser)
 router.post('/ban-user',adminauth.checksession,admincontreller.banUser)
 router.get('/products',adminauth.checksession,admincontreller.loadProducts);

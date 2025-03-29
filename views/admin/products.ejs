@@ -32,12 +32,26 @@
             </div>
 
             <div class="search-bar">
-                <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                <input type="text" placeholder="Search products..." class="search-input">
-            </div>
+                <form id="searchForm" action="/admin/products" method="GET">
+                    <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <input 
+                        type="text" 
+                        id="productSearch" 
+                        name="search"
+                        placeholder="Search products..." 
+                        class="search-input"
+                        value="<%= locals.searchQuery || '' %>"
+                    >
+                </form>
+                <% if (locals.searchQuery && (!products || products.length === 0)) { %>
+                    <div class="no-results-message">
+                        No products found for "<%= locals.searchQuery %>"
+                    </div>
+                <% } %>
+            </div>  
         </div>
 
         <!-- Products Table -->
@@ -318,6 +332,50 @@
             });
         });
     </script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        function debounce(func, wait) {
+            let timeout;
+            
+            return function executedFunction(...args) {
+                const searchInput = document.getElementById('productSearch');
+                searchInput.style.opacity = '0.6';
+                clearTimeout(timeout);
+                
+                timeout = setTimeout(() => {
+                    searchInput.style.opacity = '1';
+                    func.apply(this, args);
+                }, wait);
+            };
+        }
+
+        const searchForm = document.getElementById('searchForm');
+        const searchInput = document.getElementById('productSearch');
+        searchInput.addEventListener('input', function() {
+            const cursorPosition = this.selectionStart;
+            localStorage.setItem('adminSearchCursorPosition', cursorPosition);
+            localStorage.setItem('adminSearchInputValue', this.value);
+        });
+        const debouncedSearch = debounce(() => {
+            const urlParams = new URLSearchParams(window.location.search);
+            urlParams.set('page', '1');
+            urlParams.set('search', searchInput.value.trim());
+            window.location.href = `/admin/products?${urlParams.toString()}`;
+        }, 500);
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.trim();
+            if (searchTerm !== '') {
+                debouncedSearch();
+            }
+        });
+        const savedPosition = localStorage.getItem('adminSearchCursorPosition');
+        const savedValue = localStorage.getItem('adminSearchInputValue');
+        if (savedPosition && savedValue && searchInput.value === savedValue) {
+            searchInput.setSelectionRange(savedPosition, savedPosition);
+            searchInput.focus();
+        }
+    });
+</script>
 </body>
 
 </html>

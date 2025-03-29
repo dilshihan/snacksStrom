@@ -322,18 +322,35 @@ const loadmenu = async (req, res) => {
             filter.category = category.toLowerCase();
         }
 
-if (priceRange) {
-    switch (priceRange) {
-        case 'under100':
-            filter.$expr = { $lt: [ { $subtract: ['$price',{ $multiply: ['$price',{ $divide: [{ $ifNull: ['$offer', 0] },100]}]}]},100]};break;
-        case '100-300':
-            filter.$expr = {$and: [{ $gte: [{$subtract: ['$price',{$multiply: ['$price',{$divide: [{ $ifNull: ['$offer', 0] },100]}]}]},100]},
-        {$lte: [{$subtract: ['$price',{$multiply: ['$price',{$divide: [{ $ifNull: ['$offer', 0] },100]}]}]},300]}]};break;
-        case '300-500':
-            filter.$expr = {
-        $and: [{$gte: [{$subtract: ['$price',{$multiply: ['$price',{$divide: [{ $ifNull: ['$offer', 0] },100]}]}]},300]},
-        {$lte: [{$subtract: ['$price',{$multiply: ['$price',{ $divide: [{ $ifNull: ['$offer', 0] },100]}]}]},500]}]};break;}
-    }
+        if (priceRange) {
+            switch (priceRange) {
+                case 'under100':
+                    filter.$expr = { 
+                        $lt: [
+                            { $subtract: ['$price', { $multiply: ['$price', { $divide: [{ $ifNull: ['$offer', 0] }, 100] }] }] },
+                            100
+                        ]
+                    };
+                    break;
+                case '100-300':
+                    filter.$expr = {
+                        $and: [
+                            { $gte: [{ $subtract: ['$price', { $multiply: ['$price', { $divide: [{ $ifNull: ['$offer', 0] }, 100] }] }] }, 100] },
+                            { $lte: [{ $subtract: ['$price', { $multiply: ['$price', { $divide: [{ $ifNull: ['$offer', 0] }, 100] }] }] }, 300] }
+                        ]
+                    };
+                    break;
+                case '300-500':
+                    filter.$expr = {
+                        $and: [
+                            { $gte: [{ $subtract: ['$price', { $multiply: ['$price', { $divide: [{ $ifNull: ['$offer', 0] }, 100] }] }] }, 300] },
+                            { $lte: [{ $subtract: ['$price', { $multiply: ['$price', { $divide: [{ $ifNull: ['$offer', 0] }, 100] }] }] }, 500] }
+                        ]
+                    };
+                    break;
+            }
+        }
+
         if (searchQuery) {
             filter.name = { $regex: searchQuery, $options: 'i' }; 
         }
@@ -344,33 +361,14 @@ if (priceRange) {
 
         const totalProducts = await Productmodel.countDocuments(filter);
         const totalPages = Math.ceil(totalProducts / limit);
-
         let query = Productmodel.find(filter)
-            .select('name price image category isListed offer')
-            switch (sortBy) {
-                case 'price-low-high':
-                    query = query.sort({ price: 1 });
-                    break;
-                case 'price-high-low':
-                    query = query.sort({ price: -1 });
-                    break;
-                case 'name-a-z':
-                    query = query.sort({ name: 1 });
-                    break;
-                case 'name-z-a':
-                    query = query.sort({ name: -1 });
-                    break;
-                default:
-                    query = query.sort({ createdAt: -1 });
-            }
+            .select('name price image category isListed offer');
         
+        const products = await query.lean();
         const categories = await Category.find().lean();
         const categoryOffersMap = new Map(
             categories.map(cat => [cat.name.toLowerCase(), cat.offer || 0])
         );
-
-        const products = await query.skip(skip).limit(limit).lean();
-        
         const productsWithDiscount = products.map(product => {
             const productOffer = product.offer || 0;
             const categoryOffer = categoryOffersMap.get(product.category.toLowerCase()) || 0;
@@ -386,9 +384,29 @@ if (priceRange) {
                 originalPrice: product.price
             };
         });
+        let sortedProducts = [...productsWithDiscount];
+        switch (sortBy) {
+            case 'price-low-high':
+                sortedProducts.sort((a, b) => a.discountedPrice - b.discountedPrice);
+                break;
+            case 'price-high-low':
+                sortedProducts.sort((a, b) => b.discountedPrice - a.discountedPrice);
+                break;
+            case 'name-a-z':
+                sortedProducts.sort((a, b) => a.name.localeCompare(b.name));
+                break;
+            case 'name-z-a':
+                sortedProducts.sort((a, b) => b.name.localeCompare(a.name));
+                break;
+            default:
+                break;
+        }
+        const startIndex = skip;
+        const endIndex = skip + limit;
+        const paginatedProducts = sortedProducts.slice(startIndex, endIndex);
 
         let noProductsMessage = '';
-        if (productsWithDiscount.length === 0) {
+        if (paginatedProducts.length === 0) {
             noProductsMessage = 'No products found for your search criteria.';
         }
 
@@ -400,7 +418,7 @@ if (priceRange) {
         }).toString();
 
         return res.render("user/menu", {
-            products: productsWithDiscount,
+            products: paginatedProducts,
             user,
             currentPage: page,
             totalPages,
@@ -416,7 +434,7 @@ if (priceRange) {
         console.error(error);
         res.status(500).send("Internal Server Error");
     }
-}
+};
 
 const loadabout = async (req,res)=>{
     try{

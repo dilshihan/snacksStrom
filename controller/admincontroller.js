@@ -35,11 +35,243 @@ const loaddashboard= async(req,res)=>{
     try{
         const admin = req.session.admin
         if(!admin){return res.redirect('/admin/login')} 
-        res.render('admin/dashboard')
+        const totalUsers = await usermodel.countDocuments({ status: 'Active' });
+    
+        const orders = await Order.find({});
+        const totalOrders = orders.length;
+        
+        const totalRevenue = orders.reduce((sum, order) => {
+            const deliveredProductsRevenue = order.products
+                .filter(product => product.status === 'Delivered')
+                .reduce((productSum, product) => productSum + (product.price * product.quantity), 0);
+            return sum + deliveredProductsRevenue;
+        }, 0);
+        
+        const totalProductsSold = orders.reduce((sum, order) => {
+            return sum + order.products
+                .filter(product => product.status === 'Delivered')
+                .reduce((productSum, product) => productSum + product.quantity, 0);
+        }, 0);
+        
+        const currentDate = new Date();
+        const firstDayCurrentMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+        const firstDayLastMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
+        const lastDayLastMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0);
+        
+        const currentMonthOrders = await Order.find({ orderDate: { $gte: firstDayCurrentMonth } });
+        const lastMonthOrders = await Order.find({ 
+            orderDate: { $gte: firstDayLastMonth, $lte: lastDayLastMonth } 
+        });
+    
+        const lastMonthTotalOrders = lastMonthOrders.length;
+        const lastMonthRevenue = lastMonthOrders.reduce((sum, order) => {
+            const deliveredProductsRevenue = order.products
+                .filter(product => product.status === 'Delivered')
+                .reduce((productSum, product) => productSum + (product.price * product.quantity), 0);
+            return sum + deliveredProductsRevenue;
+        }, 0);
+        const orderChange = lastMonthTotalOrders > 0 
+            ? ((totalOrders - lastMonthTotalOrders) / lastMonthTotalOrders) * 100 
+            : 100;
+        
+        const revenueChange = lastMonthRevenue > 0 
+            ? ((totalRevenue - lastMonthRevenue) / lastMonthRevenue) * 100 
+            : 100;
+        const lastMonthUsers = await usermodel.countDocuments({ 
+            joinDate: { $gte: firstDayLastMonth, $lte: lastDayLastMonth },
+            status: 'Active'
+        });
+        
+        const userChange = lastMonthUsers > 0 
+            ? ((totalUsers - lastMonthUsers) / lastMonthUsers) * 100 
+            : 100;
+        const conversionRate = totalUsers > 0 ? (totalOrders / totalUsers) * 100 : 0;
+        const formattedRevenue = totalRevenue.toFixed(2);
+        const formattedConversionRate = conversionRate.toFixed(1);
+        
+        
+        const topProducts = await Order.aggregate([
+            { $unwind: '$products' },
+            { $match: { 'products.status': 'Delivered' } },
+            { 
+                $group: {
+                    _id: '$products.productId',
+                    productName: { $first: '$products.productName' },
+                    totalSold: { $sum: '$products.quantity' },totalRevenue: { $sum: { $multiply: ['$products.price', '$products.quantity'] } },}
+            },
+            { $sort: { totalSold: -1 } },{ $limit: 5 },{$lookup: {from: 'products',localField: '_id',foreignField: '_id',as: 'productInfo'}
+            },
+            { $unwind: { path: '$productInfo', preserveNullAndEmptyArrays: true } }
+        ]);
+
+        const topCategories = await Order.aggregate([
+            { $unwind: '$products' },
+            { $match: { 'products.status': 'Delivered' } },
+            { 
+                $lookup: {
+                    from: 'products',
+                    localField: 'products.productId',
+                    foreignField: '_id',
+                    as: 'productInfo'
+                }
+            },
+            { $unwind: '$productInfo' },
+            { 
+                $group: {
+                    _id: '$productInfo.category',
+                    totalSold: { $sum: '$products.quantity' },
+                    totalRevenue: { $sum: { $multiply: ['$products.price', '$products.quantity'] } },
+                }
+            },
+            { $sort: { totalSold: -1 } },
+            { $limit: 5 }
+        ]);
+        
+        const { graphLabels, orderData, revenueData } = await generateChartData('daily');
+        
+        res.render('admin/dashboard', {
+            stats: {
+                totalUsers,
+                totalOrders,
+                totalRevenue: formattedRevenue,
+                totalProductsSold,
+                userChange: userChange.toFixed(1),
+                orderChange: orderChange.toFixed(1),
+                revenueChange: revenueChange.toFixed(1),
+                conversionRate: formattedConversionRate
+            },
+            graphData: {
+                labels: graphLabels,
+                orders: orderData,
+                revenue: revenueData,
+                period: 'daily'
+            },
+            topProducts,
+            topCategories
+        });
     }catch(error){
-        console.log(error)
+        console.log(error);
+        res.status(500).send("Server error");
     }
-   
+}
+
+const getChartData = async(req, res) => {
+    try {
+        const period = req.query.period || 'daily';
+        const chartData = await generateChartData(period);
+        
+        res.json({
+            labels: chartData.graphLabels,
+            orders: chartData.orderData,
+            revenue: chartData.revenueData
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Server error" });
+    }
+}
+
+const generateChartData = async(period) => {
+    const currentDate = new Date();
+    let dataPoints = [];
+    let format = '';
+    
+    switch(period) {
+        case 'weekly':
+            dataPoints = Array.from({ length: 12 }, (_, i) => {
+                const endDate = new Date(currentDate);
+                endDate.setDate(currentDate.getDate() - (i * 7));
+                const startDate = new Date(endDate);
+                startDate.setDate(endDate.getDate() - 6);
+                
+                const weekNum = Math.ceil((endDate.getDate() + new Date(endDate.getFullYear(), endDate.getMonth(), 1).getDay()) / 7);
+                return {
+                    start: startDate,
+                    end: endDate,
+                    label: `W${weekNum}, ${startDate.toLocaleDateString('en-US', { month: 'short' })}`
+                };
+            }).reverse();
+            format = 'weekly';
+            break;
+            
+        case 'monthly':
+            dataPoints = Array.from({ length: 12 }, (_, i) => {
+                const date = new Date(currentDate);
+                date.setMonth(currentDate.getMonth() - i);
+                const startDate = new Date(date.getFullYear(), date.getMonth(), 1);
+                const endDate = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+                
+                return {
+                    start: startDate,
+                    end: endDate,
+                    label: startDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+                };
+            }).reverse();
+            format = 'monthly';
+            break;
+            
+        case 'yearly':
+            dataPoints = Array.from({ length: 5 }, (_, i) => {
+                const year = currentDate.getFullYear() - i;
+                const startDate = new Date(year, 0, 1);
+                const endDate = new Date(year, 11, 31);
+                
+                return {
+                    start: startDate,
+                    end: endDate,
+                    label: year.toString()
+                };
+            }).reverse();
+            format = 'yearly';
+            break;
+            
+        default: 
+            dataPoints = Array.from({ length: 7 }, (_, i) => {
+                const date = new Date(currentDate);
+                date.setDate(currentDate.getDate() - i);
+                date.setHours(0, 0, 0, 0);
+                const nextDate = new Date(date);
+                nextDate.setDate(date.getDate() + 1);
+                
+                return {
+                    start: date,
+                    end: nextDate,
+                    label: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                };
+            }).reverse();
+            format = 'daily';
+    }
+    
+    const graphLabels = dataPoints.map(point => point.label);
+    const orderData = [];
+    const revenueData = [];
+    
+    const dataPromises = dataPoints.map(async (point) => {
+        const pointOrders = await Order.find({
+            orderDate: { $gte: point.start, $lte: point.end }
+        });
+        
+        const pointRevenue = pointOrders.reduce((sum, order) => {
+            const deliveredProductsRevenue = order.products
+                .filter(product => product.status === 'Delivered')
+                .reduce((productSum, product) => productSum + (product.price * product.quantity), 0);
+            return sum + deliveredProductsRevenue;
+        }, 0);
+        
+        return {
+            orders: pointOrders.length,
+            revenue: pointRevenue
+        };
+    });
+    
+    const results = await Promise.all(dataPromises);
+    
+    results.forEach(result => {
+        orderData.push(result.orders);
+        revenueData.push(result.revenue);
+    });
+    
+    return { graphLabels, orderData, revenueData };
 }
 
 const loaduser = async (req, res) => {
@@ -47,21 +279,30 @@ const loaduser = async (req, res) => {
         const admin = req.session.admin;
         if (!admin) return res.redirect('/admin/login');
 
-        let page = parseInt(req.query.page) || 1; 
-        let limit = 5; 
-        let skip = (page - 1) * limit; 
-
-        const totalUsers = await usermodel.countDocuments(); 
-        const users = await usermodel.find({}).skip(skip).limit(limit); 
+        let page = parseInt(req.query.page) || 1;
+        let limit = 5;
+        let skip = (page - 1) * limit;
+        
+        const searchQuery = req.query.search;
+        let query = {};
+        if (searchQuery) {
+            query = {
+                email: { $regex: searchQuery, $options: 'i' }
+            };
+        }
+        const totalUsers = await usermodel.countDocuments(query);
+        const users = await usermodel.find(query).skip(skip).limit(limit);
 
         res.render('admin/users', {
-            users, 
+            users,
             currentPage: page,
-            totalPages: Math.ceil(totalUsers / limit) 
+            totalPages: Math.ceil(totalUsers / limit),
+            searchQuery
         });
 
     } catch (error) {
         console.log(error);
+        res.status(500).send("Internal Server Error");
     }
 };
 
@@ -88,19 +329,32 @@ const loadProducts = async (req, res) => {
         }
         const page = parseInt(req.query.page) || 1;
         const limit = 5;
-        const totalProducts = await ProductModel.countDocuments();
+        const searchQuery = req.query.search || '';
+
+        const searchFilter = searchQuery
+            ? {
+                $or: [
+                    { name: { $regex: searchQuery, $options: 'i' } },
+                    { description: { $regex: searchQuery, $options: 'i' } },
+                    { category: { $regex: searchQuery, $options: 'i' } }
+                ]
+            }
+            : {};
+        const totalProducts = await ProductModel.countDocuments(searchFilter);
         const totalPages = Math.ceil(totalProducts / limit);
-        const products = await ProductModel.find({})
+        const products = await ProductModel.find(searchFilter)
             .skip((page - 1) * limit)
             .limit(limit);
 
         res.render('admin/products', { 
             products, 
             currentPage: page, 
-            totalPages 
+            totalPages,
+            searchQuery 
         });
     } catch (error) {
         console.error(error);
+        res.status(500).send('Internal Server Error');
     }
 };
 
@@ -158,8 +412,6 @@ const addProduct = async (req, res) => {
 };
 
 const loadupdateProduct = async (req, res) => {
-  
-    
     try {
         const productId = req.params.id;
         const product = await ProductModel.findById(productId);
@@ -363,12 +615,8 @@ const Categorylisting = async (req, res) => {
         if (!category) {
             return res.status(404).json({ success: false, message: "Category not found" });
         }
-
-        // Update category listing status
         category.isListed = isListed;
         await category.save();
-
-        // Update all products with this category name to match the category's listing status
         await ProductModel.updateMany(
             { category: category.name },
             { $set: { isListed: isListed } }
@@ -1078,4 +1326,4 @@ updateProduct,loadorders,updateorderstatus,
 loadviewoderdeatils,loadcoupon,loadaddcoupon,
 addcoupon,loadupdatecoupon,updatecoupon,
 couponstatus,loadsalesreport,exportSalesPDF,
-exportSalesExcel,logout}
+exportSalesExcel,logout,getChartData}
