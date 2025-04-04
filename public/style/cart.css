@@ -358,3 +358,40 @@ margin-top: 120px;
   font-weight: bold;
   color: #333;
 }
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  margin: 30px 0;
+  font-family: Arial, sans-serif;
+}
+
+.page-link {
+  padding: 10px 15px;
+  border: none;
+  text-decoration: none;
+  color: #555;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  border-radius: 50%;
+}
+
+.page-link:hover {
+  background-color: #e9ecef;
+  color: #2c3e50;
+  transform: translateY(-2px);
+}
+
+.page-link.active {
+  background-color: #2c3e50;
+  color: white;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.page-link:first-child,
+.page-link:last-child {
+  border-radius: 25px;
+  padding: 10px 20px;
+  color: #FFD700;
+}

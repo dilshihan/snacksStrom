@@ -17,6 +17,7 @@ const usermodel = require('../model/usermodel')
 const PDFDocument = require('pdfkit');
 const path = require('path');
 const crypto = require('crypto');
+const { findOne } = require('../model/adminmodel')
 
 
 
@@ -41,12 +42,10 @@ const registerUser = async (req, res) => {
         const user = await userschema.findOne({ email });
         if (user) return res.render('user/register', { message: 'User already exists' });
 
-        const otp = generateOTP();
-        
-        req.session.otp=otp // Store OTP temporarily
+        const otp = generateOTP();        
+        req.session.otp=otp 
         req.session.email=email
         req.session.password=password
-        // Send OTP to email
         await transporter.sendMail({
             from: 'mohddilshan1234321@gmail.com',
             to: email,
@@ -74,12 +73,12 @@ const verifyOTP = async (req, res) => {
         const user = new userschema({ email: req.session.email, password: hashedPassword, authType: 'normal' });
         await user.save();
 
-        req.session.otp = null; // Remove OTP after verification
+        req.session.otp = null; 
 
         
         const products = await Productmodel.find({});
         const catogorys=await Category.find({})
-        req.session.user = user._id; //Store ObjectId
+        req.session.user = user._id; 
 
         res.render('user/home', { products,user, message: 'Account created successfully' ,catogorys});
 
@@ -273,6 +272,8 @@ const Loadhome = async (req, res) => {
     try {
         const userid = req.session.user;
         const user = await userschema.findById(userid);
+        const cart = await cartmodel.findOne({ userId: userid });
+        const cartCount = cart ? cart.products.length : 0;
         
         const products = await Productmodel.find({ isListed: true })
             .select('name price image category isListed offer').sort({ createdAt: -1 }).lean();
@@ -300,7 +301,8 @@ const Loadhome = async (req, res) => {
         res.render("user/home", { 
             products: productsWithDiscount,
             catogorys: categories,
-            user 
+            user ,
+            cartCount
         }); 
     } catch (error) {
         console.error(error);
@@ -317,11 +319,12 @@ const loadmenu = async (req, res) => {
         const category = req.query.category || 'all';
         const searchQuery = req.query.search || ''; 
         const filter = { isListed: true };
+        const cart = await cartmodel.findOne({ userId: userid });
+        const cartCount = cart ? cart.products.length : 0;
 
         if (category && category !== 'all') {
             filter.category = category.toLowerCase();
         }
-
         if (priceRange) {
             switch (priceRange) {
                 case 'under100':
@@ -428,7 +431,8 @@ const loadmenu = async (req, res) => {
             selectedSort: sortBy,
             selectedCategory: category,
             queryParams,
-            noProductsMessage 
+            noProductsMessage,
+            cartCount
         });
     } catch (error) {
         console.error(error);
@@ -440,7 +444,9 @@ const loadabout = async (req,res)=>{
     try{
         const   userid = req.session.user
         const user = await userschema.findById(userid) 
-        res.render('user/about',{user})
+        const cart = await cartmodel.findOne({ userId: userid });
+        const cartCount = cart ? cart.products.length : 0;
+        res.render('user/about',{user,cartCount})
     }catch(error){
         console.log(error)
         res.status(500).send("Internal Server Error");
@@ -451,7 +457,9 @@ const loadcontactus = async(req,res)=>{
     try{
         const   userid = req.session.user
         const user = await userschema.findById(userid) 
-        res.render('user/contactus',{user})
+        const cart = await cartmodel.findOne({ userId: userid });
+        const cartCount = cart ? cart.products.length : 0;
+        res.render('user/contactus',{user,cartCount})
     }catch(error){
         console.log(error)
         res.status(500).send("Internal Server Error");
@@ -462,6 +470,8 @@ const Productdetails = async (req, res) => {
     try { 
         const userid = req.session.user 
         const user = await userschema.findById(userid)
+        const cart = await cartmodel.findOne({ userId: userid });
+        const cartCount = cart ? cart.products.length : 0;
         const products = await Productmodel.findById(req.params.id).lean();
         
         if (!products) {
@@ -524,7 +534,8 @@ const Productdetails = async (req, res) => {
             relatedProducts: relatedProductsWithDetails,
             user,
             isInWishlist,
-            isInCart
+            isInCart,
+            cartCount
         });
 
     } catch (error) {
@@ -537,15 +548,17 @@ const loadcart = async (req, res) => {
     try {
         const userId = req.session?.user
         if (!userId) {
-            return res.render("user/cart", { cart: [], totalPrice: 0 });
+            return res.render("user/cart", { cart: [], allCartItems: [], totalPrice: 0 });
         }
+        const page = parseInt(req.query.page) || 1;
+        const itemsPerPage = 3;
 
         const user = await userschema.findById(userId);
         const cart = await cartmodel.findOne({ userId })
          .populate({path: "products.productId",select: "name image price category offer stock"});
 
         if (!cart || cart.products.length === 0) {
-            return res.render("user/cart", { cart: [], totalPrice: 0, user });
+            return res.render("user/cart", { cart: [], allCartItems: [], totalPrice: 0, user, currentPage: 1,totalPages: 1 });
         }
         const categories = await Category.find().lean();
         const categoryOffersMap = new Map(
@@ -578,12 +591,20 @@ const loadcart = async (req, res) => {
         const totalPrice = cartItems.reduce((total, item) => 
             total + (item.discountedPrice * item.quantity), 0
         );
+        
+        const startIndex = (page - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const paginatedItems = cartItems.slice(startIndex, endIndex);
+        const totalPages = Math.ceil(cartItems.length / itemsPerPage);
 
         res.render("user/cart", { 
-            cart: cartItems, 
+            cart: paginatedItems, 
+            allCartItems: cartItems, 
             totalPrice,
             user,
-            userId
+            userId,
+            currentPage: page,
+            totalPages
         });
     } catch (error) {
         console.error(error);
@@ -1053,6 +1074,8 @@ const loaduserprofile = async(req,res)=>{
     try {
         const userid = req.session.user 
         const user = await userschema.findById(userid) 
+        const cart = await cartmodel.findOne({ userId: userid });
+        const cartCount = cart ? cart.products.length : 0;
         if (!user) {
             return res.status(404).render('error', { message: 'User not found' });
         }
@@ -1112,7 +1135,8 @@ const loaduserprofile = async(req,res)=>{
             totalPages,
             hasNextPage: page < totalPages,
             hasPrevPage: page > 1,
-            activeTab
+            activeTab,
+            cartCount
         });
 
     } catch(error) {
@@ -1458,6 +1482,12 @@ const handleGoogleCallback = async (req, res) => {
 const loadwishlist = async(req,res)=>{
     try {
         const userid = req.session.user;
+        const cart = await cartmodel.findOne({ userId: userid });
+        const cartCount = cart ? cart.products.length : 0;
+        const page = parseInt(req.query.page) || 1; 
+        const limit = 4; 
+        const skip = (page - 1) * limit;
+
         const user = await userschema.findById(userid);
         const wishlist = await wishlistmodel.findOne({ userId: userid })
             .populate({path: 'products.productId',select: 'name price image stock category offer'}).lean();
@@ -1479,24 +1509,35 @@ const loadwishlist = async(req,res)=>{
                 originalPrice: product.price
             };
         };
-        const wishlistItems = wishlist ? wishlist.products.map(item => ({
+        const allWishlistItems = wishlist ? wishlist.products.map(item => ({
             ...item,
             productId: calculateOffers(item.productId)
         })) : [];
 
-        const productCategories = wishlistItems.map(item => item.productId.category);
+        const productCategories = allWishlistItems.map(item => item.productId.category);
         const relatedProductsRaw = await Productmodel.find({
             category: { $in: productCategories },
-            _id: { $nin: wishlistItems.map(item => item.productId._id) },isListed: true,stock: { $gt: 0 }
+            _id: { $nin: allWishlistItems.map(item => item.productId._id) },isListed: true,stock: { $gt: 0 }
         }).select('name price image stock category offer').limit(4).lean();
 
         const relatedProducts = relatedProductsRaw.map(product => calculateOffers(product));
+
+        const totalItems = allWishlistItems.length;
+        const totalPages = Math.ceil(totalItems / limit);
+        const wishlistItems = allWishlistItems.slice(skip, skip + limit);
 
         res.render('user/wishlist', {
             user,
             wishlistItems,
             relatedProducts,
-            userId: userid 
+            userId: userid ,
+            pagination: {
+                currentPage: page,
+                totalPages,
+                hasNextPage: page < totalPages,
+                hasPrevPage: page > 1
+            },
+            cartCount
         });
     } catch(error) {
         console.log(error);
@@ -1563,6 +1604,8 @@ const loadwallet = async (req, res) => {
     try {
         const userId = req.session?.user;
         const user = await usermodel.findById(userId);
+        const cart = await cartmodel.findOne({ userId: userId });
+        const cartCount = cart ? cart.products.length : 0;
         let wallet = await walletmodel.findOne({ userId });
 
         const page = parseInt(req.query.page) || 1;
@@ -1593,7 +1636,8 @@ const loadwallet = async (req, res) => {
                 return new Date(date).toLocaleString('en-IN', {
                     year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
                 });
-            }
+            },
+            cartCount
         });
 
     } catch (error) {

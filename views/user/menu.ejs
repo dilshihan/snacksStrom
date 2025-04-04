@@ -73,7 +73,7 @@
               </li>
             </ul>
             <div class="user_option">
-              <a class="cart_link" href="/user/cart">
+              <a class="cart_link" href="/user/cart" style="position: relative; display: inline-block;">
                 <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg"
                   xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 456.029 456.029"
                   style="enable-background: new 0 0 456.029 456.029" xml:space="preserve">
@@ -112,6 +112,11 @@
                   <g></g>
                   <g></g>
                 </svg>
+                <% if (cartCount > 0) { %>
+                  <span style="position: absolute; top: -10px; right: -10px; background-color: red; color: white; border-radius: 50%; padding: 2px 6px; font-size: 12px;">
+                      <%= cartCount %>
+                  </span>
+              <% } %>
               </a>  
               <a href="/user/wishlist" class="btn my-2 my-sm-0 nav_wishlist-btn" style="color: white;">
                 <i class="fa fa-heart" aria-hidden="true"></i>
