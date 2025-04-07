@@ -42,7 +42,8 @@ const registerUser = async (req, res) => {
         const user = await userschema.findOne({ email });
         if (user) return res.render('user/register', { message: 'User already exists' });
 
-        const otp = generateOTP();        
+        const otp = generateOTP();     
+           
         req.session.otp=otp 
         req.session.email=email
         req.session.password=password
@@ -79,8 +80,9 @@ const verifyOTP = async (req, res) => {
         const products = await Productmodel.find({});
         const catogorys=await Category.find({})
         req.session.user = user._id; 
+        const cartCount = 0;
 
-        res.render('user/home', { products,user, message: 'Account created successfully' ,catogorys});
+        res.render('user/home', { products,user, message: 'Account created successfully' ,catogorys,cartCount});
 
     } catch (error) {
         console.log(error);

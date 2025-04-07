@@ -422,7 +422,7 @@
                         <!-- Pagination Controls -->
                         <div class="pagination">
                           <% if (currentPage> 1) { %>
-                            <a href="?tab=orders&page=<%= currentPage - 1 %>" class="page-link">&laquo; Previous</a>
+                            <a href="?tab=orders&page=<%= currentPage - 1 %>" class="page-link">&laquo; </a>
                             <% } %>
 
                               <% for(let i=1; i <=totalPages; i++) { %>
@@ -433,7 +433,7 @@
                                 <% } %>
 
                                   <% if (currentPage < totalPages) { %>
-                                    <a href="?tab=orders&page=<%= currentPage + 1 %>" class="page-link">Next &raquo;</a>
+                                    <a href="?tab=orders&page=<%= currentPage + 1 %>" class="page-link"> &raquo;</a>
                                     <% } %>
                         </div>
                         <% } else { %>
@@ -567,7 +567,6 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', function () {
-      // Function to switch tabs
       function switchTab(tabId) {
         document.querySelectorAll('.tab_content').forEach(tab => {
           tab.classList.remove('active');
@@ -579,14 +578,14 @@
         document.querySelector(`.sidebar_nav a[data-tab="${tabId}"]`).classList.add('active');
       }
 
-      // Handle URL parameters
+
       const urlParams = new URLSearchParams(window.location.search);
       const tabFromUrl = urlParams.get('tab');
       if (tabFromUrl) {
         switchTab(tabFromUrl);
       }
 
-      // Handle click events
+
       const tabLinks = document.querySelectorAll('.sidebar_nav a[data-tab]');
       tabLinks.forEach(link => {
         link.addEventListener('click', function (e) {
@@ -594,7 +593,6 @@
           const tabId = this.getAttribute('data-tab');
           switchTab(tabId);
 
-          // Preserve page parameter if it exists and we're on the orders tab
           const currentPage = urlParams.get('page');
           let newUrl = `?tab=${tabId}`;
           if (tabId === 'orders' && currentPage) {
@@ -623,7 +621,6 @@
       const form = document.getElementById("profile-form")
       e.preventDefault();
 
-      // Validate full name
       const nameInput = form.querySelector('input[name="name"]');
       if (!nameInput.value.trim()) {
         Swal.fire({
@@ -835,15 +832,14 @@
       addressFormContainer.style.display = 'block';
       addressesList.style.display = 'none';
       addressFormTitle.textContent = 'Add New Address';
-      addressForm.reset(); // Clear form fields
-      document.getElementById('address_id').value = ''; // Clear hidden ID field
+      addressForm.reset(); 
+      document.getElementById('address_id').value = '';
     });
 
     // Handle form submission
     addressForm.addEventListener('submit', async function (e) {
       e.preventDefault();
 
-      // Form validation
       const requiredFields = [{
         id: 'address_fullName',
         name: 'Full Name'
@@ -882,7 +878,6 @@
         }
       }
 
-      // Phone number validation
       const phoneNumber = document.getElementById('address_phoneNumber').value.trim();
       const phoneRegex = /^[6-9]\d{9}$/;
       if (!phoneNumber) {
@@ -913,7 +908,6 @@
         return;
       }
 
-      // ZIP code validation
       const zipCode = document.getElementById('address_zipCode').value;
       const zipRegex = /^\d{6}(-\d{4})?$/;
       if (!zipRegex.test(zipCode)) {
@@ -970,7 +964,6 @@
         const addressCard = this.closest('.address_card');
         const addressId = this.getAttribute('data-address-id');
 
-        // Get values from the address card
         const fullName = addressCard.querySelector('h5').textContent.replace(/\s+/g, ' ').trim();
         const addressLines = addressCard.querySelectorAll('p');
         const streetAddress = addressLines[0].innerHTML.split('<br>')[0].trim();
@@ -978,20 +971,18 @@
         const phone = addressLines[1].textContent.replace('Phone:', '').trim();
         const isDefault = addressCard.querySelector('.default_badge') !== null;
 
-        // Improved state & ZIP extraction
         let state = "",
           zipCode = "";
         const cityStateZipParts = cityStateZip.split(',');
 
         if (cityStateZipParts.length >= 2) {
           const stateZipParts = cityStateZipParts[1].trim().split(' ');
-          state = stateZipParts.slice(0, -1).join(' '); // Get state (all words except last)
-          zipCode = stateZipParts[stateZipParts.length - 1]; // Get ZIP code (last part)
+          state = stateZipParts.slice(0, -1).join(' ');
+          zipCode = stateZipParts[stateZipParts.length - 1];
         } else {
           console.error("State and ZIP extraction failed:", cityStateZip);
         }
 
-        // Populate the form
         document.getElementById('address_id').value = addressId;
         document.getElementById('address_fullName').value = fullName;
         document.getElementById('address_phoneNumber').value = phone;
@@ -1001,11 +992,10 @@
         document.getElementById('address_zipCode').value = zipCode;
         document.getElementById('address_isDefault').checked = isDefault;
 
-        // Update form title and action
         addressFormTitle.textContent = 'Edit Address';
         addressForm.action = '/user/edit-address';
 
-        // Show form and hide address list
+
         addressFormContainer.style.display = 'block';
         addressesList.style.display = 'none';
       });
@@ -1015,15 +1005,12 @@
       addressFormContainer.style.display = 'none';
       addressesList.style.display = 'block';
       addressForm.reset();
-      // Reset form action to add address
       addressForm.action = '/user/add-address';
     });
 
     // Handle form submission with validation
     addressForm.addEventListener('submit', function (e) {
       e.preventDefault();
-
-      // Validate required fields
       const requiredFields = {
         'address_fullName': 'Full Name',
         'address_phoneNumber': 'Phone Number',
@@ -1045,7 +1032,6 @@
         }
       }
 
-      // Phone number validation
       const phoneNumber = document.getElementById('address_phoneNumber').value.trim();
       const phoneRegex = /^[6-9]\d{9}$/;
       if (!phoneNumber) {
@@ -1074,7 +1060,7 @@
         return;
       }
 
-      // ZIP code validation
+
       const zipCode = document.getElementById('address_zipCode').value.trim();
       const zipRegex = /^\d{5}(-\d{4})?$/;
       if (!zipRegex.test(zipCode)) {
@@ -1086,7 +1072,6 @@
         return;
       }
 
-      // If validation passes, submit the form
       Swal.fire({
         icon: 'success',
         title: 'Success!',
@@ -1166,42 +1151,86 @@
       });
     });
     document.addEventListener("DOMContentLoaded", function () {
-      document.querySelectorAll(".cancel_order_btn").forEach(button => {
-        button.addEventListener("click", function () {
-          const orderId = this.getAttribute("data-order-id");
-          const productId = this.getAttribute("data-product-id");
+  document.querySelectorAll(".cancel_order_btn").forEach(button => {
+    button.addEventListener("click", function () {
+      const orderId = this.getAttribute("data-order-id");
+      const productId = this.getAttribute("data-product-id");
 
-          Swal.fire({
-            title: "Are you sure?",
-            text: "Do you really want to cancel this product from your order?",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonText: "Yes, cancel it",
-            cancelButtonText: "No, keep it",
-            dangerMode: true
-          }).then((result) => {
-            if (!result.isConfirmed) return;
+      Swal.fire({
+        title: 'Cancel Order',
+        html: `
+          <div style="text-align: left; margin-bottom: 20px;">
+            <p>Please select a reason for cancellation:</p>
+            <div style="margin: 10px 0;">
+              <input type="radio" id="reason1" name="cancelReason" value="Changed my mind">
+              <label for="reason1">Changed my mind about the product</label>
+            </div>
+            <div style="margin: 10px 0;">
+              <input type="radio" id="reason2" name="cancelReason" value="Delivery time too long">
+              <label for="reason2">Delivery time is too long</label>
+            </div>
+            <div style="margin: 10px 0;">
+              <input type="radio" id="reason3" name="cancelReason" value="Found better price">
+              <label for="reason3">Found better price elsewhere</label>
+            </div>
+            <div style="margin: 15px 0 0 0;">
+              <label for="additionalComments" style="display: block; margin-bottom: 5px; font-weight: 500;">Complaint Box</label>
+              <textarea id="additionalComments" 
+                placeholder="Please write your complaint here..." 
+                style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; resize: vertical; min-height: 100px;"
+                required></textarea>
+            </div>
+          </div>
+        `,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, cancel order',
+        cancelButtonText: 'No, keep order',
+        confirmButtonColor: '#ffbe33',
+        cancelButtonColor: '#6c757d',
+        preConfirm: () => {
+          const selectedReason = document.querySelector('input[name="cancelReason"]:checked');
+          const comments = document.getElementById('additionalComments').value.trim();
+          if (!selectedReason && !comments) {
+            Swal.showValidationMessage('Please either select a reason or write your complaint');
+            return false;
+          }
+          
+          return {
+            reason: selectedReason ? selectedReason.value : 'Custom complaint',
+            comments: comments
+          };
+        }
+      }).then((result) => {
+        if (!result.isConfirmed) return;
 
-            fetch(`cancel-order/${orderId}/${productId}`, {
-              method: "DELETE",
-            })
-              .then(response => response.json())
-              .then(data => {
-                if (data.success) {
-                  Swal.fire("Canceled!", "Product has been canceled successfully.", "success")
-                    .then(() => location.reload());
-                } else {
-                  Swal.fire("Failed!", data.message || "Could not cancel the product.", "error");
-                }
-              })
-              .catch(error => {
-                console.error("Error:", error);
-                Swal.fire("Error!", "Something went wrong. Please try again.", "error");
-              });
-          });
+        fetch(`cancel-order/${orderId}/${productId}`, {
+          method: "DELETE",
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            reason: result.value.reason,
+            comments: result.value.comments
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            Swal.fire("Canceled!", "Product has been canceled successfully.", "success")
+              .then(() => location.reload());
+          } else {
+            Swal.fire("Failed!", data.message || "Could not cancel the product.", "error");
+          }
+        })
+        .catch(error => {
+          console.error("Error:", error);
+          Swal.fire("Error!", "Something went wrong. Please try again.", "error");
         });
       });
     });
+  });
+});
   </script>
 </body>
 
