@@ -14,6 +14,7 @@ const { use } = require('passport')
 const mongoose = require('mongoose');
 const Razorpay = require('razorpay');
 const usermodel = require('../model/usermodel')
+const returnmodel = require('../model/returnmodel')
 const PDFDocument = require('pdfkit');
 const path = require('path');
 const crypto = require('crypto');
@@ -367,7 +368,7 @@ const loadmenu = async (req, res) => {
         const totalProducts = await Productmodel.countDocuments(filter);
         const totalPages = Math.ceil(totalProducts / limit);
         let query = Productmodel.find(filter)
-            .select('name price image category isListed offer');
+            .select('name price image category isListed offer').sort({createdAt:-1});
         
         const products = await query.lean();
         const categories = await Category.find().lean();
@@ -1331,7 +1332,8 @@ const cancelorder = async (req, res) => {
                 wallet.balance += refundAmount;
                 wallet.transactions.push({
                     amount: refundAmount,
-                    type: 'credit'
+                    type: 'credit',
+                    description:'Refund for cancel product'
                 });
                 await wallet.save();
             }
@@ -1365,6 +1367,71 @@ const cancelorder = async (req, res) => {
         res.status(500).json({ success: false, message: "Error canceling product" });
     }
 };
+
+const returnorder = async (req,res) => {
+    try {
+        const { orderId, productId } = req.params;
+        const { reason, comments } = req.body;
+        const userId = req.session.user;
+    
+        const order = await Order.findOne({ _id: orderId, customerId: userId }).populate('products.productId');
+        
+        if (!order) {
+            return res.status(404).json({success: false, message: 'Order not found or you are not authorized'});
+        }
+
+        const orderItem = order.products.find(item => item._id.toString() === productId);
+     
+        if (!orderItem) {
+            return res.status(404).json({success: false, message: 'Product not found in this order'});
+        }
+
+        const existingReturn = await returnmodel.findOne({orderId: orderId, productId: productId, userId: userId});
+
+        if (existingReturn) {
+            return res.status(400).json({success: false, message: 'Return request already exists for this product'});
+        }
+
+        await Productmodel.findByIdAndUpdate(orderItem.productId._id || orderItem.productId,{ $inc: { stock: orderItem.quantity } }
+        );
+
+        const updatedOrder = await Order.findOneAndUpdate(
+            { 
+                _id: orderId,
+                'products._id': productId 
+            },
+            { 
+                $set: { 
+                    'products.$.status': 'Return',
+                    'products.$.returnedAt': new Date(),
+                    status: 'Return'
+                } 
+            },
+            { 
+                new: true,
+                runValidators: true
+            }
+        );
+
+        const newReturn = new returnmodel({
+            userId: userId,
+            orderId: orderId,
+            productId: orderItem.productId._id || orderItem.productId,
+            quantity: orderItem.quantity,
+            reason: reason,
+            additionalComments: comments,
+            status: 'Pending'
+        });
+
+        await newReturn.save();
+
+        res.json({success: true,  message: 'Return request submitted successfully' });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({success: false,message: 'Something went wrong while processing your return request'});
+    }
+}
 
 const updatepassword = async(req,res)=>{
     try {
@@ -1957,7 +2024,7 @@ module.exports = {
     checkoutaddaddress,checkoutchangeaddress,loadordersuccess,
     addorderdetails,loaduserprofile,updateprofile,
     updateprofileimage,addaddress,editaddress,
-    deleteaddress,loadorderdetils,cancelorder,
+    deleteaddress,loadorderdetils,cancelorder,returnorder,
     updatepassword,handleGoogleLogin,handleGoogleCallback,
     loadwishlist,addtowishlist,removefromwishlist,
     loadwallet,addMoney,downloadinvoice,

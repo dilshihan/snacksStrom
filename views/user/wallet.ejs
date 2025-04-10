@@ -165,11 +165,13 @@
                                             <i class="fa fa-<%= transaction.type === 'credit' ? 'plus' : 'minus' %>"></i>
                                         </div>
                                         <div class="transaction_details">
-                                            <h4>
-                                                <%= transaction.type === 'credit' ? 
-                                                    'Added Money to Wallet' : 
-                                                    'Used in Order' %>
-                                            </h4>
+                                          <h4>
+                                            <%= transaction.description 
+                                                ? transaction.description 
+                                                : (transaction.type === 'credit' 
+                                                    ? 'Added Money to Wallet' 
+                                                    : 'Used in Order') %>
+                                        </h4>
                                             <p><%= formatDate(transaction.timestamp) %></p>
                                         </div>
                                     </div>

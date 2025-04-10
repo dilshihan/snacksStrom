@@ -7,7 +7,8 @@ const walletSchema = new mongoose.Schema({
         {
             amount: { type: Number, required: true },
             type: { type: String, enum: ['credit', 'debit'], required: true },
-            timestamp: { type: Date, default: Date.now }
+            timestamp: { type: Date, default: Date.now },
+            description: { type: String, required: false }
         }
     ]
 });

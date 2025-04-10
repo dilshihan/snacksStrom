@@ -167,6 +167,15 @@
                         Coupons
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a href="/admin/return" class="nav-link">
+                        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                        </svg>
+                        Return
+                    </a>
+                </li>
             </ul>
 
             <!-- Bottom Menu -->
@@ -251,6 +260,16 @@
                         min: 'Price cannot be negative',
                         max: 'Price cannot exceed 100000',
                         pattern: 'Price must be a valid number with up to 2 decimal places'
+                    }
+                },
+                productOffer:{
+                    required: true,
+                    min: 0,
+                    max:70,
+                    errorMessages: {
+                        required: 'offer is required',
+                        min: 'offer cannot be negative',
+                        max: 'offer cannot exceed 70'
                     }
                 }
             };

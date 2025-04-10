@@ -73,6 +73,7 @@
                                 const areAllProductsCancelled = order.products.every(product => product.status === 'Cancelled');
                                 const areAllProductsDelivered = order.products.every(product => product.status === 'Delivered');
                                 const isAnyProductDelivered = order.products.some(product => product.status === 'Delivered');
+                                const isAnyProductReturned = order.products.some(product => product.status === 'Return');
                                 const isPending = order.paymentStatus === 'Pending'&&order.paymentMethod === 'razorpay';
                                 %>
                                 
@@ -80,6 +81,8 @@
                                     <span class="status-text" style="color: orange; font-weight: bold;">Payment Pending</span>
                                 <% } else if (areAllProductsCancelled) { %>
                                     <span class="status-text" style="color: red; font-weight: bold;">Cancelled</span>
+                                <% } else if (isAnyProductReturned) { %>
+                                    <span class="status-text" style="color: purple; font-weight: bold;">Returned</span>
                                 <% } else if (areAllProductsDelivered) { %>
                                     <span class="status-text" style="color: green; font-weight: bold;">Delivered</span>
                                 <% } else if (isAnyProductDelivered) { %>
@@ -196,6 +199,15 @@
                         Coupons
                     </a>
                 </li>
+                <li class="nav-item">
+                <a href="/admin/return" class="nav-link">
+                    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                    </svg>
+                    Return
+                </a>
+            </li>
             </ul>
 
             <!-- Bottom Menu -->

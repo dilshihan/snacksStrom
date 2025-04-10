@@ -1,0 +1,132 @@
+/* Return Management Page Styles */
+.return-table {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    margin-top: 2rem;
+}
+
+.return-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.return-table th {
+    background-color: #f8fafc;
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: #64748b;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.return-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #e2e8f0;
+    color: #475569;
+}
+
+.return-table tr:hover {
+    background-color: #f8fafc;
+}
+
+/* Status Badges */
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-transform: capitalize;
+}
+
+.status-badge.pending {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.status-badge.approved {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.status-badge.rejected {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* Action Buttons */
+.actions-cell {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.action-button {
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+    transition: all 0.2s;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-button:hover {
+    background-color: #f1f5f9;
+}
+
+.action-button.approve {
+    color: #28a745;
+}
+
+.action-button.reject {
+    color: #dc3545;
+}
+
+.action-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 2rem;
+}
+
+.page-button {
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    background-color: white;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s;
+}
+
+.page-button:hover {
+    background-color: #f1f5f9;
+}
+
+.page-button.active {
+    background-color: #3b82f6;
+    color: white;
+    border-color: #3b82f6;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .return-table {
+        overflow-x: auto;
+    }
+    
+    .return-table table {
+        min-width: 800px;
+    }
+    
+    .actions-cell {
+        flex-direction: column;
+    }
+}

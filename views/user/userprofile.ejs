@@ -407,13 +407,21 @@
                             data-product-id="<%= product._id %>">
                             <i class="fa fa-eye"></i> View Details
                           </button>
-
-                          <% if (product.status !=="Cancelled" && product.status !=="Delivered" ) { %>
+  
+                          <% if (product.status !=="Cancelled" && product.status !=="Delivered"&&product.status!=="Return") { %>
+                            <% if (!(order.paymentMethod === "razorpay" && order.paymentStatus === "Pending")) {%>                               
                             <button class="cancel_order_btn" data-order-id="<%= order._id %>"
                               data-product-id="<%= product._id %>">
                               <i class="fa fa-ban"></i> Cancel Order
                             </button>
+                            <% }%>
                             <% } %>
+                            <%if(product.status==="Delivered"&& product.status!=="Return"){%>
+                            <button class="return_order_btn" data-order-id="<%= order._id %>"
+                             data-product-id="<%= product._id %>">
+                              <i class="fa fa-undo"></i> Return
+                             </button>
+                             <%}%>
                         </div>
                     </div>
                     <% }); %>
@@ -1138,7 +1146,7 @@
       });
     });
   </script>
-  <script>
+  <script> 
     document.querySelectorAll('.view_details_btn').forEach(button => {
       button.addEventListener('click', function () {
         const orderId = this.getAttribute('data-order-id');
@@ -1150,88 +1158,220 @@
         }
       });
     });
+    
     document.addEventListener("DOMContentLoaded", function () {
-  document.querySelectorAll(".cancel_order_btn").forEach(button => {
-    button.addEventListener("click", function () {
-      const orderId = this.getAttribute("data-order-id");
-      const productId = this.getAttribute("data-product-id");
+    document.querySelectorAll(".cancel_order_btn").forEach(button => {
+      button.addEventListener("click", function () {
+        const orderId = this.getAttribute("data-order-id");
+        const productId = this.getAttribute("data-product-id");
 
-      Swal.fire({
-        title: 'Cancel Order',
-        html: `
-          <div style="text-align: left; margin-bottom: 20px;">
-            <p>Please select a reason for cancellation:</p>
-            <div style="margin: 10px 0;">
-              <input type="radio" id="reason1" name="cancelReason" value="Changed my mind">
-              <label for="reason1">Changed my mind about the product</label>
+        Swal.fire({
+          title: 'Cancel Order',
+          html: `
+            <div style="text-align: left; margin-bottom: 20px;">
+              <p>Please select a reason for cancellation:</p>
+              <div style="margin: 10px 0;">
+                <input type="radio" id="reason1" name="cancelReason" value="Changed my mind">
+                <label for="reason1">Changed my mind about the product</label>
+              </div>
+              <div style="margin: 10px 0;">
+                <input type="radio" id="reason2" name="cancelReason" value="Delivery time too long">
+                <label for="reason2">Delivery time is too long</label>
+              </div>
+              <div style="margin: 10px 0;">
+                <input type="radio" id="reason3" name="cancelReason" value="Found better price">
+                <label for="reason3">Found better price elsewhere</label>
+              </div>
+              <div style="margin: 10px 0;">
+                <input type="radio" id="reasonOther" name="cancelReason" value="Other">
+                <label for="reasonOther">Other</label>
+              </div>
+              <div id="complaintBoxContainer" style="display: none; margin-top: 15px;">
+                <label for="additionalComments" style="display: block; margin-bottom: 5px; font-weight: 500;">Complaint Box</label>
+                <textarea id="additionalComments" 
+                  placeholder="Please write your complaint here..." 
+                  style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; resize: vertical; min-height: 100px;"></textarea>
+              </div>
             </div>
-            <div style="margin: 10px 0;">
-              <input type="radio" id="reason2" name="cancelReason" value="Delivery time too long">
-              <label for="reason2">Delivery time is too long</label>
-            </div>
-            <div style="margin: 10px 0;">
-              <input type="radio" id="reason3" name="cancelReason" value="Found better price">
-              <label for="reason3">Found better price elsewhere</label>
-            </div>
-            <div style="margin: 15px 0 0 0;">
-              <label for="additionalComments" style="display: block; margin-bottom: 5px; font-weight: 500;">Complaint Box</label>
-              <textarea id="additionalComments" 
-                placeholder="Please write your complaint here..." 
-                style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; resize: vertical; min-height: 100px;"
-                required></textarea>
-            </div>
-          </div>
-        `,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Yes, cancel order',
-        cancelButtonText: 'No, keep order',
-        confirmButtonColor: '#ffbe33',
-        cancelButtonColor: '#6c757d',
-        preConfirm: () => {
-          const selectedReason = document.querySelector('input[name="cancelReason"]:checked');
-          const comments = document.getElementById('additionalComments').value.trim();
-          if (!selectedReason && !comments) {
-            Swal.showValidationMessage('Please either select a reason or write your complaint');
-            return false;
-          }
-          
-          return {
-            reason: selectedReason ? selectedReason.value : 'Custom complaint',
-            comments: comments
-          };
-        }
-      }).then((result) => {
-        if (!result.isConfirmed) return;
+          `,
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'Yes, cancel order',
+          cancelButtonText: 'No, keep order',
+          confirmButtonColor: '#ffbe33',
+          cancelButtonColor: '#6c757d',
+          didOpen: () => {
+            const otherOption = document.getElementById('reasonOther');
+            const complaintBoxContainer = document.getElementById('complaintBoxContainer');
 
-        fetch(`cancel-order/${orderId}/${productId}`, {
-          method: "DELETE",
-          headers: {
-            'Content-Type': 'application/json',
+            document.querySelectorAll('input[name="cancelReason"]').forEach(radio => {
+              radio.addEventListener('change', function () {
+                if (otherOption.checked) {
+                  complaintBoxContainer.style.display = 'block';
+                } else {
+                  complaintBoxContainer.style.display = 'none';
+                }
+              });
+            });
           },
-          body: JSON.stringify({
-            reason: result.value.reason,
-            comments: result.value.comments
-          })
-        })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            Swal.fire("Canceled!", "Product has been canceled successfully.", "success")
-              .then(() => location.reload());
-          } else {
-            Swal.fire("Failed!", data.message || "Could not cancel the product.", "error");
+          preConfirm: () => {
+            const selectedReason = document.querySelector('input[name="cancelReason"]:checked');
+            const comments = document.getElementById('additionalComments').value.trim();
+
+            if (!selectedReason) {
+              Swal.showValidationMessage('Please select a reason for cancellation');
+              return false;
+            }
+
+            if (selectedReason.value === "Other" && comments === "") {
+              Swal.showValidationMessage('Please write your complaint for "Other" reason');
+              return false;
+            }
+
+            return {
+              reason: selectedReason.value,
+              comments: comments
+            };
           }
-        })
-        .catch(error => {
-          console.error("Error:", error);
-          Swal.fire("Error!", "Something went wrong. Please try again.", "error");
+        }).then((result) => {
+          if (!result.isConfirmed) return;
+
+          fetch(`cancel-order/${orderId}/${productId}`, {
+            method: "DELETE",
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              reason: result.value.reason,
+              comments: result.value.comments
+            })
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              Swal.fire("Canceled!", "Product has been canceled successfully.", "success")
+                .then(() => location.reload());
+            } else {
+              Swal.fire("Failed!", data.message || "Could not cancel the product.", "error");
+            }
+          })
+          .catch(error => {
+            console.error("Error:", error);
+            Swal.fire("Error!", "Something went wrong. Please try again.", "error");
+          });
         });
       });
     });
   });
-});
   </script>
+  <script>
+  document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".return_order_btn").forEach(button => {
+      button.addEventListener("click", function () {
+        const orderId = this.getAttribute("data-order-id");
+        const productId = this.getAttribute("data-product-id");
+
+        Swal.fire({
+          title: 'Return Order',
+          html: `
+            <div style="text-align: left; margin-bottom: 20px;">
+              <p>Please select a reason for return:</p>
+              <div style="margin: 10px 0;">
+                <input type="radio" id="reason1" name="returnReason" value="Product was damaged">
+                <label for="reason1">Product was damaged</label>
+              </div>
+              <div style="margin: 10px 0;">
+                <input type="radio" id="reason2" name="returnReason" value="Received wrong item">
+                <label for="reason2">Received wrong item</label>
+              </div>
+              <div style="margin: 10px 0;">
+                <input type="radio" id="reason3" name="returnReason" value="Quality not as expected">
+                <label for="reason3">Quality not as expected</label>
+              </div>
+              <div style="margin: 10px 0;">
+                <input type="radio" id="reasonOther" name="returnReason" value="Other">
+                <label for="reasonOther">Other</label>
+              </div>
+              <div id="complaintBoxContainer" style="display:none; margin-top: 15px;">
+                <label for="additionalComments" style="display: block; margin-bottom: 5px; font-weight: 500;">Complaint Box</label>
+                <textarea id="additionalComments"
+                  placeholder="Please write your complaint here..." 
+                  style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; resize: vertical; min-height: 100px;"></textarea>
+              </div>
+            </div>
+          `,
+          didOpen: () => {
+            const otherOption = document.getElementById('reasonOther');
+            const complaintBoxContainer = document.getElementById('complaintBoxContainer');
+
+            document.querySelectorAll('input[name="returnReason"]').forEach(radio => {
+              radio.addEventListener('change', function () {
+                if (otherOption.checked) {
+                  complaintBoxContainer.style.display = 'block';
+                } else {
+                  complaintBoxContainer.style.display = 'none';
+                }
+              });
+            });
+          },
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'Yes, return order',
+          cancelButtonText: 'No, keep order',
+          confirmButtonColor: '#ffbe33',
+          cancelButtonColor: '#6c757d',
+          preConfirm: () => {
+            const selectedReason = document.querySelector('input[name="returnReason"]:checked');
+            const comments = document.getElementById('additionalComments').value.trim();
+            
+            if (!selectedReason) {
+              Swal.showValidationMessage('Please select a reason for return');
+              return false;
+            }
+
+            if (selectedReason.value === "Other" && comments === "") {
+              Swal.showValidationMessage('Please write your complaint for "Other" reason');
+              return false;
+            }
+
+            return {
+              reason: selectedReason.value,
+              comments: comments
+            };
+          }
+        }).then((result) => {
+          if (!result.isConfirmed) return;
+
+          fetch(`return-order/${orderId}/${productId}`, {
+            method: "POST",
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              reason: result.value.reason,
+              comments: result.value.comments
+            })
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              Swal.fire("Returned!", "Product has been marked for return successfully.", "success")
+                .then(() => location.reload());
+            } else {
+              Swal.fire("Failed!", data.message || "Could not return the product.", "error");
+            }
+          })
+          .catch(error => {
+            console.error("Error:", error);
+            Swal.fire("Error!", "Something went wrong. Please try again.", "error");
+          });
+        });
+      });
+    });
+  });
+</script>
+
+
 </body>
 
 </html>

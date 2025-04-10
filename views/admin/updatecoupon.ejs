@@ -122,20 +122,20 @@
             return;
           }
 
-          if (discountAmount <= 0) {
+          if (discountAmount <= 0||discountAmount>=100) {
             Swal.fire({
               icon: "error",
               title: "Invalid Discount",
-              text: "Discount amount must be greater than 0",
+              text: "Discount amount must be greater than 0 and less than 100",
             });
             return;
           }
 
-          if (minPurchase < 0) {
+          if (minPurchase <= 1||minPurchase>=1000) {
             Swal.fire({
               icon: "error",
               title: "Invalid Minimum Purchase",
-              text: "Minimum purchase amount cannot be negative",
+              text: "Minimum purchase amount cannot be negative and more than 1000",
             });
             return;
           }

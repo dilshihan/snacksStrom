@@ -6,6 +6,8 @@ const  Categorymodel = require('../model/categorymodel')
 const ordermodel = require('../model/ordermodel')
 const Order = require("../model/ordermodel")
 const couponmodel = require('../model/couponmodel')
+const returnmodel = require('../model/returnmodel')
+const walletmodel = require('../model/walletmodel')
 const fs = require('fs');
 const path = require('path');
 const PDFDocument = require('pdfkit');
@@ -344,7 +346,8 @@ const loadProducts = async (req, res) => {
         const totalPages = Math.ceil(totalProducts / limit);
         const products = await ProductModel.find(searchFilter)
             .skip((page - 1) * limit)
-            .limit(limit);
+            .limit(limit)
+            .sort({createdAt:-1});
 
         res.render('admin/products', { 
             products, 
@@ -581,7 +584,7 @@ const updateCategory = async (req, res) => {
     try {
         const { name, description, offer } = req.body;
         const categoryId = req.params.id;
-
+        
         const existingCategory = await Categorymodel.findOne({ name: { $regex: new RegExp(`^${name}$`, "i") },  _id: { $ne: categoryId }});
         if (existingCategory) {
             return res.status(400).json({ success: false, message: "Category name already exists. Choose a different name." });
@@ -592,7 +595,7 @@ const updateCategory = async (req, res) => {
             { name, description, offer },
             { new: true }
         );
-
+        
         if (!updatedCategory) {
             return res.status(404).json({ success: false, message: "Category not found" });
         }
@@ -919,8 +922,10 @@ const loadsalesreport = async (req, res) => {
         const unitsSold = await Order.aggregate([
             { $match: dateMatchStage },
             { $unwind: '$products' },
-            { $match: { 'products.status': 'Pending' } }, 
-            { $group: {_id: null, total: { $sum: '$products.quantity' }}}
+            { $group: { 
+                _id: null, 
+                total: { $sum: '$products.quantity' }
+            }}
         ]);
 
         const deliveredProducts = await Order.aggregate([
@@ -1303,6 +1308,71 @@ const exportSalesExcel = async (req, res) => {
     }
 };
 
+const loadreturn = async (req,res)  => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = 5;
+        const skip = (page - 1) * limit;
+
+        const totalReturns = await returnmodel.countDocuments();
+        const totalPages = Math.ceil(totalReturns / limit);
+
+        const returns = await returnmodel.find()
+            .sort({ requestedAt: -1 })
+            .skip(skip)
+            .limit(limit)
+            .populate('productId', 'name')
+            .populate('orderId', 'orderId');
+
+        res.render('admin/return', {
+            returns,
+            currentPage: page,
+            totalPages,
+            title: 'Return Management'
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).send('Something went wrong');
+    }
+}
+
+const updateReturnStatus = async (req, res) => {
+    try {   
+        const { returnId } = req.params;
+        const { status } = req.body;
+
+        const returnItem = await returnmodel.findById(returnId);
+        
+        if (!returnItem) {
+            return res.status(404).json({ success: false, message: 'Return request not found' });
+        }
+
+        if (status === 'Approved') {
+            const wallet = await walletmodel.findOne({ userId: returnItem.userId });
+           
+            if (wallet) {
+                const product = await ProductModel.findById(returnItem.productId);
+                const refundAmount = product.price * returnItem.quantity;
+                wallet.balance += refundAmount;
+                wallet.transactions.push({
+                    amount: refundAmount,
+                    type: 'credit',
+                    description: 'Refund for returned product'
+                });
+                await wallet.save();
+            }
+        }
+
+        returnItem.status = status;
+        await returnItem.save();
+
+        res.json({ success: true, message: 'Return status updated successfully' });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ success: false, message: 'Something went wrong'});
+    }
+}
+
 const logout=async(req,res)=>{
     try {
         req.session.admin = null; 
@@ -1326,4 +1396,5 @@ updateProduct,loadorders,updateorderstatus,
 loadviewoderdeatils,loadcoupon,loadaddcoupon,
 addcoupon,loadupdatecoupon,updatecoupon,
 couponstatus,loadsalesreport,exportSalesPDF,
-exportSalesExcel,logout,getChartData}
+exportSalesExcel,logout,getChartData,
+loadreturn,updateReturnStatus}

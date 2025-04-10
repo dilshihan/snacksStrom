@@ -38,6 +38,7 @@ router.post('/edit-address',userauth.checksession,userauth.checkBan,usercontroll
 router.delete('/delete/:id',userauth.checksession,userauth.checkBan,usercontroller.deleteaddress)
 router.get('/orderdetails',userauth.checksession,userauth.checkBan,usercontroller.loadorderdetils)
 router.delete("/cancel-order/:orderId/:productId", userauth.checksession, userauth.checkBan, usercontroller.cancelorder);
+router.post('/return-order/:orderId/:productId',userauth.checksession,userauth.checkBan,usercontroller.returnorder )
 router.post('/update-password',userauth.checksession,userauth.checkBan,usercontroller.updatepassword)
 router.get('/wishlist',userauth.checksession,userauth.checkBan,usercontroller.loadwishlist)
 router.post('/add-to-wishlist', userauth.checksession, userauth.checkBan, usercontroller.addtowishlist);
