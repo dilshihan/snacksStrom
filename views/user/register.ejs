@@ -178,7 +178,6 @@
 
           if (event.data.type === "google-auth") {
             try {
-              console.log("Received user data:", event.data.userData); // Debug log
               const result = await fetch("/user/auth/google/callback", {
                 method: "POST",
                 headers: {
