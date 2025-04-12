@@ -152,7 +152,7 @@
             <%= productDetails.status %>
           </span>
           <!-- Track Order Button -->
-          <% const isAllCancelledOrDelivered = order.products.some(product => product.status === 'Cancelled' || product.status === 'Delivered') %>
+          <% const isAllCancelledOrDelivered = order.products.some(product => product.status === 'Cancelled' || product.status === 'Delivered'||product.status === 'Return') %>
           <% if (isAllCancelledOrDelivered) { %>
             <button class="track-btn" id="trackOrderBtn" style="display: none;">Track Order</button>
           <% }else { %>
