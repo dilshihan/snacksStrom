@@ -494,95 +494,16 @@ body {
     }
 }
 
-@media (max-width: 768px) {
-    .sidebar {
-        transform: translateX(-100%);
-        width: 280px;
-    }
-    
-    .sidebar.active {
-        transform: translateX(0);
-    }
-    
-    .main-content {
-        margin-left: 0;
-        padding: 1.5rem;
-    }
-    
-    .menu-toggle {
-        display: flex;
-    }
-    
-    .overlay.active {
-        display: block;
-    }
-    
-    .stats-container {
-        grid-template-columns: 1fr;
-    }
-    
-    .chart-header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    
-    .chart-period {
-        width: 100%;
-        overflow-x: auto;
-        padding-bottom: 0.5rem;
-    }
-    
-    .chart-container {
-        height: 300px;
-    }
-}
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
 
-@media (max-width: 576px) {
-    .main-content {
-        padding: 1rem;
-    }
-    
-    .dashboard-header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    
-    .stat-card {
-        padding: 1rem;
-    }
-    
-    .product-image {
-        width: 40px;
-        height: 40px;
-    }
-    
-    .data-card {
-        padding: 1rem;
-    }
-    
-    .data-table th,
-    .data-table td {
-        padding: 0.75rem 0.5rem;
-        font-size: 0.875rem;
-    }
-    
-    .product-meta {
-        font-size: 0.75rem;
-    }
-}
+            .main-content {
+                margin-left: 0;
+            }
 
-/* Print styles */
-@media print {
-    .sidebar, .menu-toggle, .overlay {
-        display: none;
-    }
-    
-    .main-content {
-        margin-left: 0;
-        padding: 0;
-    }
-    
-    .chart-section, .data-card {
-        break-inside: avoid;
-    } 
-}
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+        }

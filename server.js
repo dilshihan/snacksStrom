@@ -36,6 +36,10 @@ connectdb()
 app.use('/user',userroutes)
 app.use('/admin',adminroutes)
 
+app.get('/', (req, res) => {
+    res.redirect('/user/home');
+});
+
 app.use((req, res, next) => {
     res.status(404).render('user/404');
 });
