@@ -203,6 +203,7 @@
                   </div>
                   </div>
                   <div class="col-md-4">
+                    <% if (cart && cart.length > 0) { %>
                       <div class="cart_summary">
                           <h3>Order Summary</h3>
                           <% let subtotal = 0; %>
@@ -237,6 +238,7 @@
                           </div>
                           <button class="checkout_btn">Proceed to Checkout</button>
                       </div>
+                      <%}%>
                   </div>
               </div>
           </div>

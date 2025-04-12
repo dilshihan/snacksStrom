@@ -241,6 +241,12 @@
         </main>
         
         <!-- Sidebar -->
+        <div class="menu-toggle" id="menuToggle">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+        </div>      
+<div class="overlay" id="overlay"></div>
     <aside class="sidebar">
         <div class="sidebar-header">
             <a href="#" class="sidebar-logo">Admin Panel</a>
@@ -497,3 +503,44 @@
             });
         });
     </script>
+    <script>
+        // Add this to the existing script section or create a new one
+document.addEventListener('DOMContentLoaded', function() {
+    // Existing chart code...
+    
+    // Mobile menu functionality
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.getElementById('overlay');
+    const mainContent = document.querySelector('.main-content');
+    
+    function toggleMenu() {
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
+    }
+    
+    if (menuToggle) {
+        menuToggle.addEventListener('click', toggleMenu);
+    }
+    
+    if (overlay) {
+        overlay.addEventListener('click', toggleMenu);
+    }
+    
+    // Responsive handling for window resize
+    function handleResize() {
+        if (window.innerWidth > 768) {
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+        }
+    }
+    
+    window.addEventListener('resize', handleResize);
+    
+    // Initialize proper state on page load
+    handleResize();
+});
+    </script>
+        
+    </body>
+</html>
