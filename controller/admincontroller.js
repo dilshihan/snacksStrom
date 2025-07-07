@@ -13,7 +13,7 @@ const path = require('path');
 const PDFDocument = require('pdfkit');
 const ExcelJS = require('exceljs');
 
-
+  
 
 const loadlogin  = async(req,res)=>{
     res.render('admin/login',{message:''})
@@ -33,7 +33,7 @@ const login = async(req,res)=>{
      }
 }
 
-const loaddashboard= async(req,res)=>{
+const loaddashboard= async(req,res)=>{  
     try{
         const admin = req.session.admin
         if(!admin){return res.redirect('/admin/login')} 
@@ -1141,7 +1141,7 @@ const exportSalesPDF = async (req, res) => {
     }
 };
 
-function drawTable(doc, table) {
+function drawTable(doc, table) {    
     const startX = 50;
     let startY = doc.y + 10;
     const rowHeight = 30;

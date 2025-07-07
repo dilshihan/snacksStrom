@@ -353,15 +353,7 @@
       );
     </script>
     <script>
-      async function fetchCart() {
-        try {
-          const response = await fetch("/cart");
-          const data = await response.json();
-          console.log("Fetched Cart Data:", data);
-        } catch (error) {
-          console.error("Error fetching cart:", error);
-        }
-      }
+     
 
       fetchCart();
     </script>
