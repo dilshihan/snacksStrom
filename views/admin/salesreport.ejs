@@ -7,6 +7,7 @@
     <title>SNACK STORM - Sales Report</title>
     <link rel="stylesheet" href="/style/salesreport.css">
     <link rel="shortcut icon" href="/images/favicon.png" type="">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <body>
@@ -418,13 +419,21 @@
         if (document.getElementById('dateRange').value === 'custom') {
             if (!startDate || !endDate) {
                 e.preventDefault();
-                alert('Please select both start and end dates');
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Missing dates',
+                        text: 'Please select both start and end dates',
+                    });
                 return false;
             }
 
             if (new Date(startDate) > new Date(endDate)) {
                 e.preventDefault();
-                alert('Start date cannot be after end date');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Invalid date range',
+                        text: 'End date must be after start date',
+                    });
                 return false;
             }
         }

@@ -1328,7 +1328,11 @@ const cancelorder = async (req, res) => {
         if (order.paymentMethod === 'razorpay' || order.paymentMethod === 'wallet') {
             const wallet = await walletmodel.findOne({ userId: order.customerId });
             if (wallet) {
-                const refundAmount = cancelledProduct.price * cancelledProduct.quantity;
+                const productBaseTotal = cancelledProduct.price * cancelledProduct.quantity;
+                const taxRate = 0.1; 
+                const productTax = productBaseTotal * taxRate;
+                const refundAmount = productBaseTotal + productTax;
+
                 wallet.balance += refundAmount;
                 wallet.transactions.push({
                     amount: refundAmount,
