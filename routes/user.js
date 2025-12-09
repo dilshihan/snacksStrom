@@ -17,18 +17,8 @@ router.post("/reset-password", usercontroller.resetpassword);
 router.post("/login", usercontroller.loginUser);
 router.get("/home", usercontroller.Loadhome);
 router.get("/menu", usercontroller.loadmenu);
-router.get(
-  "/about",
-  userauth.checksession,
-  userauth.checkBan,
-  usercontroller.loadabout
-);
-router.get(
-  "/contactus",
-  userauth.checksession,
-  userauth.checkBan,
-  usercontroller.loadcontactus
-);
+router.get("/about",usercontroller.loadabout);
+router.get("/contactus",usercontroller.loadcontactus);
 router.get(
   "/cart",
   userauth.checksession,
@@ -53,12 +43,8 @@ router.delete(
   userauth.checkBan,
   usercontroller.removefromcart
 );
-router.get(
-  "/productdetails/:id",
-  userauth.checksession,
-  userauth.checkBan,
-  usercontroller.Productdetails
-);
+router.get("/productdetails/:id",usercontroller.Productdetails);
+
 router.get(
   "/checkout",
   userauth.checksession,

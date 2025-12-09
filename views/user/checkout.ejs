@@ -698,7 +698,7 @@
                 showCancelButton: true,
                 confirmButtonColor: '#ffbe33',
                 cancelButtonColor: '#d33',
-                confirmButtonText: 'Continue Order',
+                confirmButtonText: 'retry payment',
                 cancelButtonText: 'Cancel'
               }).then((result) => {
                 if (result.isConfirmed) {
@@ -831,6 +831,15 @@
             console.log("Response:", data);
 
             if (data.success) {
+              const order = data.order;
+              const orderId = order && order._id;
+              const firstProduct = order && order.products && order.products[0];
+              const productId = firstProduct && firstProduct._id;
+
+              if (order && order.paymentStatus !== 'Paid' && orderId && productId) {
+                window.location.href = `/user/orderdetails?orderId=${orderId}&productId=${productId}`;
+                return;
+              }
               Swal.fire({
                 icon: "success",
                 title: "Order Placed Successfully!",
