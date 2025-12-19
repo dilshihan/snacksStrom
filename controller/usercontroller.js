@@ -371,7 +371,7 @@ const loadmenu = async (req, res) => {
             .select('name price image category isListed offer').sort({createdAt:-1});
         
         const products = await query.lean();
-        const categories = await Category.find().lean();
+        const categories = await Category.find({ isListed: true }).lean();
         const categoryOffersMap = new Map(
             categories.map(cat => [cat.name.toLowerCase(), cat.offer || 0])
         );
@@ -426,6 +426,7 @@ const loadmenu = async (req, res) => {
         return res.render("user/menu", {
             products: paginatedProducts,
             user,
+            categories,
             currentPage: page,
             totalPages,
             hasNextPage: page < totalPages,
@@ -800,11 +801,7 @@ const loadcheckout = async (req,res)=>{
         }
 
         const addresses = await addressmodel.find({ userId: user._id });
-        if (!addresses.length) {
-            return res.render('user/checkout', { defaultAddress: null });
-        }
-
-        const defaultAddress = addresses.find(address => address.isDefault) || addresses[0];
+        const defaultAddress = addresses.find(address => address.isDefault) || addresses[0] || null;
         const cart = await cartmodel.findOne({ userId })
             .populate({path: "products.productId",select: "name image price category offer stock"});
 

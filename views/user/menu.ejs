@@ -145,10 +145,18 @@
             <h2>Our Menu</h2>
         </div>
         <ul class="filters_menu">
-          <li class="active" data-filter="*">All</li>
-          <li data-filter="burger">Burger</li>
-          <li data-filter="pizza">Pizza</li>
-          <li data-filter="drinks">Drinks</li>
+          <li class="<%= selectedCategory === 'all' ? 'active' : '' %>" data-filter="*">All</li>
+          <% if (typeof categories !== 'undefined' && categories.length) { %>
+            <% categories.forEach(function(categoryItem) { %>
+              <% const catSlug = categoryItem.name.toLowerCase(); %>
+              <li
+                data-filter="<%= catSlug %>"
+                class="<%= selectedCategory === catSlug ? 'active' : '' %>"
+              >
+                <%= categoryItem.name %>
+              </li>
+            <% }); %>
+          <% } %>
       </ul>
             <div class="filters_price">
               <form action="/user/menu" method="GET" id="filterForm" class="filter-items">
