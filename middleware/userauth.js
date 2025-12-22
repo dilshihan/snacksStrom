@@ -27,10 +27,9 @@ const checkBan = async (req, res, next) => {
     }
     const user = await usermodel.findById(req.session.user);
     if (!user || user.status === "Banned") {
-      req.session.destroy(() => {
-        res.redirect("/user/register?blocked=true");
-      });
-      return;
+      req.session.user = null;
+      req.session.email = null;
+      return res.redirect("/user/register?blocked=true");
     }
 
     next();
