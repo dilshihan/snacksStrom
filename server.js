@@ -9,9 +9,14 @@ const userroutes = require('./routes/user')
 const adminroutes = require('./routes/admin') 
 const connectdb = require('./database/connectdb')
 
-app.set('views', path.join(__dirname, 'views'))
+app.set('views', [
+    path.join(__dirname, 'views'),
+    path.resolve(process.cwd(), 'views'),
+    path.join(__dirname, '../views')
+])
 app.set('view engine', 'ejs')    
 app.use(express.static(path.join(__dirname, 'public')))
+app.use(express.static(path.resolve(process.cwd(), 'public')))
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 if (process.env.VERCEL) {
     app.use('/uploads', express.static('/tmp/uploads'))
@@ -37,7 +42,7 @@ app.use(async (req, res, next) => {
         next();
     } catch (err) {
         console.error("DB connection error in middleware:", err);
-        next(err);
+        return res.status(500).send(`Database Connection Error: ${err.message}. Please check your MONGODB_URI in Vercel settings and allow 0.0.0.0/0 in MongoDB Atlas.`);
     }
 });
 app.use('/user', userroutes)
@@ -52,8 +57,8 @@ app.use((req, res, next) => {
 });
 
 app.use((err, req, res, next) => {
-    console.log(err);
-    res.status(500).send("Something went wrong! Please try again later.");
+    console.error("Global error handler:", err);
+    res.status(500).send(`Server Error: ${err.message || 'Something went wrong! Please try again later.'}`);
 });
 
 const PORT = process.env.PORT || 3001;

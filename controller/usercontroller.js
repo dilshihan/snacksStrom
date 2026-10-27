@@ -308,8 +308,8 @@ const Loadhome = async (req, res) => {
             cartCount
         }); 
     } catch (error) {
-        console.error(error);
-        res.status(500).send("Internal Server Error");
+        console.error("Error loading home:", error);
+        res.status(500).send(`Internal Server Error: ${error.message}`);
     }
 };
 
